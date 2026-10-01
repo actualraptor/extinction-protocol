@@ -1,0 +1,1553 @@
+[
+  {
+    "version": "0.8.8",
+    "title": "Patch history",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Interface",
+        "body": "Browse previous updates from the main menu. Added version selection and Newer, Older and Latest navigation."
+      }
+    ]
+  },
+  {
+    "version": "0.8.7",
+    "title": "Update 0.8.7",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Changes",
+        "body": "Daily level-ups animate the offered normal upgrades using the existing reel."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Daily chests show their reward animations."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Seeded RNG still chooses the reward; gameplay pauses until the landed result is acknowledged."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Includes the right-side main menu notice and illustrated native patch notes from 0.8.6."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Runtime test passed: level and chest spin, hold, claim."
+      }
+    ]
+  },
+  {
+    "version": "0.8.6",
+    "title": "Update 0.8.6",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Changes",
+        "body": "Right-side Latest Info card opens patch notes from the main menu."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Native illustrated notes page with fossil framing and weapon art."
+      }
+    ]
+  },
+  {
+    "version": "0.8.5",
+    "title": "Update 0.8.5",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Changes",
+        "body": "Smaller bronze upgrade heading, warm ivory supporting text, and no blue utility labels."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Removed the cramped Arsenal heading; weapon icons retain hover descriptions."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added safe screen-edge margins to the bottom dock."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Moved the timer beside the stage information, inside the artwork's clear area."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Enlarged stage text and unified HUD typography."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Score panel now shows only score. Kills remain in run statistics."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Bottom dock hides during reward selection so chest odds remain clear."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Validation: 768 card/menu checks and 73 HUD checks across four resolutions and three scales."
+      }
+    ]
+  },
+  {
+    "version": "0.8.4",
+    "title": "Update 0.8.4",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Changes",
+        "body": "Rebuilt the bottom HUD as one continuous fossil-and-bronze dock."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Weapons remain on the left, level and XP information in the center, resources and shortcuts on the right."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Blue segmented XP now runs beneath all three groups without a plaque obscuring the fill."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Removed the separate weapon and currency frames and oversized black background strip."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Shared spacing and separators keep the dock readable across resolutions and HUD scales."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Design reference: https://www.nngroup.com/articles/common-region/"
+      }
+    ]
+  },
+  {
+    "version": "0.8.3",
+    "title": "Update 0.8.3",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Changes",
+        "body": "Bundled Cinzel semibold for headings and buttons, and Source Sans 3 medium for body text and combat numbers."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Removed reliance on installed system fonts; heading symbols fall back to the bundled body font."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Upgrade buttons sit above the lower fossil ornaments, with a simple inset gold border."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Button text refits from its intended size when resized, rather than permanently shrinking."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Adjusted timer spacing for the new font metrics."
+      }
+    ]
+  },
+  {
+    "version": "0.8.2",
+    "title": "Update 0.8.2",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Daily survival randomizer",
+        "body": "Removed preset five-weapon builds, fixed relic sequences and special level rewards."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Daily uses the normal level-up generator, then randomly selects one of its available choices."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Chests use the ordinary rarity, evolution, union, refinement and replacement systems. Daily automatically resolves choices; a replacement offer randomly equips or salvages."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "New weapons, passives, augments and relics enter through the normal eligible reward pools. No separate daily content list is maintained."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "A shared UTC date seed selects the survivor and map. Start with that survivor's normal weapon. All content is available; permanent research is disabled."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Reward RNG is separate from combat RNG. Legal choices still depend on your current build and which rewards you collect."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Meteor victory opens another circuit instead of ending the daily run. The next map is drawn from the map catalog in rotation."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Each completed circuit doubles new enemy/boss HP and adds 50% incoming non-piercing damage. Boss scheduling restarts at five-minute intervals after entering each biome."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Survive until death; the meteor's timer can still end a failed encounter."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added a local daily leaderboard ranked by survival time, then kills, then score. Also records bosses defeated and circuit reached."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Results save with their UTC date and ruleset. The board shows today's top ten attempts; up to 200 attempts are retained. This is not an online leaderboard."
+      },
+      {
+        "icon": "lightning",
+        "title": "HUD",
+        "body": "Rebuilt the timer panel's internal layout: timer, biome and countdown stay inside the illustrated inset."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added a matching stone/brass frame around the blue XP bar and a central gold-text level plaque."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added a framed arsenal tray and styled amber/backpack readout."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Daily readout says FATE DECIDES rather than advertising unused rerolls."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Weapon tray, XP bar and backpack panel have separate reserved space."
+      }
+    ]
+  },
+  {
+    "version": "0.8.1",
+    "title": "Update 0.8.1",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Changes",
+        "body": "Upgrade cards now reserve space inside the illustrated corners and borders."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Smaller icons, wrapped titles and revised text spacing keep descriptions and purchase buttons inside their cards."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added serif headings and warm ivory/gold text to match the fossil-and-metal artwork."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Replaced plain menu buttons with textured stone-and-brass controls, including hover, pressed, disabled and keyboard focus states."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Archive purchases wrap longer descriptions and fit text to the available button area."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Discoveries use matching textured rows, wrapped descriptions and styled unlock buttons."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Fixed the Discovery Archive's outdated two-max-weapons evolution instruction."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Preserved 0.8 gameplay rules and existing saves."
+      }
+    ]
+  },
+  {
+    "version": "0.8",
+    "title": "Update 0.8",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "GENERAL",
+        "body": "Weapon capacity remains 5 slots."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added Ironbriar, bringing the arsenal to 23 base weapons and 6 unions."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added destructible bone urns, fossil crates and egg nests throughout the maps."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Starting spawn rate reduced by 35%, gradually returning to normal over the first 120 seconds."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added rotated, mirrored and alternate district layouts, broken formations and additional map decoration."
+      },
+      {
+        "icon": "lightning",
+        "title": "HEROES",
+        "body": "Bonuses below are gained through character levels. Damage/speed traits begin after level 1; existing starting bonuses remain."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "MARA VOSS"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Gains +1 projectile every 10 levels, up to +3."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Applies to projectile weapons, not chains or ground strikes."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "KAEL"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Gains +1% physical damage per level, up to +50%."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "VESPER"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Gains +1% spell damage per level, up to +40%."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Retains his existing spell specialization."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "IONA"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Gains +0.5% movement speed per level, up to +15%."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "ORIN"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Gains +0.5% arcane attack speed per level, up to +20%."
+      },
+      {
+        "icon": "lightning",
+        "title": "WEAPONS",
+        "body": "STORMBINDER"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Gains an additional natural chain target at weapon ranks 5 and 10."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Base target count progresses 3 → 4 → 5, before build bonuses."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "EXTINCTION MORTAR"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Shells now launch from the survivor and follow a visible upward arc."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Explosions occur on landing, not during flight."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "The same trajectory treatment applies to its bombardment union."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "IRONBRIAR — NEW WEAPON"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Releases automatic thorn bursts and retaliates when struck."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Base damage: 25. Base cooldown: 2.4s. Base radius: 115."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Gains +4 base damage per armor, up to 25 armor, before ordinary weapon scaling."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Retaliation deals 80% of current burst damage."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Retaliation cooldown: 40% of attack cooldown, minimum 0.65s."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Tags: Physical, Area, Defensive, Retaliation, Knockback, Critical."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Does not consume the offensive aura allowance."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Unlock: 800 lifetime expedition kills, or discover its signal in the Lost Cradle."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added to Kael's available kit once unlocked."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "HARDENED SPINES — NEW AUGMENT"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "+25% thorn damage and +15% thorn radius per rank. Maximum 3 ranks."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "QUICK RETORT — NEW AUGMENT"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "+15% thorn attack speed per rank. Maximum 3 ranks."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "IRONBRIAR BUILD"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Kael / Ironbriar / armor / Hardened Spines / Quick Retort."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Add Ancestor's Wrath for the union. Health and regeneration support close-range play; crit and area improve the bursts."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Armor conversion and retaliation frequency are bounded. Taking damage is a bonus trigger, not a requirement to attack."
+      },
+      {
+        "icon": "lightning",
+        "title": "EVOLUTIONS",
+        "body": "Solo evolution: rank-10 weapon + relic chest. Removed passive-rank requirements."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Union: one rank-10 weapon + its compatible partner at any rank + relic chest."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Unions consume both ingredients and free 1 weapon slot."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Eligible unions take priority over solo evolutions."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Ingredients — Union"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Stormbinder + Winterglass — WHITEOUT"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Cinder Gospel + Extinction Mortar — SUPERNOVA"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Graveshot + Bone Rattler — THE LAST WORD"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Ancestor's Wrath + Epoch Lance — EARTHSHAKER"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Rift Blades + Prism Aegis — RIFT BASTION"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Ironbriar + Ancestor's Wrath — IRONBRIAR KING"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "IRONBRIAR KING"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Base damage 48, cooldown 1.8s, radius 155 before rank/build scaling."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Retaliation deals 115% of current burst damage."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Retains armor scaling and adds stronger radial coverage."
+      },
+      {
+        "icon": "lightning",
+        "title": "CRITICAL STRIKES",
+        "body": "Critical chance can now exceed 100%."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Each full 100% guarantees one critical tier; the remainder rolls for one additional tier."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "250% effective crit = guaranteed double crit + 50% chance of triple crit."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Damage multiplier: 1 + 0.9 × critical tier. Single/double/triple crits deal 1.9× / 2.8× / 3.7× damage."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Raw crit gains have diminishing returns: first 100 points at 100% efficiency, next 100 at 65%, next 200 at 40%, further gains at 25%."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Backpack displays effective chance. Upgrade cards show the actual gain."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Critical passive maximum increased 5 → 60 ranks for extreme builds."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added small gold sparks and marked damage numbers. Visual tier markers cap at three; actual damage does not."
+      },
+      {
+        "icon": "lightning",
+        "title": "ENEMIES & BOSSES",
+        "body": "Charging enemy population limited to 5 / 6 / 7 by biome depth."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added a shared charge windup interval of 1.15 / 1.00 / 0.85 seconds by depth."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Excess charger spawns become other local species, including scheduled hordes."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Small enemies are displaced outside boss bodies."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Bosses render above ordinary swarms and friendly effects."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Boss bars now display current HP / maximum HP."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "POST-BOSS PRESSURE"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added 20 seconds of post-boss looting grace."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "After grace, newly spawned enemy health doubles every 25 seconds."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Incoming non-piercing damage gains +100% every 25 seconds after grace, including attacks from enemies already present."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Spawn pressure increases up to 6×; new enemy movement increases up to 2×. Population safety limits remain."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Elite intervals shrink toward 8 seconds."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "At 2 minutes after the boss: new enemies have 16× HP and incoming damage is 5×."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Pressure continues rising beyond the old plateau. The portal stays open and crossing it clears lingering pressure."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added a warning when grace ends and live HP/damage multipliers in the rift HUD."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "EXTINCTION ENGINE — TIMED DEFEAT"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Reaching its existing 210-second limit now triggers a 5.2-second ending sequence."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Meteor expansion, fiery screen-wide shockwave, bass impact, music ducking, darkness, then the scoreboard."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Screen shake follows the player's setting. Ordinary deaths still show results immediately."
+      },
+      {
+        "icon": "lightning",
+        "title": "BREAKABLES",
+        "body": "Drop — Chance"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Amber cache (+8 amber) — 70%"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Health pickup — 20%"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "XP magnet — 5%"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Freeze / frenzy / surge / nuke — 1.25% each"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Breakables do not award kills or XP."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Automatic targeting prioritizes hostile enemies; props become targets when no hostile is available."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Area attacks and projectile collisions can still destroy props during combat."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Local prop and pickup limits protect performance. Amber is banked directly if the pickup pool is full."
+      },
+      {
+        "icon": "lightning",
+        "title": "THE ARCHIVE",
+        "body": "Expanded permanent research from 3 → 14 tracks. Costs below are first-rank prices; subsequent prices scale by 1.65× per rank."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Research — Bonus per rank — Max ranks — Starting amber"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Hunter's Eye — +2 raw crit points — 10 — 200"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Survivor's Blood — +10 health — 5 — 70"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Forbidden Knowledge — +3% damage — 5 — 100"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Scavenger's Legacy — +5% amber and luck — 5 — 80"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Second Thoughts — +1 starting reroll — 5 — 180"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Lucky Fossil — +1% luck — 10 — 120"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Full Magazine — +1 projectile — 2 — 1,800"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Storm Memory — +1 chain target — 2 — 2,000"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Refuse Extinction — One revival at 50% HP, 3s immunity — 1 — 3,000"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Amber Prospector — +5% amber — 8 — 100"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Ancient Insight — +3% XP — 8 — 120"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Gathering Instinct — +12 pickup radius — 8 — 90"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Fossil Plating — +1 armor — 3 — 220"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Living History — +0.15 HP/s regeneration — 4 — 240"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Existing purchases and progression are preserved."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Rebuilt Archive layout as a compact grid with a fixed footer."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Fixed the Main menu button accepting mouse input."
+      },
+      {
+        "icon": "lightning",
+        "title": "DAILY EXPEDITION",
+        "body": "Date now determines the survivor, map and five-weapon build."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Levels 2–5 automatically grant the remaining weapons."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Later levels improve the lowest-rank owned weapon; from level 15, grant up to 2 ranks."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Every third level grants a scheduled passive upgrade."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Chests follow a fixed relic order or award an eligible evolution."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "No gear-choice pauses, rerolls or permanent research bonuses."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Records remain local to this computer; there is no online leaderboard."
+      },
+      {
+        "icon": "lightning",
+        "title": "UI & AUDIO",
+        "body": "Simplified upgrade wording and added icons for currently owned weapons affected by each upgrade."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Armor upgrades explicitly identify Ironbriar as an affected weapon."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added painted fossil-and-metal HUD plates, upgrade frames and a skull-framed scoreboard."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Scoreboard includes run metrics and a weapon damage/share table."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Fixed the HUD size preference; verified small and large settings and ultrawide layout."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Repositioned boss headings to avoid score/HUD overlap."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Added 29 original weapon/impact/breakable sounds with distinct gun, frost, lightning, fire, melee and arcane treatments."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Glacier Wheel now uses icy transient layers instead of the old alarm-like tone."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Dense combat attenuates overlapping sounds to preserve definition."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Existing nine map/biome music arrangements remain in this release."
+      },
+      {
+        "icon": "lightning",
+        "title": "FIXES",
+        "body": "Breakables respect the total enemy budget."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Corrected prop variation selection so urns, crates and nests can all appear."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Amber drops now use amber artwork instead of chest artwork."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Daily results return to today's fixed build rather than unrestricted survivor selection."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Save purchases, evolution slot rules, boss visibility, mortar landing damage and multi-crit probability covered by regression checks."
+      }
+    ]
+  },
+  {
+    "version": "0.7",
+    "title": "Update 0.7",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Changes",
+        "body": "Three selectable expedition maps, five survivors, twenty-two base weapons, eighteen enemy species, and nine original map/biome combat compositions."
+      },
+      {
+        "icon": "lightning",
+        "title": "Choose an expedition",
+        "body": "The Lost Cradle: the original jungle expedition, with Ashen Rift and Star Grave depths."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Frostbreak Expanse: glacial shelves, ice avenues, Frostfang charging packs and Aurora Drifters. Opens after 250 cumulative expedition kills. Three depths: Ivory Shelf, Aurora Trenches, Frozen Firmament."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "The Sunken Observatory: connected astronomical courtyards, armored Meridian Scarabs and Spore Reliquary broods. Opens after your first expedition boss kill. Three depths: Drowned Court, Brass Meridian, Unmade Sky."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Each map has its own terrain layout, painted ground, local enemy composition, music, and first two boss patterns. Shared raptors and beetles keep the ecosystem connected. The final Extinction Engine encounter remains shared. The new maps have no hidden ground slowdown zones. Their full local rosters arrive after a gentler opening."
+      },
+      {
+        "icon": "lightning",
+        "title": "Earn the arsenal",
+        "body": "Every survivor always has access to their own starter kit. Existing unlocks and research are preserved. New milestones accumulate across expeditions and checkpoint during play; daily challenges and practice do not farm campaign progress. The Archive displays requirements and progress."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Reward — Requirement"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Mara — 100 cumulative kills, or the existing discovery/purchase route"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Lost Ballistics — 500 cumulative kills, or discovery/purchase"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Kael — 700 cumulative kills, or discovery/purchase"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Riftcraft — 1,200 cumulative kills, or discovery/purchase"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Iona + Fossil Harpoon — Find Iona's camp in Frostbreak's first biome"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Orin + Hollow Lantern — Find Orin's camp in the Observatory's first biome"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Glacier Wheel — 1,000 Frostbreak kills, or find its second-biome signal"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Helios Repeater — 1,500 Observatory kills, or find its second-biome signal"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "New camp and weapon discoveries unlock for free. Milestones grant automatically. Original exploration unlocks remain available. Historical kills from old versions are not guessed or backfilled; previously earned content stays unlocked."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Iona is a fast polar hunter with an ice damage bonus and piercing, knockback harpoons. Orin is an arcane specialist whose painted lantern wisps seek enemies and burst. Glacier Wheel ricochets and freezes; Helios Repeater fires rapid piercing solar bolts with burn damage. All four use the existing tag-aware upgrade system and have chest evolutions. The five-weapon limit remains."
+      },
+      {
+        "icon": "lightning",
+        "title": "Play",
+        "body": "Run Play Extinction Protocol.cmd in the project, or extract the 0.7 Windows ZIP and run Extinction Protocol.exe. Choose a survivor, then an unlocked expedition. B opens stats; Tab shows the map. Old release folders remain available for rollback. Normal saves retain the same location and are migrated additively."
+      }
+    ]
+  },
+  {
+    "version": "0.6.3",
+    "title": "Update 0.6.3",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Changes",
+        "body": "Removed the opaque central backdrop and rectangular reel cards. The reel floats above a uniformly dimmed world, with a smaller heading, understated rarity glow and faint neighboring icons after landing. Text outlines retain readability over terrain. Reward descriptions, rarity odds, union ingredients and explicit continue/replacement controls remain."
+      }
+    ]
+  },
+  {
+    "version": "0.6.2",
+    "title": "Update 0.6.2",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Changes",
+        "body": "Expanded viewport fills ultrawide displays without pillarboxing. Terrain, swarms, effects, navigation and player health now follow the expanded drawing area. Menus remain centered and their backdrop covers the screen."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Timer/biome at upper-left, boss name and phase at top-center with a separate health-frame region, score at upper-right. Compact layouts move the buff grid beneath the boss frame's vertical extent."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Weapons only at bottom-left. Temporary buffs (with countdowns), relics, passives and augments occupy a right-aligned top-right grid with hover descriptions."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "B opens a complete single-screen backpack: Attack, Defense and Utility stat tables; five weapon rows; eight relic slots; passive/augment icons. No scroll container. Detailed weapon damage and equipment descriptions remain available on hover."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Tab map has no rectangular background or explored-cell fill. It shows translucent terrain boundaries and small objective markers while gameplay continues."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Existing character size, under-character health, progression and combat rules are retained."
+      }
+    ]
+  },
+  {
+    "version": "0.6.1",
+    "title": "Update 0.6.1",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Changes",
+        "body": "Tab opens a transparent map overlay while movement and combat continue. Tab or Escape closes it. M remains an alias. B opens the paused backpack and damage ledger."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Off-screen guidance prioritizes a placed waypoint, biome exit, then nearest undiscovered unlock. No arrows to routine chests or shrines, no arrow when the target is on-screen."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Completed discoveries no longer show misleading unknown signals. Unfound locations use larger illustrated camp markers; arriving records the discovery and explains the Archive purchase."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Equipment uses compact hoverable icons: weapons, relics and passives. Backpack includes survivor crit chance, armor, speed, health, regeneration and upgrade ranks, plus calculated weapon power/cooldown/count/radius and measured damage."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Smaller ornate boss frame, compact footer and automatic relative HUD reduction at larger window sizes. Settings adds a saved HUD-size preference."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Health is a small bar below the survivor; hover for current/max HP. Low health turns red and an active shield adds a blue strip. Removed the upper-left health panel."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Survivor artwork is about 21% smaller. Combat collision and movement are unchanged."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Removed both untextured circles around spit windups/projectiles. Painted venom remains visible above friendly spells."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Extract the Windows ZIP, then run Extinction Protocol.exe. The previous release remains available; your existing progression is retained."
+      }
+    ]
+  },
+  {
+    "version": "0.6",
+    "title": "Update 0.6",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Explore, discover, return stronger",
+        "body": "M opens the paused expedition map. Walking reveals fog, terrain, nearby caches and shrines. Unknown signals hint at discoveries; click the map to set a waypoint. A screen-edge arrow points to that waypoint or the current cache, shrine or exit."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Twelve discovery sites span the three biomes. Find a site, then purchase its survivor/equipment package with amber in Discoveries / survivors & equipment. Discovery is saved immediately; purchases happen between runs. Fresh profiles start with Vesper and a compact selection of guns, melee and elemental spells. Optional equipment, augment groups and relics expand through the archive."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Returning 0.5 players keep their original catalog, survivors, currency, research and records. An existing profile with at least one banked run receives legacy unlocks during migration. No progression is reset. Two new weapon discoveries remain available to everyone:"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Prism Skipper, found in biome two: crystals ricochet between distinct targets, losing 15% damage per bounce. Rank VIII + Deadeye II + a chest evolves it into Prism Cascade, adding ricochets and stronger volleys."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Sun Chaser, found in biome three: crescents fly outward and return toward the moving survivor, hitting again on their return. Rank VIII + movement-speed passive II + a chest evolves it into Second Dawn."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "The arsenal now has eighteen base weapons and five original unions. Five backpack slots and one offensive aura remain the limits. Daily and Meteor trial use the complete catalog without permanent research bonuses."
+      },
+      {
+        "icon": "lightning",
+        "title": "Chests worth stopping for",
+        "body": "Every chest uses one RNG reel in every biome, including with eight relics bound. Eligible transformations still take priority and are clearly labelled guaranteed."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Full satchels: lower-tier finds become a compatible rank upgrade or supplies. Higher-tier relics, and equal-tier Epic-or-better finds, offer an optional replacement."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "On a replacement reveal, E equips the new relic. Space, Enter or movement keeps the current relic and salvages the find for 25 amber and 15 healing. The current relic's effect is shown for comparison. There is no second popup."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "The reel displays the actual rarity distribution after luck, available compatible relics and bad-luck protection. Locked relics are excluded. An Artifact cannot appear before it is unlocked."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "A union displays both ingredient icons, a merging presentation, and a first-discovery announcement. Discovered recipes are saved in the archive. Consuming two weapons frees exactly one slot."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Whiteout retains Winterglass's single-target role through three seeking ice lances alongside its freezing arcs. Supernova uses a separate bounded boss hit interval so the union no longer loses most of its ingredients' damage. Controlled large-target checks cover all five unions against their ingredient pairs."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Scheduled mini-bosses still drop chests while fewer than four boxes are waiting. Invasion mutations instead have a 12% chance, sharing a 35-second cooldown. This removes the late-game chest forest."
+      },
+      {
+        "icon": "lightning",
+        "title": "Read the fight",
+        "body": "Original icon atlases distinguish every weapon, passive, augment and relic. Stormbinder, Thunderstorm and Whiteout have separate artwork."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Backpack cards show the weapon/evolution name, actual rank, and evolved/union state. The bottom HUD fits above the blue XP bar without long relic lists overlapping it."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Tab opens a paused damage/loadout ledger: total effective damage, five-second DPS, average DPS over the weapon's active lifetime, relic effects and acquired upgrades. Overkill is excluded; historical averages stop when ingredients are consumed."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Boss lanes, craters and shockwaves use painted lava/ember textures with exact footprint outlines. Venom globules and charge wakes use dedicated textures. Hostile effects and the meteor silhouette render above friendly magic."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Friendly effects have lower additive intensity, smaller impact sizes, a clear area around the player, and bounded visual budgets. Multi-shot volleys stagger their projectiles instead of producing an instant opaque fan."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Three original 32-bar combat cues, at 140 / 152 / 164 BPM, give each biome its own melodic hook, harmony and rhythm. The previous calmer score plays in menus. Combat tracks crossfade on biome changes. Weapon effects are 4 dB quieter; warnings and reward sounds retain their level."
+      },
+      {
+        "icon": "lightning",
+        "title": "Strong builds, meaningful consequences",
+        "body": "Rank X's hidden extra doubling becomes a 20% mastery bonus. Existing rank scaling, milestone behaviors, solo evolutions and unions remain."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Shared caps bound count, radius, chain reach, duration, cooldown and active projectiles. Endless combinations no longer multiply without practical limits."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Blood Chalice heals at most once every two seconds. A mass kill cannot instantly erase repeated boss mistakes."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "The meteor's arena collapse ticks once per second for 18% maximum health + 10, bypassing flat armor. Its 6,000,000 health, anchor windows and phase gates are unchanged."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Skybreaker Flight, Ironback Procession and Rift Hunt add timed species-specific formations between the large existing swarms. There are lanes and flanks as well as encirclements."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Armor primarily resists physical attacks. Mossjaw is vulnerable to fire; Cinder Colossus resists fire and is vulnerable to ice. Bosses retain selective crowd-control resistance."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Utility drops use weighted tables: healing and magnets are more common than nukes, with extra weighting for low health and a crowded XP field."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Physical gun rounds and Prism Skipper respect rock cover and prefer visible targets. Magical frost/fire retain terrain penetration. Generic weapon data now includes targeting, shot interval, terrain behavior and projectile caps."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "The user's weapon reference, weapon statistics, map discovery and relic progression informed the reusable systems. The names, art, music, combinations and implementation are original. The long concept's examples are supported as a design direction, not copied one-for-one into the roster."
+      }
+    ]
+  },
+  {
+    "version": "0.5",
+    "title": "Update 0.5",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Faster rewards, clearer choices",
+        "body": "Rift shrines charge in six seconds, down from twelve. Portal entry also takes half the previous time."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Relic reels keep the landed reward visible until a fresh WASD, arrow, Space or Enter press. Holding movement cannot accidentally skip the result. There is no second popup."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Mini-bosses drop a physical relic chest. Walk over it to collect; it remains until you leave the biome."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Chest rarity odds appear below the reel. Base weights: Common 40%, Uncommon 30%, Rare 18%, Epic 9%, Legendary 2.7%, Artifact 0.3%."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Fortune's Favor is a new run passive. Permanent Scavenger's Luck research improves rarity odds as well as amber income. Higher tiers receive progressively stronger weighting; the displayed odds include luck, available unowned compatible relics and the existing fifth-dry-chest Rare guarantee."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "A ready evolution or union takes priority over a relic roll, even with eight relics equipped. The reveal clearly identifies a guaranteed transformation rather than displaying random relic odds."
+      },
+      {
+        "icon": "lightning",
+        "title": "Weapons and evolutions",
+        "body": "Vesper starts with Stormbinder. Sixteen base weapons/spells plus five original unions are available. Carry five weapons at once, with at most one offensive aura."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Both union ingredients must reach rank X. Their individual evolved forms also qualify. Collecting the next chest replaces both with their union, freeing one slot. Ingredients consumed by a union cannot be reacquired during that run. When multiple recipes are ready, the chest selects one eligible union."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Ingredients — Union — Behavior"
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Stormbinder + Winterglass — WHITEOUT — Frost lightning arcs through enemies, freezes them, and detonates already-frozen prey. Detonations have a shared cooldown and cannot recursively detonate."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Cinder Gospel + Extinction Mortar — SUPERNOVA — Solar bombardments leave burning fields with a final eruption."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Graveshot + Bone Rattler — THE LAST WORD — Rapid, long-range fans of piercing execution rounds."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Ancestor's Wrath + Epoch Lance — EARTHSHAKER — Wide full-circle cleaves, echoes and piercing shockwaves."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Rift Blades + Prism Aegis — RIFT BASTION — Heavy orbiting blades with a periodically recharging barrier."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Solo evolutions require rank VIII + their linked passive at rank II + a chest. Upgrade cards show the recipe. Each keeps its role: seeking/faster-freezing Winterglass, branching Stormbinder, burning mortar craters, larger fire explosions, wider auras, stronger barriers and longer time stops. Unions are optional and do not require choosing a solo evolution first."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Thunderstorm creates a targeted two-second field with four lightning strikes. It benefits from damage, area, cooldown, field count and duration upgrades. It is not an aura. Its evolution, HEAVEN'S END, lasts three seconds and strikes twice as often. Field/visual caps and per-boss hit intervals prevent overlapping fields from producing uncontrolled damage."
+      },
+      {
+        "icon": "lightning",
+        "title": "Movement, combat and presentation",
+        "body": "Fixed XP appearing to stop dropping during large hordes. At the 800-gem cap, two old distant gems now combine and a fresh gem appears at the new kill. Total XP is preserved; a gravity pickup still collects all banked XP."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Bosses use run-time milestones at 5:00, 10:00 and 15:00, rather than resetting a five-minute clock after each portal. Late entry grants 45 seconds of preparation. You must enter the next biome through its portal. The HUD now shows the next boss countdown."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Enemy bodies collide and separate using a bounded spatial contact solver. Dense packs spread and compress around obstacles instead of sharing one point. Contact searches are staggered; minor temporary overlap remains possible in large packs."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Eight-direction navigation and direct pursuit across open ground replace four-direction stair-stepping. Flyers still cross terrain but collide with other creatures."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Venom spitters wind up and fire bright, straight-moving projectiles. Sidestep them or use rock cover. They no longer place green damage circles under the player."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Frozen creatures receive a faceted blue ice coating and frost crystals. They stop walking, stop bobbing, and resist displacement until thawing. Bosses retain their freeze resistance."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Winterglass has shimmering trails, glassy attack cracks and brittle impacts. Lightning chains reveal successive jagged arcs with electrical crackles. Thunderstorm adds descending bolts, a rotating field and thunder impacts."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Weapon transients were tightened, short reflections replaced long rapid-fire echoes, and strong casts briefly lower music slightly to preserve attack clarity."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Design reference: the user's Vampire Survivors weapon wiki, evolution/union rules and Santa Water. Names, combinations, gameplay implementation, artwork and synthesized audio in this game are original."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Existing permanent progression loads unchanged. Start a new run in the new executable for this ruleset. Local daily records are tagged 0.5."
+      }
+    ]
+  },
+  {
+    "version": "0.4",
+    "title": "Update 0.4",
+    "entries": [
+      {
+        "icon": "lightning",
+        "title": "Play and build",
+        "body": "Five weapon slots, visible in the bottom-left backpack. Weapon upgrades and evolutions retain their slot. Once full, level-ups offer existing weapons, applicable augments and passives. Only one offensive aura can enter a build; orbiting blades, barriers and time magic remain distinct options."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Start each run with three rerolls. Press R or click Reroll on the level-up screen. A reroll excludes the displayed offers when at least three alternatives exist, costs one charge, and does not advance gameplay. Boss kills restore one charge, up to five. Meteor trial also uses five weapons."
+      },
+      {
+        "icon": "lightning",
+        "title": "Combat",
+        "body": "Winterglass and all other projectiles now use a shared ground-space aim origin and swept segment collision. Fast projectiles cannot skip small targets between ticks. Volleys always include a centre shot; ricochets start a fresh path next tick instead of hitting along their previous trajectory."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Fire hitting a frozen enemy causes thermal shock: it consumes the freeze and schedules one area explosion. Per-enemy cooldowns, a damage cap and the existing bounded proc queue prevent recursive explosions. Ice remains useful alongside fire, instead of merely duplicating damage. Gun impacts, crystalline frost trails/shards, fire cores and directed spear thrusts have distinct effects."
+      },
+      {
+        "icon": "lightning",
+        "title": "Relic caches",
+        "body": "Caches roll one compatible, unowned relic and automatically award it after a slowing reel and rarity reveal. No selection followed by another confirmation. Eight relics remain the satchel limit; additional caches provide the existing bonus upgrade and amber reward."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Rarity tiers: Common (white), Uncommon (green), Rare (blue), Epic (purple), Legendary (orange), Artifact (gold). Initial tier weights are 40 / 30 / 18 / 9 / 2.7 / 0.3, normalized over available tiers. After four consecutive Common/Uncommon rewards, the next eligible roll is Rare or better. The actual reward is selected by the seeded simulation before animation; decorative reel movement does not alter it."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "26 relics, including six additions: Hunter's Flint, Mammoth Wrap, Quickening Coil, Amber Lens, Prism of Plenty and the ultra-rare Unwritten Era. New bonuses affect real damage, health, recharge, XP or projectile/chain/blade/bombardment counts."
+      },
+      {
+        "icon": "lightning",
+        "title": "Audio",
+        "body": "Original 116 BPM D-minor chiptune/adventure score, “Against the Falling Sky”: 32 bars, melodic variations, triangle bass, pulse lead, bell arpeggios, pads and percussion. A synchronized additional rhythm layer rises with danger. Music has independent players so weapon spam cannot steal its voices. The loop is 66.21 seconds."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "36 stereo sound cues include weapon-specific casts, separate frost/fire/metal impacts, thermal shock, reel ticks and six rarity stings. Frost uses inharmonic ice/glass tones and fracture noise; firearms use sharp report/body layers; fire and mortar use low roar/impact layers; lightning uses gated crackle; arcane abilities use resonant tones. Repeated impacts and aura casts are rate-limited for mix clarity."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Generated deterministically by `tools/compose_audio.py`, with no borrowed recordings or melodies. Music and sound toggles retain saved preferences."
+      },
+      {
+        "icon": "lightning",
+        "title": "Biomes, enemies and boss pacing",
+        "body": "The first two bosses leave a visible animated rift instead of immediately changing biomes. Collect remaining drops, then walk into the rift for 0.65 seconds to leave. Staying behind increases spawn pressure up to fivefold, enemy health up to fourfold and newly spawned enemy movement speed up to 75%. The HUD displays linger time and spawn pressure. Entering clears remaining old-world drops and starts the next biome's five-minute boss interval, with a brief protected visual transition. Runs can exceed fifteen minutes when you linger or take longer to defeat bosses."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Fourteen enemy species now include Venomcrest spitters, armored Ironbacks and Mossjaws, telegraphing Tuskbreaker mammoths, Brood Widows that release three hatchlings, flying Amberwings, Cinder Colossi, terrain-phasing Rift Stalkers and Embersails. New painted silhouettes are GPU-batched. Heavy species enter after the opening section; later biomes change the mix."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Ordinary ground attackers share a global cooldown: four seconds in biome two, three elsewhere. Warnings last 1.65 seconds and impacts just 0.3 seconds, with fixed positions. Ordinary casters stop casting during boss fights. Killing elites no longer creates a damaging ground burst."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Basalt Behemoth health is 90,000 (previously 360,000). It now uses obsidian-colossus art, alternates four crossing lanes with two brief impacts, and pauses 4.7–5.5 seconds between patterns. Half-health armor transition remains. The final Extinction Engine retains its extreme six-million-health build check."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "XP is now at the bottom. Boss name, phase, health and final-boss mechanics are at the top in an original illustrated fossil/obsidian frame with a delayed damage trail."
+      },
+      {
+        "icon": "lightning",
+        "title": "Inspiration",
+        "body": "Reviewed indexed excerpts from the user-supplied Vampire Survivors wiki: Weapons, Level up, PowerUps, Treasure Chest and Evolution. Direct Fandom fetches returned 402, so research used indexed excerpts. Limited loadouts, rerolls, weighted rewards and upgrade/evolution roles informed this pass; game content, audiovisual assets and tuning are original."
+      },
+      {
+        "icon": "lightning",
+        "title": "",
+        "body": "Enemy roles and biome encounters also take inspiration from the user-linked Enemies reference. See assets/PROVENANCE-0.4.md for original artwork and audio details."
+      }
+    ]
+  }
+]

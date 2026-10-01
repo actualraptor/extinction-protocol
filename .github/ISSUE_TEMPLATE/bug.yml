@@ -1,0 +1,28 @@
+name: Tester bug report
+description: Report a problem in a private test build.
+title: "[Bug] "
+body:
+  - type: input
+    id: version
+    attributes:
+      label: Build and operating system
+      placeholder: "0.9.0 / Windows 11"
+    validations:
+      required: true
+  - type: input
+    id: run
+    attributes:
+      label: Run details
+      description: Character, map, mode and approximate time into the run.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include what you expected and how to reproduce it.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Screenshot, video or run report
+      description: Optional attachments. Please avoid unrelated personal data.

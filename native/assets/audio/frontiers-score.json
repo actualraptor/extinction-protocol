@@ -1,0 +1,74 @@
+[
+  {
+    "file": "frontier_0_0.wav",
+    "title": "Canopy Overture",
+    "bpm": 144,
+    "seconds": 80.0,
+    "peak": 0.86,
+    "rms": 0.24452378555124035
+  },
+  {
+    "file": "frontier_0_1.wav",
+    "title": "Cinder Counterpoint",
+    "bpm": 156,
+    "seconds": 73.85,
+    "peak": 0.8599999999999999,
+    "rms": 0.23436204695197313
+  },
+  {
+    "file": "frontier_0_2.wav",
+    "title": "The Last Procession",
+    "bpm": 168,
+    "seconds": 68.57,
+    "peak": 0.86,
+    "rms": 0.23502741869275867
+  },
+  {
+    "file": "frontier_1_0.wav",
+    "title": "Ivory Aurora",
+    "bpm": 149,
+    "seconds": 77.32,
+    "peak": 0.86,
+    "rms": 0.24320374087907312
+  },
+  {
+    "file": "frontier_1_1.wav",
+    "title": "Glassbound Fugue",
+    "bpm": 161,
+    "seconds": 71.55,
+    "peak": 0.86,
+    "rms": 0.24539232454073326
+  },
+  {
+    "file": "frontier_1_2.wav",
+    "title": "Winter at the Edge of Time",
+    "bpm": 173,
+    "seconds": 66.59,
+    "peak": 0.86,
+    "rms": 0.2328893184787282
+  },
+  {
+    "file": "frontier_2_0.wav",
+    "title": "The Drowned Clock",
+    "bpm": 154,
+    "seconds": 74.81,
+    "peak": 0.86,
+    "rms": 0.23699989657727352
+  },
+  {
+    "file": "frontier_2_1.wav",
+    "title": "Brass Meridian",
+    "bpm": 166,
+    "seconds": 69.4,
+    "peak": 0.86,
+    "rms": 0.2301474000171629
+  },
+  {
+    "file": "frontier_2_2.wav",
+    "title": "Unmaking the Heavens",
+    "bpm": 178,
+    "seconds": 64.72,
+    "peak": 0.86,
+    "rms": 0.2309369779504677
+  }
+]

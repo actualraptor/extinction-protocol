@@ -1,0 +1,28 @@
+# Publish only the native game and its project presentation.
+/*
+!/.gitignore
+!/.gitattributes
+!/README.md
+!/DEVELOPING.md
+!/.github/
+!/docs/
+!/native/
+# Generated/editor state and private fixture data
+native/.godot/
+native/build/
+native/export_templates/
+native/feature_profiles/
+native/script_templates/
+native/text_editor_themes/
+**/__pycache__/
+**/*.pyc
+**/.DS_Store
+**/Thumbs.db
+**/.env
+**/.env.*
+**/steam_appid.txt
+# Machine-specific presentation automation (site itself is portable)
+docs/preview-*.png
+
+docs/prepare_assets.py
+docs/test-site.cjs

@@ -1,0 +1,8 @@
+# 0.4 asset provenance
+
+- `monsters-04.png`: original nine-creature atlas generated with built-in imagegen. Prompt specifies a painted prehistoric fantasy style, nine distinct right-facing silhouettes in a transparent 3×3 grid: crested venom dinosaur, ankylosaurus, mammoth, brood spider, giant dragonfly, snapping turtle, basalt golem, spectral skeletal raptor and ember dimetrodon. Two revisions removed the background and enforced generous 60%-cell occupancy. Final atlas is unchanged; `monster-regions.json` stores alpha-component bounding rectangles extracted by `tools/index_monsters.py` without modifying image pixels.
+- `boss-frame.png`: original transparent boss HUD art generated with built-in imagegen. Prompt specifies a slender horizontal obsidian/bronze trough, ivory fangs, fossil ornamentation and a horned skull at the left; no text, game logos or borrowed UI artwork. The game overlays the health fill in the inset trough.
+- `audio/*.wav`: 38 original stereo PCM assets rendered by `tools/compose_audio.py`: two synchronized music stems and 36 sound cues. No external audio recordings, samples or melodies. Synthesis uses explicitly composed pitches, harmonic oscillators, deterministic noise, envelopes and short stereo reflections. The score is titled “Against the Falling Sky.”
+- Portal motion, rarity reels, particle effects and weapon embellishments use existing original painted effect sheets plus native animation code. Earlier art provenance remains in the preceding provenance documents.
+
+Gameplay inspiration was researched from the user-linked Vampire Survivors wiki. No wiki images, music, code, characters or weapon names were imported.
