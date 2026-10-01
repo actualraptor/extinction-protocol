@@ -1,5 +1,5 @@
 const repository = document.documentElement.dataset.repository || 'actualraptor/extinction-protocol';
-const releaseTag = 'v0.9.0';
+const releaseTag = 'v0.9.1';
 const base = `https://github.com/${repository}`;
 const links = {repo:base,release:`${base}/releases/tag/${releaseTag}`,windows:`${base}/releases/tag/${releaseTag}`,linux:`${base}/releases/tag/${releaseTag}`,feedback:`${base}/issues/new/choose`};
 document.querySelectorAll('[data-link]').forEach(link=>{link.href=links[link.dataset.link];});

@@ -11,6 +11,7 @@ static func affected(g,o):
 		if g.Rules.matches(g.C.WEAPONS[id].tags,d.get("filter",{})): result.append(id)
 	return result
 static func description(g,o):
+	if o.type=="supplies": return "+25 amber. Restore 15 health. Your build is fully upgraded."
 	var d=g.C.WEAPONS[o.id] if o.type=="weapon" else g.C.AUGMENTS[o.id] if o.type=="augment" else g.C.PASSIVES[o.id]
 	if o.type=="weapon":
 		var rank=g.weapons[o.id].level+1 if g.weapons.has(o.id) else 1

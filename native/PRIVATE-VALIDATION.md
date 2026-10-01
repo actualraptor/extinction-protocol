@@ -27,3 +27,9 @@ Date: 2026-10-01. This is a limited private Windows test candidate, not a claim 
 5. Tester acceptance: a normal non-invulnerable Expedition and a Daily session, application restart after purchases/unlocks, then update in place without progress loss. Reports/video feed the next fix pass.
 
 Controls, store assets and broad performance optimization were explicitly deferred. No custom server is required or planned for Steam's basic achievements/Cloud/client leaderboards.
+
+## 0.9.1 — Commit to the Build
+
+Verified integration runs, Daily rewards, weapon checks, save safety, native menu layouts, upgrade cards, and reward reels. Added 105 shared-buff-slot checks, 124 union/magnet checks, 33 ground-effect checks, 132 refund/progression checks, 657 scoreboard layout checks, and a native supplies reward claim. Archive UI: 280 checks at 1024x640 and 3440x1440. Union balance comparisons pass for all five tested unions.
+
+Native screenshots inspected for scoreboard safe insets, painted scorch areas, Archive icons, and the six-section patch-notes PNG. Website responsive checks passed at 390/768/1440. Refund tests cover milestone regrant loops and preserving discovered progress. Windows exported package smoke test uses its isolated verification profile. Linux remains an exported, runtime-unverified candidate.

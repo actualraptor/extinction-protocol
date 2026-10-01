@@ -40,6 +40,21 @@ func _draw():
 	if s==null: return
 	if impacts:
 		for zone in s.zones:
+			if zone.wait>0: continue
+			if zone.get("scorched",false):
+				var ground = world.screen(zone.p)
+				if not Rect2(-zone.radius,-zone.radius,1440+zone.radius*2,900+zone.radius*2).has_point(ground): continue
+				var cooling = clampf(zone.life/0.45,0.0,1.0)
+				var heat = 0.88+sin(world.clock*6+zone.p.x*0.01)*0.12
+				# The authored ember/crater frame stays visible between damage ticks.
+				# Its circular footprint shares the simulation's world-space radius.
+				piece(3,ground,Vector2.ONE*zone.radius*2.2,zone.p.x*0.017,0.9*cooling*heat,Color("ffb77d"))
+				for ember in range(4):
+					var angle = ember*TAU/4+zone.p.y*0.01
+					var phase = fmod(world.clock*0.65+ember*0.23,1.0)
+					var location = ground+Vector2.from_angle(angle)*zone.radius*0.55
+					burst(0,location,Vector2.ONE*zone.radius*0.52,phase,0.4*cooling,angle)
+				continue
 			if zone.id!="thunderstorm": continue
 			var center = world.screen(zone.p)
 			var fade = minf(1,zone.life*3)

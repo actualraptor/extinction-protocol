@@ -30,7 +30,7 @@ func _initialize():
  for map_id in E.Maps.DATA:
   for mode in ["expedition","daily"]:
    var g=game(mode,map_id)
-   g.weapons={"frost":{"level":10,"evolved":false,"timer":0.1},"lightning":{"level":1,"evolved":false,"timer":0.1}}
+   g.weapons={"frost":{"level":10,"evolved":false,"timer":0.1},"lightning":{"level":10,"evolved":false,"timer":0.1}}
    var ending=[];g.ended.connect(func(won):ending.append(won))
    for stage in range(1,4):
     g.time=g.next_boss-.01;g.invul=100;g.transition_time=0
@@ -48,7 +48,7 @@ func _initialize():
     g.enter_portal()
     check(g.depth==old_depth and g.daily_loop==old_loop and g.portal!=null,"Portal cannot skip unclaimed boss reward")
     claim(g)
-    if stage==1:check(g.weapons.size()==1 and g.weapons.has("whiteout"),"Boss chest fuses max weapon plus partner and frees slot")
+    if stage==1:check(g.weapons.size()==1 and g.weapons.has("whiteout"),"Boss chest fuses two max weapons and frees slot")
     g.xp=g.xp_goal+1;g.invul=100;g.tick(.01,Vector2.ZERO)
     claim(g)
     g.explored[0][Vector2i(99,99)]=true;g.breakable_cells["previous"]=true

@@ -533,7 +533,7 @@ func update_hud_scale():
 	xp_bar.position = Vector2(24*factor,viewport.y-130*factor)
 	xp_bar.size = Vector2(viewport.x/factor-48,106)
 	var dock_visible=sim!=null and not sim.choosing and page!="upgrade"
-	if sim!=null:hud_root.visible=page!="upgrade"
+	if sim!=null:hud_root.visible=page not in ["upgrade","summary"]
 	xp_bar.visible=dock_visible
 	weapons_hud.visible=dock_visible
 	loadout_label.visible=dock_visible
@@ -734,8 +734,9 @@ func upgrade_menu(opts,relic):
 	label(head,"Take something dangerous" if relic else "Become their extinction",32,"d9bd83")
 	label(menu_root,"Weapons %s / 5  ·  Upgrade your build or fill an empty slot."%sim.weapons.size(),16,"c6baa3").position = Vector2(95,202)
 	var row = HBoxContainer.new()
-	row.position = Vector2(95,230)
-	row.size = Vector2(1250,535)
+	var reward_width = minf(1250,opts.size()*400+maxi(0,opts.size()-1)*22)
+	row.position = Vector2((1440-reward_width)/2,230)
+	row.size = Vector2(reward_width,535)
 	row.add_theme_constant_override("separation",22)
 	menu_root.add_child(row)
 	for i in range(opts.size()):
@@ -748,11 +749,11 @@ func upgrade_menu(opts,relic):
 		var v = VBoxContainer.new()
 		v.add_theme_constant_override("separation",6)
 		panel.add_child(v)
-		var data = C.RELICS[o.id] if o.type=="relic" else C.PASSIVES[o.id] if o.type=="passive" else C.AUGMENTS[o.id] if o.type=="augment" else C.WEAPONS[o.id]
+		var data = C.RELICS[o.id] if o.type=="relic" else C.PASSIVES[o.id] if o.type=="passive" else C.AUGMENTS[o.id] if o.type=="augment" else {"name":"Amber Supplies","desc":"+25 amber and restore 15 health."} if o.type=="supplies" else C.WEAPONS[o.id]
 		var rarity = "EVOLUTION" if o.type=="evolution" else data.get("rarity","RARE" if o.type=="augment" else "")
 		if rarity in ["LEGENDARY","EVOLUTION"]: panel.self_modulate=Color("fff0cd")
 		if not rarity.is_empty(): panel.tooltip_text=rarity
-		Icons.control(v,o.id,o.type,32)
+		Icons.control(v,"lens" if o.type=="supplies" else o.id,"relic" if o.type=="supplies" else o.type,32)
 		var title = data.evolution if o.type=="evolution" else data.name
 		var name_label = label(v,title,23)
 		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -781,7 +782,7 @@ func upgrade_menu(opts,relic):
 		tween.tween_interval(i*0.09)
 		tween.tween_property(panel,"modulate:a",1.0,0.2)
 		tween.parallel().tween_property(panel,"scale",Vector2.ONE,0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	label(menu_root,"1 / 2 / 3 to choose. Five weapon slots. One offensive aura.",18,"95aeae").position=Vector2(95,800)
+	label(menu_root,"1 / 2 / 3 to choose. Buff types %s / 8. One offensive aura."%sim.buff_slots_used(),18,"95aeae").position=Vector2(95,800)
 	var reroll = button(menu_root,"R / REROLL (%s)"%sim.rerolls,func():sim.reroll_choices())
 	reroll.position = Vector2(1015,785)
 	reroll.size = Vector2(320,58)
@@ -861,6 +862,8 @@ func discovery_menu():
 			portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			portrait.custom_minimum_size = Vector2(60,60)
 			row.add_child(portrait)
+		elif id in ["map_frost","map_observatory"]:
+			Icons.control(row,id,"discovery",60)
 		else:
 			var category = "weapon" if d.has("weapons") else "augment" if d.has("augments") else "relic"
 			var id_list = d.get("weapons",d.get("augments",d.get("relics",["tablet"])))
@@ -872,20 +875,23 @@ func discovery_menu():
 		label(text,Campaign.requirement(save_data,id),14,"dfb67a").autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 		label(text,d.desc,16,"b3c5cb").autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 		var buy_button = button(row,"UNLOCKED" if bought else "%s AMBER"%d.cost if found else "IN PROGRESS" if d.has("goal") else "UNDISCOVERED",func():
-			if Discoveries.purchase(save_data,id):
+			if preload("res://scripts/archive_respec.gd").buy_discovery(save_data,id):
 				persist()
 				discovery_menu())
 		buy_button.custom_minimum_size.x = 220
 		buy_button.disabled = bought or not found or save_data.amber<d.cost
 	label(body,"DISCOVERED COMBINATIONS / %s"%save_data.recipes.size(),23,"d6b580")
-	if save_data.recipes.is_empty(): label(body,"Max one weapon, find its compatible partner, then open a chest.",18,"b3c5cb")
+	if save_data.recipes.is_empty(): label(body,"Max both compatible weapons to rank 10, then open a chest.",18,"b3c5cb")
 	for id in save_data.recipes:
 		if not C.WEAPONS.has(id): continue
 		var parts = Expedition.Evolutions.UNIONS[id].parts
 		label(body,"%s + %s → %s"%[C.WEAPONS[parts[0]].name,C.WEAPONS[parts[1]].name,C.WEAPONS[id].name],21,"e6d2b2")
 	var back = button(menu_root,"← Main menu",main_menu)
 	back.position = Vector2(100,780)
-	back.size = Vector2(1240,60)
+	back.size = Vector2(605,60)
+	var refund=button(menu_root,"Refund paid unlocks",func():archive_refund_menu(false))
+	refund.position=Vector2(720,780);refund.size=Vector2(620,60)
+	refund.disabled=preload("res://scripts/archive_respec.gd").discovery_total(save_data)<=0
 
 func map_menu():
 	paused = false
@@ -945,26 +951,36 @@ func summary():
 		defeat_cinematic.set_process(false)
 		defeat_cinematic.caption.hide()
 		layer.move_child(defeat_cinematic,0)
-		hud_root.hide()
 	page="summary";clear_menu();shade(1.0 if sim.extinction_timeout else 0.82)
+	hud_root.hide()
 	UIArt.plate(menu_root,2,Rect2(90,12,1260,770))
-	label(menu_root,"EXTINCTION DENIED" if sim.won else "EXPEDITION COMPLETE",36,"f4d49b").position=Vector2(190,212)
-	label(menu_root,"%s · %02d:%02d · %s · %s"%[C.HEROES[sim.hero].name,int(sim.time)/60,int(sim.time)%60,sim.mode.to_upper(),Maps.DATA[sim.map_id].name],19,"b7cbd0").position=Vector2(190,262)
-	var grid=GridContainer.new();grid.columns=3;grid.position=Vector2(190,305);grid.size=Vector2(1060,150);grid.add_theme_constant_override("h_separation",70);menu_root.add_child(grid)
-	for metric in [["SCORE",sim.score],["KILLS",sim.kills],["AMBER",0 if sim.mode=="safari" else int(sim.amber*sim.fortune)],["BEST STREAK",sim.best_streak],["PEAK HORDE",sim.peak_enemies],["HITS TAKEN",sim.hits]]:
-		var v=VBoxContainer.new();v.custom_minimum_size=Vector2(275,70);grid.add_child(v);label(v,metric[0],14,"afbdc2");label(v,str(metric[1]),28,"f0d098")
-	label(menu_root,"WEAPON",16,"b7cbd0").position=Vector2(190,490)
-	label(menu_root,"DAMAGE",16,"b7cbd0").position=Vector2(620,490)
-	label(menu_root,"SHARE",16,"b7cbd0").position=Vector2(875,490)
+	# This inset excludes the skull crest and the lower corner fossils. All
+	# results belong to it, rather than treating the art's outer bounds as usable.
+	var content=Control.new();content.name="SummaryContent"
+	content.position=Vector2(235,218);content.size=Vector2(970,390);menu_root.add_child(content)
+	var title=label(content,"EXTINCTION DENIED" if sim.won else "EXPEDITION COMPLETE",32,"f4d49b")
+	title.size=Vector2(970,42)
+	var detail=label(content,"%s · %02d:%02d · %s · %s"%[C.HEROES[sim.hero].name,int(sim.time)/60,int(sim.time)%60,sim.mode.to_upper(),Maps.DATA[sim.map_id].name],18,"b7cbd0")
+	detail.position=Vector2(0,45);detail.size=Vector2(970,25);detail.clip_text=true;UIArt.fit_label(detail,18)
+	if not sim.won:
+		var reason=label(content,sim.death_reason,15,"ecb4a4")
+		reason.position=Vector2(0,69);reason.size=Vector2(970,22);reason.clip_text=true;UIArt.fit_label(reason,15)
+	var metrics=[["SCORE",sim.score],["KILLS",sim.kills],["AMBER",0 if sim.mode=="safari" else int(sim.amber*sim.fortune)],["BEST STREAK",sim.best_streak],["PEAK HORDE",sim.peak_enemies],["HITS TAKEN",sim.hits]]
+	for i in range(metrics.size()):
+		var x=(i%3)*330;var y=98+(i/3)*55
+		var caption=label(content,metrics[i][0],13,"afbdc2");caption.position=Vector2(x,y)
+		var value=label(content,str(metrics[i][1]),24,"f0d098");value.position=Vector2(x,y+17);value.size=Vector2(290,32);value.clip_text=true;UIArt.fit_label(value,24)
+	for heading in [["WEAPON",0],["DAMAGE",470],["SHARE",785]]:
+		label(content,heading[0],14,"b7cbd0").position=Vector2(heading[1],209)
 	var ids=sim.damage_by_weapon.keys();ids.sort_custom(func(a,b):return sim.damage_by_weapon[a]>sim.damage_by_weapon[b])
 	var total=maxf(1,sim.damage_total)
 	for i in range(mini(5,ids.size())):
-		var id=ids[i];var damage=sim.damage_by_weapon[id]
-		var icon=Icons.control(menu_root,id,"weapon",29);icon.position=Vector2(190,522+i*33)
-		label(menu_root,C.WEAPONS.get(id,{"name":"Relics"}).name,18,"e4d9c3").position=Vector2(228,523+i*33)
-		label(menu_root,str(int(damage)),18).position=Vector2(620,523+i*33)
-		label(menu_root,"%.1f%%"%(damage/total*100),18,"8fdac8").position=Vector2(875,523+i*33)
-	if not sim.won: label(menu_root,sim.death_reason,15,"ecb4a4").position=Vector2(190,285)
+		var id=ids[i];var damage=sim.damage_by_weapon[id];var y=236+i*28
+		var icon=Icons.control(content,id,"weapon",24);icon.position=Vector2(0,y)
+		var name_label=label(content,C.WEAPONS.get(id,{"name":"Relics"}).name,17,"e4d9c3")
+		name_label.position=Vector2(34,y);name_label.size=Vector2(420,25);name_label.clip_text=true;UIArt.fit_label(name_label,17)
+		var damage_label=label(content,str(int(damage)),17);damage_label.position=Vector2(470,y);damage_label.size=Vector2(295,25);damage_label.clip_text=true;UIArt.fit_label(damage_label,17)
+		label(content,"%.1f%%"%(damage/total*100),17,"8fdac8").position=Vector2(785,y)
 	var row=HBoxContainer.new();row.position=Vector2(100,800);row.size=Vector2(1240,60);row.add_theme_constant_override("separation",16);menu_root.add_child(row)
 	button(row,"RUN IT BACK",start_run,true).size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	button(row,"Today's build" if sim.mode=="daily" else "Change survivor",daily_menu if sim.mode=="daily" else characters).size_flags_horizontal=Control.SIZE_EXPAND_FILL
@@ -975,11 +991,15 @@ func research_menu():
 	clear_menu();shade(0.94);page="research"
 	label(menu_root,"THE ARCHIVE / %s AMBER"%int(save_data.amber),27,"e7c88c").position=Vector2(100,45)
 	label(menu_root,"Permanent upgrades · expedition only",21,"b9ced3").position=Vector2(100,88)
+	var refund=button(menu_root,"Reset upgrades / refund amber",func():archive_refund_menu(true))
+	refund.position=Vector2(885,65);refund.size=Vector2(455,56)
+	refund.disabled=preload("res://scripts/archive_respec.gd").research_total(save_data)<=0
 	var grid=GridContainer.new();grid.columns=3;grid.position=Vector2(100,145);grid.size=Vector2(1240,590)
 	grid.add_theme_constant_override("h_separation",14);grid.add_theme_constant_override("v_separation",12);menu_root.add_child(grid)
 	for id in C.RESEARCH:
 		var r=C.RESEARCH[id];var rank_value=int(save_data.research.get(id,0));var cost=int(r.cost*pow(1.65,rank_value))
-		var b=button(grid,"%s  %s/%s\n%s\n%s"%[r.name,rank_value,r.max,UIArt.wrap_copy(r.desc,preload("res://scripts/ui_art.gd").body_font(),16,328),"MAXED" if rank_value>=r.max else str(cost)+" AMBER"],func():buy(id))
+		var b=button(grid,"%s  %s/%s\n%s\n%s"%[r.name,rank_value,r.max,UIArt.wrap_copy(r.desc,preload("res://scripts/ui_art.gd").body_font(),16,240),"MAXED" if rank_value>=r.max else str(cost)+" AMBER"],func():buy(id))
+		b.icon=Icons.get_icon(id,"research");b.expand_icon=true;b.add_theme_constant_override("icon_max_width",42);b.add_theme_constant_override("h_separation",12)
 		b.custom_minimum_size=Vector2(404,110);b.add_theme_font_size_override("font_size",16)
 		b.add_theme_font_override("font",preload("res://scripts/ui_art.gd").body_font())
 		b.disabled=rank_value>=r.max or save_data.amber<cost
@@ -996,14 +1016,29 @@ func records_menu():
 	button(v,"Back to archive",research_menu)
 
 func buy(id):
-	var r = C.RESEARCH[id]
-	var rank_value = int(save_data.research.get(id,0))
-	var cost = int(r.cost*pow(1.65,rank_value))
-	if rank_value>=r.max or save_data.amber<cost: return
-	save_data.amber -= cost
-	save_data.research[id] = rank_value+1
+	if not preload("res://scripts/archive_respec.gd").buy_research(save_data,id):return
 	persist()
 	research_menu()
+
+func archive_refund_menu(research_only):
+	clear_menu();shade(0.96);page="archive-refund"
+	var respec=preload("res://scripts/archive_respec.gd")
+	var amount=respec.research_total(save_data) if research_only else respec.discovery_total(save_data)
+	var v=column(menu_root,Vector2(190,180),Vector2(1060,540),24)
+	label(v,"RESET PERMANENT UPGRADES" if research_only else "REFUND PAID UNLOCKS",30,"e7c88c")
+	label(v,"Return %s amber to your balance."%amount,27,"ead6aa")
+	var copy="All purchased permanent upgrade ranks return to zero. Discoveries and unlocked equipment remain yours." if research_only else "Paid characters and equipment become locked again. Found discoveries stay found, ready to purchase again. Free characters, free equipment and unlocked maps stay yours. If your selected character is relocked, Vesper becomes selected."
+	copy+="\nYour runs, records, discovered recipes and milestone progress are preserved."
+	var details=label(v,copy,22,"c7c3b4");details.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	button(v,"Confirm refund / %s amber"%amount,func():
+		if research_only:respec.refund_research(save_data)
+		else:
+			respec.refund_discoveries(save_data)
+			if not Discoveries.hero_open(save_data,selected):selected=2
+		persist()
+		if research_only:research_menu()
+		else:discovery_menu(),true)
+	button(v,"Keep my upgrades" if research_only else "Keep my unlocks",research_menu if research_only else discovery_menu)
 
 func manual():
 	clear_menu()
@@ -1012,10 +1047,10 @@ func manual():
 	label(v,"FIELD MANUAL",45)
 	label(v,"WASD / arrows: move. Every attack aims and fires automatically.\n1 / 2 / 3: upgrades. Tab: overlay map. B: backpack & stats. Esc: pause. F11: fullscreen.",21)
 	label(v,"THE BUILD",18,"d6b27e")
-	label(v,"Five weapons or spells. Eight relics. Max weapon rank + chest evolves.\nMax weapon + compatible partner (any rank) + chest merge, freeing one slot.\nChest odds include Luck and Fortune research. Rocks block; mud slows; lava burns.",21,"b4c6c9")
+	label(v,"Five weapons. Eight passive/augment types. Eight relics. Max weapon rank + chest evolves.\nTwo compatible rank-10 weapons + chest merge, freeing one slot.\nChest odds include Luck and Fortune research. Rocks block; mud slows; lava burns.",21,"b4c6c9")
 	label(v,"THE DESCENT",18,"d6b27e")
 	label(v,"Bosses arrive at 5, 10 and 15 minutes. The first two open harder biomes.\nThe meteor is an endgame build check: destroy three anchors to expose its core.\nYou have 12 seconds per opening. Phase transitions restore its armor.\nIt enrages at 150 seconds and completes extinction at 210. Read the ground warnings.",21,"b4c6c9")
-	label(v,"Explore map signals, then spend amber on discoveries in the archive.\nFull satchel: chest rolls can refine your build or offer a higher-tier replacement.\nDeath banks amber. Daily rolls each reward automatically; trial uses prepared gear. Records are local.",18,"adc1bd")
+	label(v,"Explore map signals, then spend amber on discoveries in the archive.\nFull slots: improve equipped buffs. Maxed builds receive amber and healing.\nDeath banks amber. Daily rolls each reward automatically; trial uses prepared gear. Records are local.",18,"adc1bd")
 	button(v,"I'LL MAKE HISTORY",main_menu,true)
 
 func settings():
@@ -1120,7 +1155,7 @@ func patch_notes(index=0):
 	var content=VBoxContainer.new();content.size_flags_horizontal=Control.SIZE_EXPAND_FILL;content.add_theme_constant_override("separation",14);scroll.add_child(content)
 	for entry in selected_release.entries:
 		var row=HBoxContainer.new();row.add_theme_constant_override("separation",22);content.add_child(row)
-		var icon=TextureRect.new();icon.texture=Icons.get_icon(entry.icon,"weapon");icon.custom_minimum_size=Vector2(60,60);icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;row.add_child(icon)
+		var icon=TextureRect.new();icon.texture=Icons.get_icon(entry.icon,entry.get("category","weapon"));icon.custom_minimum_size=Vector2(60,60);icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;row.add_child(icon)
 		var copy=VBoxContainer.new();copy.size_flags_horizontal=Control.SIZE_EXPAND_FILL;copy.add_theme_constant_override("separation",4);row.add_child(copy)
 		if entry.title!="":
 			var heading=label(copy,entry.title,23,"dfbd7b");heading.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
@@ -1130,6 +1165,7 @@ func patch_notes(index=0):
 	var newer=button(menu_root,"Newer",func():patch_notes(index-1));newer.position=Vector2(200,750);newer.size=Vector2(260,58);newer.disabled=index==0
 	var older=button(menu_root,"Older",func():patch_notes(index+1));older.position=Vector2(980,750);older.size=Vector2(260,58);older.disabled=index==releases.size()-1
 	var latest=button(menu_root,"Latest",func():patch_notes(0));latest.position=Vector2(1030,704);latest.size=Vector2(210,42);latest.custom_minimum_size.y=42
+
 
 
 

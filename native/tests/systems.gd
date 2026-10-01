@@ -96,7 +96,7 @@ func _initialize():
 	g.add_gem(Vector2(800,0),50)
 	g.pickups.append({"id":"heal","p":Vector2(700,0),"life":60.0,"magnet":false})
 	P.activate(g,"magnet")
-	check(g.gems[0].magnet and g.pickups[0].magnet,"Magnet affects all relevant collectibles")
+	check(g.gems[0].magnet and not g.pickups[0].magnet,"Magnet attracts XP and leaves world pickups")
 	g.hp = 10
 	P.activate(g,"heal")
 	check(g.hp>40,"Healing pickup")

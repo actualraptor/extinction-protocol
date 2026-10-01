@@ -85,7 +85,7 @@ func _ready():
 		name_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 		name_label.size=Vector2(86,39)
 	panel(Rect2(100,685,1240,126))
-	text_at("PASSIVES & AUGMENTS / HOVER FOR DETAILS",Vector2(118,697),900,17,"e1bf86")
+	text_at("PASSIVES & AUGMENTS / %s OF 8 TYPES / HOVER FOR DETAILS"%g.buff_slots_used(),Vector2(118,697),900,17,"e1bf86")
 	var index=0
 	for collection in [g.passives,g.augments]:
 		for id in collection:

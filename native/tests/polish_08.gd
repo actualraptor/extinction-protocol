@@ -21,7 +21,9 @@ func _initialize():
 		g.weapons.lightning.level=rank
 		check(g.Rules.stats(g,"lightning").count==3+int(rank>=5)+int(rank>=10),"Stormbinder chain milestone / %s"%rank)
 	g=game();g.weapons={};equip(g,"frost",10);equip(g,"lightning",1)
-	check({"type":"fusion","id":"whiteout"} in g.Evolutions.ready(g),"Max weapon plus rank-one partner merges")
+	check({"type":"fusion","id":"whiteout"} not in g.Evolutions.ready(g),"Rank-one partner cannot merge")
+	g.weapons.lightning.level=10
+	check({"type":"fusion","id":"whiteout"} in g.Evolutions.ready(g),"Both max weapons merge")
 	g.weapons.erase("lightning");check({"type":"evolution","id":"frost"} in g.Evolutions.ready(g),"Max weapon evolves without passive requirements")
 	g.weapons.frost.level=9;check(g.Evolutions.ready(g).is_empty(),"Rank nine does not evolve")
 	g=game(1);g.weapons={};equip(g,"thorns")
@@ -33,8 +35,8 @@ func _initialize():
 	g.update_weapons(0.1);check(target.hp<10000,"Thorns attacks without taking damage")
 	before=target.hp;g.invul=0;g.hurt(20,"test");check(target.hp<before,"Incoming hit triggers retaliation")
 	before=target.hp;g.invul=0;g.hurt(20,"test");check(target.hp==before,"Retaliation cooldown prevents hit spam")
-	g.weapons.thorns.level=10;equip(g,"club",1)
-	check({"type":"fusion","id":"thornking"} in g.Evolutions.ready(g),"Thorn union needs max Ironbriar and partner")
+	g.weapons.thorns.level=10;equip(g,"club",10)
+	check({"type":"fusion","id":"thornking"} in g.Evolutions.ready(g),"Thorn union needs both max weapons")
 	check(g.Rules.can_add_weapon(g.weapons,g.C.WEAPONS,"winter"),"Thorns leaves aura slot available")
 	g=game(0,{"vitality":2,"reroll":3,"power":2,"greed":2,"luck":4,"projectiles":2,"chains":1,"revive":1,"growth":3,"magnet":4,"armor":2,"recovery":2})
 	check(g.max_hp==130 and g.armor==3 and g.rerolls==6,"Permanent health armor rerolls applied")

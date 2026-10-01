@@ -1,4 +1,4 @@
-# Extinction Protocol — Private test 0.9.0
+# Extinction Protocol — Hobby playtest 0.9.1
 
 Windows: extract the ZIP, then run Extinction Protocol.exe. No installer needed. Close the old build before starting this one.
 
@@ -19,3 +19,4 @@ Private test focus:
 On a problem, include the version, mode, character, map, approximate run time, screenshot/video and the run report from the end screen. Logs live in the user-data logs directory; reports in reports. A test report may not exist if the process crashes before the run ends. Keep the save when reporting a progression issue.
 
 Steam features are not connected yet. Daily rankings remain local. No Steam account is required to run this private build.
+

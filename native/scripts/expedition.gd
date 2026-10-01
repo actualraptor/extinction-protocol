@@ -119,6 +119,8 @@ var enemy_frame = 0
 var options = []
 var option_is_relic = false
 const BACKPACK_SLOTS = 5
+const BUFF_SLOTS = 8
+const RELIC_SLOTS = 8
 const RIFT_CHARGE_SECONDS = 6.0
 const PORTAL_CHARGE_SECONDS = 0.325
 var hostile_shots = []
@@ -579,23 +581,28 @@ func update_shots(dt):
 			if shot.life<=0: break
 	shots = shots.filter(func(s): return s.life>0)
 
-func blast(p,radius,damage,id):
+func blast(p,radius,damage,id,hit_channel = "impact"):
 	var tags = C.WEAPONS.get(id,{}).get("tags",[])
 	var visual = "frost" if "ICE" in tags else "lightning" if "LIGHTNING" in tags else "orbital" if "ARCANE" in tags else "fire" if "FIRE" in tags else id
 	effect.emit("blast_"+visual,p,Color(C.WEAPONS.get(id,{"color":"ffad68"}).color),radius)
 	for e in nearby(p,radius):
-		hit(e,damage,id)
+		hit(e,damage,id,true,true,hit_channel)
 		if not e.boss and not e.anchor and not rooted(e) and "KNOCKBACK" in tags: e.p = terrain.move(e.p,(e.p-p).normalized()*35)
 
-func hit(e, amount, id, can_crit = true, apply_status = true):
+func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "impact"):
 	if not active or e.dead: return 0.0
 	if e.boss and boss_stage==2 and e.get("reform",0)>0: return 0.0
 	# One large target must not take every overlapping orbital/mortar pulse.
 	var interval = C.WEAPONS.get(id,{}).get("boss_hit_interval",0.0)
 	if e.boss and interval>0:
 		if not e.has("pulse_times"): e.pulse_times = {}
-		if time-e.pulse_times.get(id,-100.0)<interval: return 0.0
-		e.pulse_times[id] = time
+		# Low-power lingering/status ticks cannot consume a shell's impact slot.
+		# Overlapping fields still share one bounded repeat allowance per weapon.
+		var pulse_key = id
+		if id in ["mortar","supernova"]:
+			pulse_key += ":"+(hit_channel if apply_status else "status")
+		if time-e.pulse_times.get(pulse_key,-100.0)<interval: return 0.0
+		e.pulse_times[pulse_key] = time
 	var crit_tier = roll_crit_tier(crit_chance()) if can_crit else 0
 	var critical = crit_tier>0
 	if critical: amount *= 1.0+0.9*crit_tier
@@ -1047,6 +1054,11 @@ func update_objectives(dt):
 				open_choices(true)
 		else: shrine_progress = maxf(0,shrine_progress-dt*0.5)
 
+func buff_slots_used(): return passives.size()+augments.size()
+
+func can_take_buff(id):
+	return passives.has(id) or augments.has(id) or buff_slots_used()<BUFF_SLOTS
+
 func upgrade_pool(owned_only = false):
 	var pool = []
 	for id in C.WEAPONS:
@@ -1055,9 +1067,9 @@ func upgrade_pool(owned_only = false):
 			if weapons[id].level<Rules.MAX_RANK: pool.append({"type":"weapon","id":id})
 		elif not owned_only and content_allowed("weapons",id) and weapons.size()<BACKPACK_SLOTS and Rules.can_add_weapon(weapons,C.WEAPONS,id): pool.append({"type":"weapon","id":id})
 	for id in C.PASSIVES:
-		if rank_of(id)<C.PASSIVES[id].max and Rules.eligible(weapons,C.WEAPONS,C.PASSIVES[id].filter): pool.append({"type":"passive","id":id})
+		if can_take_buff(id) and rank_of(id)<C.PASSIVES[id].max and Rules.eligible(weapons,C.WEAPONS,C.PASSIVES[id].filter): pool.append({"type":"passive","id":id})
 	for id in C.AUGMENTS:
-		if content_allowed("augments",id) and augments.get(id,0)<C.AUGMENTS[id].max and Rules.eligible(weapons,C.WEAPONS,C.AUGMENTS[id].filter): pool.append({"type":"augment","id":id})
+		if can_take_buff(id) and content_allowed("augments",id) and augments.get(id,0)<C.AUGMENTS[id].max and Rules.eligible(weapons,C.WEAPONS,C.AUGMENTS[id].filter): pool.append({"type":"augment","id":id})
 	return pool
 
 func open_choices(relic):
@@ -1073,16 +1085,8 @@ func open_choices(relic):
 		else:
 			var reward = Relics.roll(self)
 			var rarity = C.RELICS[reward].rarity if reward!="" else "COMMON"
-			if reward!="" and relics.size()<8:
+			if reward!="" and relics.size()<RELIC_SLOTS:
 				options = [{"type":"relic","id":reward}]
-			elif reward!="":
-				var weakest = relics[0]
-				for id in relics:
-					if Relics.TIERS.find(C.RELICS[id].rarity)<Relics.TIERS.find(C.RELICS[weakest].rarity): weakest = id
-				var tier = Relics.TIERS.find(rarity)
-				var weakest_tier = Relics.TIERS.find(C.RELICS[weakest].rarity)
-				if tier>weakest_tier or (tier==weakest_tier and tier>=3):
-					options = [{"type":"relic","id":reward,"replace":weakest}]
 			if options.is_empty():
 				var improvements = upgrade_pool(true)
 				var reward_option = {"type":"supplies","id":"supplies"} if improvements.is_empty() else improvements[rng.randi_range(0,improvements.size()-1)].duplicate()
@@ -1104,10 +1108,7 @@ func open_choices(relic):
 			options.append(pool[i])
 			pool.remove_at(i)
 	if options.is_empty():
-		hp = minf(max_hp,hp+20)
-		amber += 10
-		rng=encounter_rng
-		return
+		options = [{"type":"supplies","id":"supplies"}]
 	choosing = true
 	effect.emit("level",pos,Color("b4d6ff"),350)
 	sound.emit("loot" if relic else "level")
@@ -1146,7 +1147,9 @@ func choose(index):
 			effect.emit("evolve",pos,Color(C.WEAPONS[o.id].color),550)
 			sound.emit("evolve")
 			banner.emit(C.WEAPONS[o.id].name,"WEAPON UNION / ONE BACKPACK SLOT FREED")
-		"augment": augments[o.id] = augments.get(o.id,0)+1
+		"augment":
+			if not can_take_buff(o.id) or augments.get(o.id,0)>=C.AUGMENTS[o.id].max: return
+			augments[o.id] = augments.get(o.id,0)+1
 		"weapon":
 			if weapons.has(o.id): weapons[o.id].level += 1
 			elif weapons.size()<BACKPACK_SLOTS and Rules.can_add_weapon(weapons,C.WEAPONS,o.id): weapons[o.id] = {"level":1,"evolved":false,"timer":0.1}
@@ -1157,6 +1160,7 @@ func choose(index):
 			sound.emit("evolve")
 			banner.emit(C.WEAPONS[o.id].evolution,"LEGENDARY EVOLUTION / LET THEM COME")
 		"passive":
+			if not can_take_buff(o.id) or rank_of(o.id)>=C.PASSIVES[o.id].max: return
 			passives[o.id] = rank_of(o.id)+1
 			if o.id == "armor":
 				armor += 2
@@ -1201,6 +1205,6 @@ func finish(victory):
 	ended.emit(victory)
 
 func report():
-	return {"version":"native-0.9.0","daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"events":event_log,"samples":samples}
+	return {"version":"native-0.9.1","daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"events":event_log,"samples":samples}
 
 

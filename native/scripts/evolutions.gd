@@ -41,8 +41,7 @@ static func ready(g):
 		if g.weapons.has(id): continue
 		var valid = true
 		for part in UNIONS[id].parts:
-			if not g.weapons.has(part): valid = false
-		if valid and maxi(g.weapons[UNIONS[id].parts[0]].level,g.weapons[UNIONS[id].parts[1]].level)<10: valid=false
+			if not g.weapons.has(part) or g.weapons[part].level<10: valid = false
 		if valid: offers.append({"type":"fusion","id":id})
 	if not offers.is_empty(): return offers
 	for id in g.weapons:
@@ -59,5 +58,5 @@ static func hint(id,catalog):
 		if id not in UNIONS[result].parts: continue
 		var parts = UNIONS[result].parts
 		var other = parts[1] if parts[0]==id else parts[0]
-		lines.append("Union: + "+catalog[other].name+" (either weapon maxed) → "+UNIONS[result].name+" (chest)")
+		lines.append("Union: + "+catalog[other].name+" (both weapons rank 10) → "+UNIONS[result].name+" (chest)")
 	return "\n".join(lines)

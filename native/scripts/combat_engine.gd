@@ -69,7 +69,8 @@ static func update(g,dt):
 				for j in range(mini(s.count,8)):
 					var p = target.p+Vector2.from_angle(g.rng.randf()*TAU)*j*65
 					g.hazards.append({"kind":"friendly","p":p,"launch":g.pos,"flight":0.75+j*0.12,"angle":0.0,"radius":s.radius,"wait":0.75+j*0.12,"warning":0.75,"life":0.2,"damage":s.power,"id":id,"fired":false})
-					if s.duration>0 and g.zones.size()<24: g.zones.append({"p":p,"radius":s.radius,"id":id,"damage":s.power*0.22,"wait":0.8,"life":s.duration,"tick":0.0})
+					# Each crater ignites when its own shell lands, including staggered volleys.
+					if s.duration>0 and g.zones.size()<24: g.zones.append({"p":p,"radius":s.radius,"id":id,"damage":s.power*0.22,"wait":0.75+j*0.12,"life":s.duration,"duration":s.duration,"age":0.0,"tick":0.0,"scorched":true})
 			"aura":
 				var burst = w.level>=7 and w.casts%4==0
 				g.blast(g.pos,s.radius*(1.8 if burst else 1),s.power*(2 if burst else 1),id)
@@ -84,6 +85,7 @@ static func update(g,dt):
 		if echo.wait<=0: melee(g,echo.id,g.pos,echo.aim,echo.stats)
 	g.echoes = g.echoes.filter(func(e):return e.wait>0)
 	for zone in g.zones:
+		var active_step = maxf(0.0,dt-maxf(0.0,zone.wait))
 		zone.wait -= dt
 		if zone.wait>0: continue
 		if zone.id=="thunderstorm":
@@ -92,19 +94,23 @@ static func update(g,dt):
 			zone.age += active_dt
 			while zone.pulse*zone.interval<zone.age and zone.pulse*zone.interval<zone.duration-0.00001:
 				zone.pulse += 1
-				g.blast(zone.p,zone.radius,zone.damage,zone.id)
+				g.blast(zone.p,zone.radius,zone.damage,zone.id,"field")
 				g.sound.emit("thunder_hit")
 				for j in range(3):
 					var landing = zone.p+Vector2.from_angle(zone.pulse*2.4+j*TAU/3)*zone.radius*(0.15 if j==0 else 0.6)
 					if g.strikes.size()<180: g.strikes.append({"a":landing+Vector2(-35,-200),"b":landing,"life":0.24,"wait":j*0.035})
 			zone.life -= dt
 			continue
-		zone.life -= dt
-		zone.tick -= dt
-		if zone.tick<=0:
-			zone.tick = 0.6
-			g.blast(zone.p,zone.radius,zone.damage,zone.id)
-		if zone.life<=0: g.blast(zone.p,zone.radius*1.2,zone.damage*3,zone.id)
+		var active_dt = minf(active_step,zone.life)
+		var duration = zone.get("duration",zone.life+zone.get("age",0.0))
+		zone.age = zone.get("age",0.0)+active_dt
+		zone.life -= active_dt
+		zone.pulse = zone.get("pulse",0)
+		while zone.pulse*0.6<zone.age and zone.pulse*0.6<duration-0.00001:
+			zone.pulse += 1
+			g.blast(zone.p,zone.radius,zone.damage,zone.id,"field")
+		# Supernova explicitly promises an eruption; ordinary craters simply cool.
+		if zone.life<=0 and zone.id=="supernova": g.blast(zone.p,zone.radius*1.2,zone.damage*3,zone.id)
 	g.zones = g.zones.filter(func(z):return z.life>0)
 	for strike in g.strikes:
 		if strike.get("wait",0)>0:

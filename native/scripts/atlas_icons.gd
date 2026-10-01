@@ -2,6 +2,12 @@ extends RefCounted
 const WEAPONS = ["revolver","club","frost","fire","lightning","shotgun","orbital","mortar","spear","pyre","winter","miasma","dread","aegis","stasis","thunderstorm","whiteout","supernova","lastword","earthshaker","bastion","ricochet","return","compass","tablet"]
 const UPGRADES = ["luck","damage","haste","area","count","crit","armor","speed","pickup","regen","velocity","pierce","homing","bounce","reach","echo","conductor","fork","pulse","linger","ward","eternity","sorcery","winterbite","combustion"]
 const RELICS = ["ember","storm","blood","glass","clock","magnet","frost","boots","crown","shell","volley","branch","cyclone","shatter","wildfire","garden","reaper","laststand","momentum","apex","flint","wrap","coil","lens","prism","chronicle","portal","chest","camp","meteor"]
+const RESEARCH_ICONS = {
+ "critical":["crit","passive"],"vitality":["wrap","relic"],"power":["damage","passive"],
+ "fortune":["crown","relic"],"reroll":["echo","augment"],"luck":["luck","passive"],
+ "projectiles":["volley","relic"],"chains":["conductor","augment"],"revive":["laststand","relic"],
+ "greed":["ember","relic"],"growth":["lens","relic"],"magnet":["magnet","relic"],
+ "armor":["armor","passive"],"recovery":["regen","passive"]}
 static var cache = {}
 static func field(index):
 	var t=AtlasTexture.new();t.atlas=preload("res://assets/thorns-breakables-08.png")
@@ -18,6 +24,10 @@ static func frontier(index):
 
 
 static func get_icon(id,category = "weapon"):
+	if category=="research" and RESEARCH_ICONS.has(id):
+		return get_icon(RESEARCH_ICONS[id][0],RESEARCH_ICONS[id][1])
+	if category=="discovery" and id in ["map_frost","map_observatory"]:
+		return frontier(8 if id=="map_frost" else 10)
 	var key = category+":"+id
 	if cache.has(key): return cache[key]
 	if id in ["thorns","thornking","spines","retribution"]: return field(0)
