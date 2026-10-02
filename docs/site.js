@@ -1,7 +1,15 @@
 const repository = document.documentElement.dataset.repository || 'actualraptor/extinction-protocol';
 const releaseTag = 'v0.9.3';
 const base = `https://github.com/${repository}`;
-const links = {repo:base,release:`${base}/releases/tag/${releaseTag}`,windows:`${base}/releases/tag/${releaseTag}`,linux:`${base}/releases/tag/${releaseTag}`,feedback:`${base}/issues/new/choose`};
+// The v0.9.3 release currently contains binaries exported with the 0.9.2
+// filenames. Keep the asset names explicit until the next release is renamed.
+const links = {
+ repo:base,
+ release:`${base}/releases/tag/${releaseTag}`,
+ windows:`${base}/releases/download/${releaseTag}/Extinction-Protocol-Windows-0.9.2.zip`,
+ linux:`${base}/releases/download/${releaseTag}/Extinction-Protocol-Linux-0.9.2.tar.gz`,
+ feedback:`${base}/issues/new/choose`
+};
 document.querySelectorAll('[data-link]').forEach(link=>{link.href=links[link.dataset.link];});
 const shots = [
  ['observatory','The Unmade Sky · Fight your way through a world coming apart.','A survivor surrounded by mutated creatures in the Unmade Sky'],
