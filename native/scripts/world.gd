@@ -24,11 +24,17 @@ var emitters = []
 var camera_offset = Vector2.ZERO
 var camera_pos = Vector2.ZERO
 var camera_run = null
+var stage_landmark_sheet
+var stage_landmark_regions = []
 var font = preload("res://scripts/ui_art.gd").body_font()
 var selected = 0
 var vignette = null
 
 func _ready():
+	var ground_layer = preload("res://scripts/continuous_ground.gd").new()
+	ground_layer.world = self
+	ground_layer.z_index = -2
+	add_child(ground_layer)
 	for r in JSON.parse_string(FileAccess.get_file_as_string("res://assets/monster-regions.json"))[0]: monster_regions.append(Rect2(r[0],r[1],r[2],r[3]))
 	for r in JSON.parse_string(FileAccess.get_file_as_string("res://assets/frontier-regions.json")): frontier_regions.append(Rect2(r[0],r[1],r[2],r[3]))
 	var swarm = preload("res://scripts/swarm_renderer.gd").new()
@@ -167,17 +173,7 @@ func glow(p,radius,color):
 
 func _draw():
 	var biome = sim.Maps.biome(sim.map_id,sim.depth) if sim!=null else C.BIOMES[0]
-	draw_rect(visible_rect(),Color(biome.ground))
 	var center = camera_pos if sim != null else Vector2(clock*7,0)
-	for x in range(floori((center.x-get_viewport_rect().size.x/2-100)/640),ceili((center.x+get_viewport_rect().size.x/2+100)/640)):
-		for y in range(floori((center.y-get_viewport_rect().size.y/2-100)/640),ceili((center.y+get_viewport_rect().size.y/2+100)/640)):
-			var tile_pos = Vector2(x*640,y*640)-center+Vector2(720,465)+camera_offset
-			if sim!=null and sim.map_id!="cradle":
-				var cell=Vector2(frontier_ground.get_size())/Vector2(3,2)
-				var index=sim.depth+(3 if sim.map_id=="observatory" else 0)
-				draw_texture_rect_region(frontier_ground,Rect2(tile_pos,Vector2(641,641)),Rect2(Vector2(index%3,floori(index/3.0))*cell,cell),Color(0.72,0.78,0.82))
-			else: draw_texture_rect(terrain,Rect2(tile_pos,Vector2(641,641)),false,Color(0.58,0.65,0.68))
-	draw_rect(visible_rect(),Color(Color(biome.ground),0.48))
 	# Illustrated biome props replace geometric environment placeholders.
 	if sim==null:
 		for gx in range(floori((center.x-get_viewport_rect().size.x/2-100)/260),ceili((center.x+get_viewport_rect().size.x/2+100)/260)):
@@ -215,7 +211,7 @@ func _draw():
 				if sim.map_id!="cradle":
 					draw_texture_rect(preload("res://scripts/atlas_icons.gd").frontier(9 if sim.map_id=="frostbreak" else 11),Rect2(p-Vector2(100,80),Vector2(200,160)),false)
 				else: draw_texture_rect_region(feature_sheet,Rect2(p-Vector2(40,40),Vector2(80,80)),region)
-	# Sparse nonblocking scenery breaks up repeated districts without covering paths.
+	# Sparse local scenery follows region identity and never creates collision.
 	for gx in range(floori((center.x-get_viewport_rect().size.x/2-100)/384),ceili((center.x+get_viewport_rect().size.x/2+100)/384)):
 		for gy in range(floori((center.y-get_viewport_rect().size.y/2-100)/384),ceili((center.y+get_viewport_rect().size.y/2+100)/384)):
 			var h=absi(gx*92821 ^ gy*68917 ^ sim.terrain.seed_value)
@@ -224,6 +220,25 @@ func _draw():
 			if not sim.terrain.walkable(at,36): continue
 			if sim.map_id=="cradle": prop(6+sim.depth,screen(at),75+h%30,Color(0.7,0.8,0.74,0.65))
 			else: draw_texture_rect(preload("res://scripts/atlas_icons.gd").frontier(9 if sim.map_id=="frostbreak" else 11),Rect2(screen(at)-Vector2(50,50),Vector2(100,85)),false,Color(0.7,0.8,0.9,0.65))
+	for landmark in sim.terrain.stage.get("landmarks",[]):
+		var at = screen(landmark.p)
+		var size_value = float(landmark.get("scale",220.0))
+		if not visible_rect().grow(size_value).has_point(at): continue
+		glow(at,size_value*0.65,Color("b0ac83"))
+		if landmark.has("landmark_art") and ResourceLoader.exists("res://assets/stage-landmarks-092.png"):
+			if stage_landmark_sheet==null:
+				stage_landmark_sheet = load("res://assets/stage-landmarks-092.png")
+				if FileAccess.file_exists("res://assets/stage-landmarks-092-regions.json"):
+					for r in JSON.parse_string(FileAccess.get_file_as_string("res://assets/stage-landmarks-092-regions.json")): stage_landmark_regions.append(Rect2(r[0],r[1],r[2],r[3]))
+			var index = int(landmark.landmark_art)
+			var cell_size = Vector2(stage_landmark_sheet.get_size())/Vector2(3,2)
+			var region = stage_landmark_regions[index] if index<stage_landmark_regions.size() else Rect2(Vector2(index%3,floori(index/3.0))*cell_size,cell_size)
+			var dimensions = region.size*(size_value/maxf(region.size.x,region.size.y))
+			draw_texture_rect_region(stage_landmark_sheet,Rect2(at-Vector2(dimensions.x*0.5,dimensions.y*0.72),dimensions),region,Color(0.82,0.87,0.86))
+		elif landmark.has("frontier_art"):
+			draw_texture_rect(preload("res://scripts/atlas_icons.gd").frontier(landmark.frontier_art),Rect2(at-Vector2.ONE*size_value*0.5,Vector2.ONE*size_value),false,Color(0.75,0.82,0.8))
+		else: prop(landmark.get("art",6),at,size_value,Color(0.75,0.82,0.8))
+		if landmark.p.distance_to(sim.pos)<500: draw_string(font,at+Vector2(-110,size_value*0.4),landmark.name,HORIZONTAL_ALIGNMENT_CENTER,220,14,Color("99aaa5"))
 	for chest in sim.relic_chests: draw_cache(screen(chest))
 	for item in sim.pickups:
 		var d = sim.Pickups.DEFINITIONS[item.id]

@@ -22,6 +22,7 @@ static func evaluate(profile):
 		earned.append(id)
 	return earned
 static func requirement(profile,id):
+	if id=="kael": return "Available from the start"
 	var d=Discoveries.ENTRIES[id]
 	if d.has("goal"):
 		var what={"kills":"total kills","bosses":"bosses defeated","map_kills":"kills in "+d.get("map",""),"wins":"victories in "+d.get("map","")}[d.goal]

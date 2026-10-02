@@ -1,6 +1,6 @@
 extends RefCounted
-## Repeating designed districts with seeded variants. Two-cell roads connect
-## every district. One shared breadth-first flow field guides the whole horde.
+## Continuous seeded obstacle islands, authored regions and wide travel routes.
+## Only nearby 64px cells are evaluated; one local flow field serves the horde.
 const CELL = 64.0
 const DIRS = [Vector2i.RIGHT,Vector2i.DOWN,Vector2i.LEFT,Vector2i.UP]
 const FLOW_DIRS = [Vector2i(1,1),Vector2i(-1,1),Vector2i(-1,-1),Vector2i(1,-1),Vector2i.RIGHT,Vector2i.DOWN,Vector2i.LEFT,Vector2i.UP]
@@ -16,40 +16,64 @@ var sight = {}
 
 func cell(p): return Vector2i(floori(p.x/CELL),floori(p.y/CELL))
 func center(c): return Vector2(c)*CELL+Vector2.ONE*CELL*0.5
+var stage = {}
+var bounds = Rect2(-40000,-34000,80000,68000)
+var depth = 0
+var noise = FastNoiseLite.new()
+var configured_seed = -2147483648
+
+func configure(definition,biome_depth = 0):
+	stage = definition
+	bounds = stage.get("bounds",Rect2(-40000,-34000,80000,68000))
+	depth = biome_depth
+	noise.seed = seed_value
+	noise.frequency = 0.0019
+	noise.fractal_octaves = 2
+	configured_seed = seed_value
+	cached.clear(); clearance.clear(); flow.clear(); sight.clear()
+	goal = Vector2i(99999,99999)
+	refresh = 0.0
+
+func region_at(p):
+	var nearest = {}
+	var best = INF
+	for region in stage.get("regions",[]):
+		var distance = p.distance_to(region.p)/region.radius
+		if distance<1.35 and distance<best:
+			nearest = region
+			best = distance
+	return nearest
+
+func on_route(p):
+	var start = stage.get("spawn",Vector2.ZERO)
+	if p.distance_squared_to(start)<900*900: return true
+	for target in stage.get("routes",[]):
+		if Geometry2D.get_closest_point_to_segment(p,start,target).distance_squared_to(p)<230*230: return true
+	for landmark in stage.get("landmarks",[]):
+		if p.distance_squared_to(landmark.p)<320*320: return true
+	return false
+
 func kind(c):
-	if arena!=Vector2.INF and center(c).distance_squared_to(arena)<810*810: return 0
+	var p = center(c)
+	if not bounds.has_point(p): return 1
+	if arena!=Vector2.INF and p.distance_squared_to(arena)<810*810: return 0
+	if configured_seed!=seed_value: configure(stage,depth)
 	if cached.has(c): return cached[c]
-	var x = posmod(c.x,16)
-	var y = posmod(c.y,16)
-	var district = Vector2i(floori(c.x/16.0),floori(c.y/16.0))
-	var h = absi(district.x*73856093 ^ district.y*19349663 ^ seed_value)
-	var variant=h%3
-	if variant==1:
-		var swapped=x;x=y;y=swapped
-	elif variant==2:
-		x=15-x
 	var result = 0
-	# Crossroads and central clearing are always open. Broken L-shaped ridges
-	# make funnels without ever enclosing a walkable tile.
-	if center(c).length()>240 and x>1 and y>1:
-		if (x==5 and y>=4 and y<=10 and y!=7) or (y==10 and x>=5 and x<=11 and x!=8): result = 1
-		elif x>=10 and x<=13 and y>=4 and y<=6: result = 2 if h%2==0 else 3
-	if layout==1:
-		result=0
-		# Long shelves with wide, regularly spaced north/south passages.
-		if center(c).length()>260 and y in [5,6,12] and x>2 and x<13 and x not in [7,8]: result=1
-	elif layout==2:
-		result=0
-		# Open courtyards; four three-cell gates prevent sealed rooms.
-		if center(c).length()>520 and ((x in [3,12] and y>=3 and y<=12 and y not in [6,7,8]) or (y in [3,12] and x>=3 and x<=12 and x not in [6,7,8])): result=1
-	if variant==2 and center(c).length()>520 and x>2 and y>2:
-		if layout==0: result=1 if (x in [5,6,11] and y in [4,5,10,11]) else 0
-		elif layout==1: result=1 if (x in [4,5,11,12] and y in [4,5,11,12]) else 0
-		elif layout==2: result=1 if (y in [4,11] and x in [4,5,6,10,11,12]) else 0
+	if not on_route(p):
+		# Smooth irregular islands never repeat at a district boundary.
+		var n = noise.get_noise_2d(p.x,p.y)
+		var region = region_at(p)
+		var theme = region.get("kind","")
+		var threshold = 0.49 if theme in ["ridge","ruins","grove","ice"] else 0.59+layout*0.015
+		if n>threshold: result = 1
+		elif theme=="marsh" and n>0.05: result = 2
+		elif theme=="crater" and depth>0 and n>0.22: result = 3
 	cached[c] = result
 	return result
 
 func walkable(p,radius = 14.0):
+	if not bounds.grow(-radius-32).has_point(p): return false
 	var a = Vector2i(floori((p.x-radius)/CELL),floori((p.y-radius)/CELL))
 	var b = Vector2i(floori((p.x+radius)/CELL),floori((p.y+radius)/CELL))
 	if kind(a)==1: return false
@@ -70,12 +94,25 @@ func move(p,delta,radius = 14.0):
 	return p
 
 func open_position(p):
+	var safe = bounds.grow(-96)
+	p = Vector2(clampf(p.x,safe.position.x,safe.end.x),clampf(p.y,safe.position.y,safe.end.y))
 	if walkable(p,22): return p
-	for r in range(1,10):
-		for d in DIRS:
-			var candidate = center(cell(p)+d*r)
-			if walkable(candidate,22): return candidate
-	return Vector2.ZERO
+	# Search the whole expanding ring, not only cardinal spokes. Never teleport
+	# a distant objective to world origin on failure.
+	for r in range(1,25):
+		for x in range(-r,r+1):
+			for y in [-r,r]:
+				var candidate = center(cell(p)+Vector2i(x,y))
+				if walkable(candidate,22): return candidate
+		for y in range(-r+1,r):
+			for x in [-r,r]:
+				var candidate = center(cell(p)+Vector2i(x,y))
+				if walkable(candidate,22): return candidate
+	# Preserve locality even for a malformed solid region by clearing a small
+	# landing pocket rather than returning an unrelated spawn coordinate.
+	for x in range(-1,2):
+		for y in range(-1,2): cached[cell(p)+Vector2i(x,y)] = 0
+	return center(cell(p))
 
 func update(dt,p):
 	refresh -= dt

@@ -15,7 +15,7 @@ func game():
 func _initialize():
 	var save = {"amber":500,"runs":0,"records":[],"research":{"power":3}}
 	D.migrate(save)
-	check(D.hero_open(save,2) and not D.hero_open(save,0),"Fresh profile starts with mage")
+	check(D.hero_open(save,1) and not D.hero_open(save,0) and not D.hero_open(save,2),"Fresh profile starts with Kael")
 	check(not D.purchase(save,"mara") and save.amber==500,"Cannot buy undiscovered content")
 	save.discoveries.append("mara")
 	check(D.purchase(save,"mara") and save.amber==320 and D.hero_open(save,0),"Discover then buy survivor with amber")

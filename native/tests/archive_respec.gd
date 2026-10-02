@@ -21,11 +21,12 @@ func _initialize():
  var records=p.records.duplicate(true);var recipes=p.recipes.duplicate();var discovered=p.discoveries.duplicate()
  check(R.refund_research(p)==spent and p.amber==initial and p.research.is_empty(),"Full research reset")
  check(R.refund_research(p)==0 and p.amber==initial,"Research refund cannot duplicate amber")
- for id in R.D.ENTRIES:check(R.buy_discovery(p,id),"Discovery purchase / "+id)
+ for id in R.D.ENTRIES:
+  if id not in p.unlocks:check(R.buy_discovery(p,id),"Discovery purchase / "+id)
  var paid=initial-p.amber
  check(R.refund_discoveries(p)==paid and p.amber==initial,"Paid unlock refund")
  check(R.refund_discoveries(p)==0 and p.amber==initial,"Unlock refund cannot duplicate amber")
- check(p.hero==2 and not R.D.hero_open(p,0),"Relocked selected hero falls back to Vesper")
+ check(p.hero==1 and not R.D.hero_open(p,0),"Relocked selected hero falls back to Kael")
  check(p.records==records and p.recipes==recipes and p.discoveries==discovered and p.campaign.kills==123,"Records recipes discoveries milestones preserved")
  for id in R.D.ENTRIES:
   if R.D.ENTRIES[id].cost==0:check(id in p.unlocks,"Free unlock retained / "+id)

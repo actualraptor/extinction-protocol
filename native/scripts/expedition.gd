@@ -9,6 +9,12 @@ const Bestiary = preload("res://scripts/bestiary.gd")
 const Evolutions = preload("res://scripts/evolutions.gd")
 const Discoveries = preload("res://scripts/discoveries.gd")
 const Maps = preload("res://scripts/expedition_maps.gd")
+const StageDefinition = preload("res://scripts/stage_definition.gd")
+const StageObjects = preload("res://scripts/stage_objects.gd")
+var stage = StageDefinition.stage("cradle")
+var stage_objects = []
+var collected_stage_objects = {}
+var spawn_view = Vector2(1440,900)
 var map_id = "cradle"
 var campaign_bosses = 0
 var charge_ready = 0.0
@@ -155,6 +161,12 @@ func setup(character, run_mode, research = {}, seed_value = 0, selected_map = "c
 	if seed_value == 0: rng.randomize()
 	else: rng.seed = seed_value
 	terrain.seed_value = int(rng.seed)%2147483647
+	collected_stage_objects.clear()
+	stage = StageDefinition.stage(map_id)
+	terrain.configure(stage,depth)
+	pos = terrain.open_position(stage.spawn)
+	StageObjects.setup(self)
+	permanent_luck += stage.modifiers.get("luck",0.0)
 	cache_pos = terrain.open_position(cache_pos)
 	shrine_pos = terrain.open_position(shrine_pos)
 	var data = C.HEROES[hero]
@@ -212,7 +224,7 @@ func update_exploration():
 			log_event("discovery",{"id":marker.id})
 			discovered_content.emit(marker.id)
 func area_scale(): return 1.0 + rank_of("area")*0.12
-func speed(): return C.HEROES[hero].speed*(1+rank_of("speed")*0.08)*(1+minf(0.15,(level-1)*0.005) if hero==3 else 1.0)
+func speed(): return stage.modifiers.get("player_speed",1.0)*C.HEROES[hero].speed*(1+rank_of("speed")*0.08)*(1+minf(0.15,(level-1)*0.005) if hero==3 else 1.0)
 func trait_text():
 	match hero:
 		0: return "GUNSLINGER / +%s projectiles (one per 10 levels; max 3)"%mini(3,level/10)
@@ -233,7 +245,7 @@ func rooted(e): return not e.boss and not e.anchor and (e.get("frozen",0)>0 or b
 func linger_pressure(): return maxf(0.0,linger-20.0) if portal!=null else 0.0
 func linger_health(): return pow(2.0,minf(30.0,linger_pressure()/25.0))
 func linger_damage(): return 1.0+linger_pressure()/25.0
-func elite_interval(): return maxf(8.0,(45-depth*7)/(1.0+linger_pressure()/20.0))
+func elite_interval(): return maxf(8.0,(45-depth*7)*stage.modifiers.get("elite_interval",1.0)/(1.0+linger_pressure()/20.0))
 func threat(): return (1+time/210.0)*(1+depth*0.25)*linger_health()*pow(2.0,minf(daily_loop,25))
 
 func tick(dt, direction):
@@ -271,7 +283,7 @@ func tick(dt, direction):
 	director.update(self,dt)
 	var spawn_rate = 2.4+time/18.0 if time<120 else 3+time/14.0+depth*5
 	spawn_rate *= lerpf(0.65,1.0,clampf(time/120.0,0.0,1.0))
-	spawn_rate *= 1+minf(5,linger_pressure()/12.0)
+	spawn_rate *= stage.modifiers.get("density",1.0)*(1+minf(5,linger_pressure()/12.0))
 	spawn_budget = minf(12,spawn_budget+dt*spawn_rate*(0.4 if boss != null else 1.0))
 	while spawn_budget >= 1:
 		spawn_budget -= 1
@@ -310,9 +322,20 @@ func tick(dt, direction):
 		xp_goal = 9+pow(level,1.45)*4.8
 		open_choices(false)
 
+func spawn_position(angle):
+	var half = spawn_view*0.5+Vector2(110,135)
+	for attempt in range(16):
+		var direction = Vector2.from_angle(angle+attempt*0.63)
+		var distance = minf(half.x/maxf(0.001,absf(direction.x)),half.y/maxf(0.001,absf(direction.y)))+rng.randf_range(35,120)
+		var candidate = pos+direction*distance
+		if terrain.bounds.grow(-128).has_point(candidate):
+			var safe = terrain.open_position(candidate)
+			if absf(safe.x-pos.x)>spawn_view.x/2+70 or absf(safe.y-pos.y)>spawn_view.y/2+90: return safe
+	return terrain.open_position(pos+Vector2(0,half.y+100))
+
 func spawn_enemy(elite = false, at = null, kind_override = -1, announce = true):
 	var angle = rng.randf()*TAU
-	var p = pos+Vector2.from_angle(angle)*rng.randf_range(520 if time<45 else 760,720 if time<45 else 980) if at == null else at
+	var p = spawn_position(angle) if at == null else at
 	var composition = Maps.pool(map_id,depth,time)
 	var kind = composition[rng.randi_range(0,composition.size()-1)] if kind_override<0 else kind_override
 	if Bestiary.DATA[kind].role=="charge":
@@ -325,11 +348,11 @@ func spawn_enemy(elite = false, at = null, kind_override = -1, announce = true):
 			if not alternatives.is_empty(): kind=alternatives[rng.randi_range(0,alternatives.size()-1)]
 	var species = Bestiary.DATA[kind]
 	if species.role not in ["fly","phase"]: p = terrain.open_position(p)
-	var health = species.hp*threat()*(7 if elite else 1)*(1+Relics.modifiers(self).get("enemy_health",0))
+	var health = species.hp*stage.modifiers.get("enemy_health",1.0)*threat()*(7 if elite else 1)*(1+Relics.modifiers(self).get("enemy_health",0))
 	var mutated = time>420 and rng.randf()<0.13
 	if mutated: health *= 2.2
 	next_uid += 1
-	var e = {"uid":next_uid,"p":p,"hp":health,"max_hp":health,"kind":kind,"role":species.role,"elite":elite,"mutated":mutated,"boss":false,"anchor":false,"size":species.size*(1.7 if elite else 1.0)*(1.25 if mutated else 1.0),"speed":species.speed*(1+minf(time/2000,0.6))*(1+minf(1.0,linger_pressure()/80.0)),"flash":0.0,"slow":0.0,"burn":0.0,"burn_tick":0.0,"attack":rng.randf_range(3,8),"dead":false}
+	var e = {"uid":next_uid,"p":p,"hp":health,"max_hp":health,"kind":kind,"role":species.role,"elite":elite,"mutated":mutated,"boss":false,"anchor":false,"size":species.size*(1.7 if elite else 1.0)*(1.25 if mutated else 1.0),"speed":species.speed*stage.modifiers.get("enemy_speed",1.0)*(1+minf(time/2000,0.6))*(1+minf(1.0,linger_pressure()/80.0)),"flash":0.0,"slow":0.0,"burn":0.0,"burn_tick":0.0,"attack":rng.randf_range(3,8),"dead":false}
 	enemies.append(e)
 	if elite and announce: banner.emit("MUTATION DETECTED","An apex hunter enters the field")
 	return e
@@ -339,6 +362,9 @@ func update_enemies(dt):
 	crowd.build(enemies)
 	for e in enemies:
 		if e.dead or e.get("breakable",false): continue
+		if not e.boss and not e.anchor and e.p.distance_squared_to(pos)>pow(maxf(2400,spawn_view.length()*0.9),2):
+			e.dead = true
+			continue
 		var step = dt
 		# Under extreme population pressure, stagger ordinary creature AI at
 		# 15 Hz. Player, attacks, bosses and contact rendering retain 30 Hz.
@@ -758,6 +784,7 @@ func enter_portal():
 		daily_loop+=1;boss_stage=0;depth=0
 		explored = [{},{},{}]
 		breakable_cells.clear()
+		collected_stage_objects.clear()
 		var maps=Maps.DATA.keys();maps.sort()
 		map_id=maps[(maps.find(map_id)+1)%maps.size()];terrain.layout=Maps.DATA[map_id].layout
 	else:depth = mini(2,depth+1)
@@ -791,7 +818,11 @@ func enter_portal():
 	terrain.flow.clear()
 	terrain.goal = Vector2i(99999,99999)
 	terrain.refresh = 0
-	pos = terrain.open_position(Vector2.ZERO)
+	stage = StageDefinition.stage(map_id)
+	terrain.configure(stage,depth)
+	permanent_luck = research_ranks.get("luck",0)*0.01+research_ranks.get("fortune",0)*0.05+stage.modifiers.get("luck",0.0)
+	pos = terrain.open_position(stage.spawn)
+	StageObjects.setup(self)
 	shrine_pos = terrain.open_position(pos+Vector2(-450,-250))
 	cache_pos = terrain.open_position(pos+Vector2(480,180))
 	cache_timer = 0
@@ -836,7 +867,7 @@ func update_gems(dt):
 		if distance<radius: gem.magnet = true
 		if gem.magnet: gem.p = gem.p.move_toward(pos,(420+distance*3)*dt)
 		if gem.p.distance_to(pos)<20:
-			xp += gem.value*(1+research_ranks.get("growth",0)*0.03)*(1+rank_of("pickup")*0.08)*(1+Relics.modifiers(self).get("xp",0))*(2 if buffs.get("surge",0)>0 else 1)
+			xp += gem.value*stage.modifiers.get("xp",1.0)*(1+research_ranks.get("growth",0)*0.03)*(1+rank_of("pickup")*0.08)*(1+Relics.modifiers(self).get("xp",0))*(2 if buffs.get("surge",0)>0 else 1)
 			gem.value = 0
 	gems = gems.filter(func(g): return g.value>0)
 
@@ -1029,6 +1060,8 @@ func update_boss(dt):
 	log_event("boss-pattern",{"stage":boss_stage,"pattern":boss_pattern})
 
 func update_objectives(dt):
+	if not active or choosing: return
+	if mode!="safari": StageObjects.update(self)
 	if not active or choosing: return
 	for chest in relic_chests:
 		if chest.distance_squared_to(pos)<38*38:

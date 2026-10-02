@@ -1,8 +1,33 @@
 extends RefCounted
 ## Player-facing changes only. Preserve older releases in assets/patch-history.json.
-const VERSION="0.9.1"
-const TITLE="Commit to the Build"
+const VERSION="0.9.2"
+const TITLE="The World Opens Up"
 const ENTRIES=[
+ {
+  "icon": "map", "category": "relic",
+  "title": "THREE AUTHORED STAGES",
+  "body": "Lost Cradle, Frostbreak Expanse and the Sunken Observatory now use large continuous maps with distinct terrain, landmarks, routes and escalating stage modifiers."
+ },
+ {
+  "icon": "camp", "category": "relic",
+  "title": "FAR OBJECTIVES",
+  "body": "World caches, build passives and discovery signals are placed across the stage. The atlas projects major objectives and lets you pin a route."
+ },
+ {
+  "icon": "meteor", "category": "relic",
+  "title": "STAGE PRESSURE",
+  "body": "Each map now has its own horde density, XP, luck or movement identity. Distant ordinary enemies recycle safely while bosses and discoveries stay readable."
+ },
+ {
+  "icon": "camp", "category": "relic",
+  "title": "KAEL LEADS THE EXPEDITION",
+  "body": "Kael is the guaranteed starting survivor. Other survivors remain unlockable through discoveries and milestones."
+ },
+ {
+  "icon": "frost", "category": "relic",
+  "title": "VESPER RECAST",
+  "body": "Vesper now uses a new directional female mage walk cycle in-game, with readable front, side and back poses."
+ },
  {
   "icon": "lightning",
   "title": "WEAPON UNIONS",

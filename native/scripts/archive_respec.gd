@@ -55,5 +55,5 @@ static func refund_discoveries(save):
   # A later milestone may regrant this entry for free; it cannot be refunded twice.
   save.discovery_spent[id]=0
  save.amber+=total
- if not D.hero_open(save,int(save.get("hero",2))):save.hero=2
+ if not D.hero_open(save,int(save.get("hero",1))):save.hero=1
  return total

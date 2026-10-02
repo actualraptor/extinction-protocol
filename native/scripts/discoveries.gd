@@ -3,6 +3,7 @@ extends RefCounted
 const BASE_WEAPONS = ["lightning","frost","fire","winter","revolver","club"]
 const KITS = [["revolver","club","shotgun"],["club","spear","thorns"],["lightning","frost","fire"],["harpoon","frost","return"],["lantern","fire","orbital"]]
 const ENTRIES = {
+	"vesper":{"name":"Vesper / The Riftwalker","desc":"Recruit Vesper. Reach the distant rift signal in the Lost Cradle.","cost":0,"depth":0,"pos":Vector2(16000,-16000),"map":"cradle","hero":2},
 	"ironbriar":{"name":"The Ironbriar Cache","desc":"Unlock Ironbriar: armor-scaling thorn bursts and retaliation.","cost":0,"depth":0,"pos":Vector2(-510,980),"map":"cradle","weapons":["thorns"],"goal":"kills","target":800},
 	"map_frost":{"name":"Frostbreak Expanse","desc":"Open a new expedition map: glacial avenues, ice packs and three original score cues.","cost":0,"depth":0,"pos":Vector2.ZERO,"map":"frostbreak","goal":"kills","target":250,"discoverable":false},
 	"map_observatory":{"name":"The Sunken Observatory","desc":"Open the second new expedition: courtyard arenas, constructs and three original score cues.","cost":0,"depth":0,"pos":Vector2.ZERO,"map":"observatory","goal":"bosses","target":1,"discoverable":false},
@@ -14,7 +15,7 @@ const ENTRIES = {
 	"ballistics":{"goal":"kills","target":500,"name":"Lost Ballistics","desc":"Bone Rattler and Extinction Mortar enter the upgrade pool.","cost":140,"depth":0,"pos":Vector2(-760,610),"weapons":["shotgun","mortar"]},
 	"riftcraft":{"goal":"kills","target":1200,"name":"Riftcraft","desc":"Rift Blades, Thunderstorm and Prism Aegis enter the upgrade pool.","cost":180,"depth":0,"pos":Vector2(650,820),"weapons":["orbital","thunderstorm","aegis"]},
 	"tracking":{"name":"Predator Engineering","desc":"Unlock homing, ricochet and projectile accelerator upgrades.","cost":100,"depth":0,"pos":Vector2(-980,-590),"augments":["homing","bounce","velocity"]},
-	"kael":{"goal":"kills","target":700,"name":"Kael, the First Man","desc":"Unlock the ancestor. Heavy melee, armor and endurance.","cost":260,"depth":1,"pos":Vector2(760,670),"hero":1},
+	"kael":{"name":"Kael, the First Man","desc":"Your first survivor. Heavy melee, armor and endurance.","cost":0,"depth":0,"pos":Vector2.ZERO,"hero":1,"discoverable":false},
 	"ancients":{"name":"Voices of the Ancients","desc":"Epoch Lance and Ancestor Choir enter the upgrade pool.","cost":220,"depth":1,"pos":Vector2(-800,-620),"weapons":["spear","dread"]},
 	"alchemy":{"name":"Ashen Alchemy","desc":"Walking Pyre and Black Bloom enter the upgrade pool.","cost":220,"depth":1,"pos":Vector2(920,-720),"weapons":["pyre","miasma"]},
 	"fracture":{"name":"Fractured Time","desc":"Borrowed Seconds, Stolen Eternity and Violent Echo.","cost":300,"depth":1,"pos":Vector2(-700,860),"weapons":["stasis"],"augments":["eternity","echo"]},
@@ -41,11 +42,14 @@ static func migrate(save):
 		for key in save.unlocks:
 			if key not in save.discoveries: save.discoveries.append(key)
 
+	if "kael" not in save.unlocks: save.unlocks.append("kael")
+	if "kael" not in save.discoveries: save.discoveries.append("kael")
+
 static func hero_open(save,index):
-	return index==2 or ["mara","kael","", "iona","orin"][index] in save.get("unlocks",[])
+	return index==1 or (index>=0 and index<5 and ["mara","kael","vesper","iona","orin"][index] in save.get("unlocks",[]))
 
 static func allowed(save,category,id):
-	if category=="weapons" and id in KITS[save.get("hero",2)]: return true
+	if category=="weapons" and id in KITS[save.get("hero",1)]: return true
 	for key in ENTRIES:
 		if id in ENTRIES[key].get(category,[]): return key in save.get("unlocks",[])
 	return true
@@ -59,8 +63,12 @@ static func purchase(save,id):
 
 static func landmarks(g):
 	var out = []
-	for id in ENTRIES:
-		var d = ENTRIES[id]
-		if d.get("discoverable",true) and d.depth==g.depth and d.get("map",g.map_id)==g.map_id:
-			out.append({"id":id,"name":d.name,"p":g.terrain.open_position(d.pos),"found":id in g.discovered})
+	for signal_data in g.stage.get("signals",[]):
+		if not ENTRIES.has(signal_data.id) or int(signal_data.get("depth",0))!=g.depth:continue
+		var d=ENTRIES[signal_data.id]
+		var p=g.terrain.open_position(signal_data.p)
+		if p.distance_to(signal_data.p)>640 or not g.terrain.walkable(p,22):
+			push_warning("Unreachable stage signal: "+signal_data.id)
+			continue
+		out.append({"id":signal_data.id,"name":d.name,"p":p,"found":signal_data.id in g.discovered})
 	return out

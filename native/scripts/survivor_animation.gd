@@ -1,6 +1,6 @@
 extends RefCounted
 
-const SHEETS = [preload("res://assets/mara-walk.png"),preload("res://assets/kael-walk.png"),preload("res://assets/vesper-walk.png"),preload("res://assets/iona-walk.png"),preload("res://assets/orin-walk.png")]
+const SHEETS = [preload("res://assets/mara-walk.png"),preload("res://assets/kael-walk.png"),preload("res://assets/vesper-walk-v2.png"),preload("res://assets/iona-walk.png"),preload("res://assets/orin-walk.png")]
 var regions = []
 var scales = []
 var direction = Vector2.DOWN

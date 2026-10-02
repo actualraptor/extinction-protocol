@@ -34,7 +34,7 @@ var boss_label
 var boss_panel
 var objective_label
 var paused = false
-var selected = 2
+var selected = 1
 var chosen_mode = "expedition"
 var daily_date = ""
 var page = "menu"
@@ -234,6 +234,12 @@ func main_menu():
 	audio.biome = -1
 
 func texture(index):
+	if index==2:
+		var portrait=AtlasTexture.new()
+		portrait.atlas=preload("res://assets/vesper-walk-v2.png")
+		var r=JSON.parse_string(FileAccess.get_file_as_string("res://assets/walk-regions.json"))[2][1]
+		portrait.region=Rect2(r[0],r[1],r[2],r[3])
+		return portrait
 	if index>=3:
 		var image=load("res://assets/"+("iona" if index==3 else "orin")+"-walk.png")
 		var r=JSON.parse_string(FileAccess.get_file_as_string("res://assets/walk-regions.json"))[index][1]
@@ -340,7 +346,7 @@ func flush_campaign(force=false):
 		campaign_save_clock=0
 
 func start_run():
-	if chosen_mode=="expedition" and not Discoveries.hero_open(save_data,selected): selected = 2
+	if chosen_mode=="expedition" and not Discoveries.hero_open(save_data,selected): selected = 1
 	release_run()
 	clear_menu()
 	page = "playing"
@@ -487,6 +493,7 @@ func update_hud_scale():
 	var viewport = get_viewport_rect().size
 	var offset = (viewport-Vector2(1440,900))/2
 	world.position = offset
+	if sim!=null: sim.spawn_view=viewport
 	menu_root.position = offset
 	var pixel_ratio = maxf(0.1,get_viewport().get_screen_transform().get_scale().y)
 	var factor = clampf(float(save_data.settings.get("hud_scale",1.0)),0.65,1.35)
@@ -900,7 +907,7 @@ func map_menu():
 	var map = preload("res://scripts/expedition_map.gd").new()
 	map.game = self
 	map.size = Vector2(1440,900)
-	map.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	map.mouse_filter = Control.MOUSE_FILTER_STOP
 	menu_root.add_child(map)
 
 
@@ -1027,14 +1034,14 @@ func archive_refund_menu(research_only):
 	var v=column(menu_root,Vector2(190,180),Vector2(1060,540),24)
 	label(v,"RESET PERMANENT UPGRADES" if research_only else "REFUND PAID UNLOCKS",30,"e7c88c")
 	label(v,"Return %s amber to your balance."%amount,27,"ead6aa")
-	var copy="All purchased permanent upgrade ranks return to zero. Discoveries and unlocked equipment remain yours." if research_only else "Paid characters and equipment become locked again. Found discoveries stay found, ready to purchase again. Free characters, free equipment and unlocked maps stay yours. If your selected character is relocked, Vesper becomes selected."
+	var copy="All purchased permanent upgrade ranks return to zero. Discoveries and unlocked equipment remain yours." if research_only else "Paid characters and equipment become locked again. Found discoveries stay found, ready to purchase again. Free characters, free equipment and unlocked maps stay yours. If your selected character is relocked, Kael becomes selected."
 	copy+="\nYour runs, records, discovered recipes and milestone progress are preserved."
 	var details=label(v,copy,22,"c7c3b4");details.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	button(v,"Confirm refund / %s amber"%amount,func():
 		if research_only:respec.refund_research(save_data)
 		else:
 			respec.refund_discoveries(save_data)
-			if not Discoveries.hero_open(save_data,selected):selected=2
+			if not Discoveries.hero_open(save_data,selected):selected=1
 		persist()
 		if research_only:research_menu()
 		else:discovery_menu(),true)
@@ -1165,6 +1172,7 @@ func patch_notes(index=0):
 	var newer=button(menu_root,"Newer",func():patch_notes(index-1));newer.position=Vector2(200,750);newer.size=Vector2(260,58);newer.disabled=index==0
 	var older=button(menu_root,"Older",func():patch_notes(index+1));older.position=Vector2(980,750);older.size=Vector2(260,58);older.disabled=index==releases.size()-1
 	var latest=button(menu_root,"Latest",func():patch_notes(0));latest.position=Vector2(1030,704);latest.size=Vector2(210,42);latest.custom_minimum_size.y=42
+
 
 
 

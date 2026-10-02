@@ -36,11 +36,29 @@ func _draw():
 		if e.get("charge_wait",0)>0:
 			var start = world.screen(e.p)
 			Hostile.piece(self,4,start+e.charge_dir*100,Vector2(220,75),e.charge_dir.angle(),0.7)
+	# Stage rewards are static authored objects; only nearby art is submitted.
+	for item in s.stage_objects:
+		if item.collected:continue
+		var at=world.screen(item.p)
+		if not world.visible_rect().grow(110).has_point(at):continue
+		var category="relic" if item.type=="cache" else item.type
+		var icon="chest" if item.type=="cache" else item.id
+		draw_set_transform(at,0,Vector2(1,.35))
+		draw_circle(Vector2.ZERO,33,Color(.015,.025,.02,.65))
+		draw_arc(Vector2.ZERO,36,0,TAU,36,Color(.75,.62,.35,.6),2,true)
+		draw_set_transform(Vector2.ZERO)
+		draw_texture_rect(Icons.get_icon(icon,category),Rect2(at-Vector2(28,56+sin(world.clock*2)*3),Vector2(56,56)),false)
+		if s.pos.distance_squared_to(item.p)<280*280:
+			var caption=item.name
+			var width=world.font.get_string_size(caption,HORIZONTAL_ALIGNMENT_LEFT,-1,13).x
+			draw_string(world.font,at+Vector2(-width/2,25),caption,HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("e7d9ab"))
 	for marker in s.landmarks:
 		if marker.found: continue
 		var at = world.screen(marker.p)
 		if not world.visible_rect().grow(100).has_point(at): continue
-		draw_texture_rect(Icons.get_icon("camp","relic"),Rect2(at-Vector2(46,76),Vector2(92,92)),false)
+		var discovery=s.Discoveries.ENTRIES.get(marker.id,{})
+		var art="camp" if discovery.has("hero") else "chronicle" if discovery.has("relics") else "chest"
+		draw_texture_rect(Icons.get_icon(art,"relic"),Rect2(at-Vector2(46,76),Vector2(92,92)),false)
 		draw_arc(at,42,0,TAU,32,Color("f4cf88"),2,true)
 		draw_string(world.font,at+Vector2(-70,35),"DISCOVER / "+marker.name,HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("f7d797"))
 	if s.portal!=null:
@@ -60,3 +78,5 @@ func _draw():
 	for n in world.numbers:
 		draw_string(world.font,world.screen(n.p),n.text,HORIZONTAL_ALIGNMENT_LEFT,-1,18,Color(n.color,n.life/0.65))
 	if s.boss!=null and s.boss_stage==3: draw_arc(world.screen(s.boss.p),720,0,TAU,100,Color(1,0.3,0.2,0.5),5,true)
+
+

@@ -4,7 +4,7 @@ const VERSION = 2
 const Discoveries = preload("res://scripts/discoveries.gd")
 
 static func defaults():
-	return {"version":VERSION,"amber":0,"wins":0,"runs":0,"research":{},"records":[],"daily_records":[],"settings":{"sound":true,"music":true,"shake":true,"hud_scale":1.0},"campaign":{"kills":0,"bosses":0,"map_kills":{},"map_wins":{}}}
+	return {"version":VERSION,"starter_rules":2,"amber":0,"wins":0,"runs":0,"research":{},"records":[],"daily_records":[],"settings":{"sound":true,"music":true,"shake":true,"hud_scale":1.0},"campaign":{"kills":0,"bosses":0,"map_kills":{},"map_wins":{}}}
 
 static func numeric(value):
 	return (value is int or value is float) and is_finite(float(value)) and value >= 0
@@ -51,6 +51,7 @@ static func validate(data):
 
 static func migrate(data):
 	var result=data.duplicate(true)
+	var preserve_vesper=not data.has("starter_rules")
 	var base=defaults()
 	for key in base:
 		if not result.has(key): result[key]=base[key]
@@ -65,6 +66,10 @@ static func migrate(data):
 		for field in {"date":"Unknown","seconds":0,"kills":0,"score":0,"bosses":0,"circuit":1}:
 			if not record.has(field): record[field]={"date":"Unknown","seconds":0,"kills":0,"score":0,"bosses":0,"circuit":1}[field]
 	Discoveries.migrate(result)
+	if preserve_vesper:
+		if "vesper" not in result.unlocks:result.unlocks.append("vesper")
+		if "vesper" not in result.discoveries:result.discoveries.append("vesper")
+	result.starter_rules=2
 	result.version=VERSION
 	return result
 
