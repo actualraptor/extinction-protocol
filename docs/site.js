@@ -1,13 +1,11 @@
 const repository = document.documentElement.dataset.repository || 'actualraptor/extinction-protocol';
-const releaseTag = 'v0.9.3';
 const base = `https://github.com/${repository}`;
-// The v0.9.3 release currently contains binaries exported with the 0.9.2
-// filenames. Keep the asset names explicit until the next release is renamed.
+// Let GitHub resolve the latest published release, independent of asset names.
 const links = {
  repo:base,
- release:`${base}/releases/tag/${releaseTag}`,
- windows:`${base}/releases/download/${releaseTag}/Extinction-Protocol-Windows-0.9.2.zip`,
- linux:`${base}/releases/download/${releaseTag}/Extinction-Protocol-Linux-0.9.2.tar.gz`,
+ release:`${base}/releases/latest`,
+ windows:`${base}/releases/latest`,
+ linux:`${base}/releases/latest`,
  feedback:`${base}/issues/new/choose`
 };
 document.querySelectorAll('[data-link]').forEach(link=>{link.href=links[link.dataset.link];});
