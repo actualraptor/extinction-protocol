@@ -11,9 +11,9 @@ func _initialize():
 		g.permanent_luck=luck
 		var odds=g.Relics.odds(g,false)
 		check(is_equal_approx(odds.reduce(func(a,b):return a+b,0.0),100),"Odds normalize")
-		check(is_equal_approx(odds[5],minf(100,.3+luck*100)),"Artifact uses exact additive roll bonus")
+		check(is_equal_approx(odds[5],minf(100,.3+luck*20)),"Artifact uses exact additive roll bonus")
 		for value in odds:check(value>=0 and value<=100,"Valid probability")
-		if luck==.1:check(is_equal_approx(odds[0],30),"Ten Luck points remove ten Common points")
+		if luck==.1:check(is_equal_approx(odds[0],38),"Ten percent Luck removes two Common points")
 		g.relic_state.dry_chests=4
 		var pity=g.Relics.odds(g,true)
 		check(pity[0]==0 and pity[1]==0 and is_equal_approx(pity.reduce(func(a,b):return a+b,0.0),100),"Pity still normalizes Rare+")

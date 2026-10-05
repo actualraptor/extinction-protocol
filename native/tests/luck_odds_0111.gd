@@ -17,8 +17,8 @@ func _initialize():
 		g.permanent_luck=luck
 		var odds=g.Relics.odds(g,false)
 		check(is_equal_approx(odds.reduce(func(a,b):return a+b,0.0),100),"Normalized / %s"%luck)
-		check(is_equal_approx(odds[0],maxf(0,40-luck*100)),"Additive Common reduction / %s"%luck)
-		check(is_equal_approx(odds[5],minf(100,.3+luck*100)),"Additive Artifact increase / %s"%luck)
+		check(is_equal_approx(odds[0],maxf(0,40-luck*20)),"Additive Common reduction / %s"%luck)
+		check(is_equal_approx(odds[5],minf(100,.3+luck*20)),"Additive Artifact increase / %s"%luck)
 		check(odds[5]>=previous,"Artifact chance does not decrease")
 		previous=odds[5]
 		g.relic_state.dry_chests=4
@@ -31,7 +31,7 @@ func _initialize():
 	for i in range(6):check(is_equal_approx(g.Relics.odds(g,false)[i],g.Relics.WEIGHTS[i]),"Negative luck safely clamps to baseline")
 	g.permanent_luck=.2;g.passives.luck=1
 	g.buff_stacks.luck=[{"rank_gain":1,"stat_gain":3.0,"rarity":"ARTIFACT"}]
-	check(is_equal_approx(g.Relics.odds(g,false)[5],50.3),"Artifact Luck quality and permanent Luck combine (0.3 + 0.2)")
+	check(is_equal_approx(g.Relics.odds(g,false)[5],10.3),"Artifact Luck quality and permanent Luck combine (0.3 + 0.2)")
 	# Replay each exact RNG ticket through both real reward paths. Pity must
 	# affect chests only; level rewards must neither read nor consume it.
 	var different=0

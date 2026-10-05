@@ -35,7 +35,7 @@ func _initialize():
 	var world=preload("res://scripts/world.gd").new()
 	world.fx("ring",Vector2.ZERO,Color.WHITE,100)
 	for i in range(500):world.fx("kael_slam_dirt_1_3_100",Vector2.ZERO,Color.WHITE,200)
-	check(world.effects.size()==17,"16 Kael effects plus unrelated effect")
+	check(world.effects.size()==65,"64 Kael effects plus unrelated effect")
 	check(world.effects[0].kind=="ring","Kael budget preserves other effects")
 	check(is_equal_approx(world.effects[-1].life,.10),"Rapid effects use short lifetime")
 	world.free()

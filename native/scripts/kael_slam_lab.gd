@@ -6,6 +6,9 @@ const CADENCES=[.8,.25,.08,.03]
 var game
 var speed=0
 var variant=0
+var repeats=0
+var attacks_enabled=true
+var area_multiplier=1.0
 var next=0.0
 var keys={}
 var caption
@@ -16,15 +19,16 @@ func _ready():
 	g.map_id="cradle";g.depth=0;g.time=0;g.level=1;g.boss_stage=0
 	game.clear_menu();game.hud_root.visible=false
 	caption=game.label(game.menu_root,"",18,"edddb6");caption.position=Vector2(45,30);caption.size=Vector2(1300,85)
+	if "--slam-stress" in OS.get_cmdline_user_args():speed=3;variant=2;repeats=8
 	configure()
 func configure():
 	var g=game.sim;var id="earthshaker" if variant==2 else "club"
-	g.weapons={id:{"level":1,"evolved":variant>0,"timer":99999,"casts":0}}
+	g.weapons={id:{"level":10,"evolved":variant>0,"timer":99999,"casts":0}}
 	g.kael_attack.clear();g.echoes.clear();game.world.effects.clear();g.enemies.clear()
 	for i in range(16):
 		var e=g.spawn_enemy(false,g.pos+Vector2.from_angle(i*TAU/16)*(150 if i%2==0 else 260));e.hp=1e12;e.max_hp=e.hp
 	next=g.time
-	caption.text="KAEL SLAM TEST — %s — %.2fs between attacks\nF6: speed  |  F7: weapon  |  F8: ground  |  F9: Halloween  |  WASD: move  |  Close window to exit"%[["Ancestor's Wrath","World Breaker","Earth Shaker"][variant],CADENCES[speed]]
+	caption.text="KAEL SLAM TEST — %s — %.2fs between attacks\nF6: speed  |  F7: weapon  |  F8: ground  |  F9: Halloween  |  F10: repeats %s  |  F11: area x%s  |  F12: stop/start slams  |  WASD: move  |  Close window to exit"%[["Ancestor's Wrath","World Breaker","Earth Shaker"][variant],CADENCES[speed],repeats,area_multiplier]
 func pressed(key):
 	var down=Input.is_physical_key_pressed(key);var edge=down and not keys.get(key,false);keys[key]=down;return edge
 func _process(dt):
@@ -33,12 +37,15 @@ func _process(dt):
 	if pressed(KEY_F6):speed=(speed+1)%CADENCES.size();configure()
 	if pressed(KEY_F7):variant=(variant+1)%3;configure()
 	if pressed(KEY_F8):g.map_id="frostbreak" if g.map_id=="cradle" else "observatory" if g.map_id=="frostbreak" else "cradle";configure()
+	if pressed(KEY_F12):attacks_enabled=not attacks_enabled
+	if pressed(KEY_F11):area_multiplier=area_multiplier*2 if area_multiplier<16 else 1;configure()
+	if pressed(KEY_F10):repeats=(repeats+2)%10;configure()
 	if pressed(KEY_F9):g.halloween=not g.halloween
 	var movement=Vector2(float(Input.is_physical_key_pressed(KEY_D))-float(Input.is_physical_key_pressed(KEY_A)),float(Input.is_physical_key_pressed(KEY_S))-float(Input.is_physical_key_pressed(KEY_W))).normalized()
 	g.pos=g.terrain.move(g.pos,movement*220*dt)
 	if movement.x!=0:g.facing=-1 if movement.x<0 else 1
 	g.time+=dt;g.build_grid();Combat.update(g,dt)
-	if g.time>=next:
+	if attacks_enabled and g.time>=next:
 		var id="earthshaker" if variant==2 else "club"
-		var stats=g.Rules.stats(g,id);stats.cooldown=CADENCES[speed];stats.repeat=0;stats.radius=180 if variant==0 else 270 if variant==1 else 320
+		var stats=g.Rules.stats(g,id);stats.cooldown=CADENCES[speed];stats.repeat=repeats;stats.radius=(180 if variant==0 else 270 if variant==1 else 320)*area_multiplier
 		Slam.start(g,id,Vector2(g.facing,0),stats);next=g.time+CADENCES[speed]

@@ -21,7 +21,7 @@ func _initialize():
    check("ARMOR EXPOSED" in DR.caption(g,g.boss),"Exposure state explained")
  var g=game(1);g.passives.crit=60
  var dealt=g.hit(g.boss,100,"revolver",true,false)
- check(g.boss.last_crit_tier>0 and is_equal_approx(dealt,100*(1+.9*g.boss.last_crit_tier)*.5),"Multi-crits apply before resistance exactly once")
+ check(g.boss.last_crit_tier>0 and is_equal_approx(dealt,100*pow(1.9,g.boss.last_crit_tier)*.5),"Multi-crits apply before resistance exactly once")
  var position=g.boss.p
  g.hit(g.boss,1,"club",false,false)
  check(g.boss.p==position,"Resistance does not change boss knockback immunity")

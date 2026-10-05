@@ -1,5 +1,29 @@
 [
   {
+    "version": "0.11.6",
+    "title": "Hollow Harvest: The Earth Awakens",
+    "entries": [
+      {
+        "icon": "map",
+        "category": "relic",
+        "title": "FEEL THE IMPACT",
+        "body": "Kael slams a crater into the ground, sending staggered fracture fronts and lifted debris outward. Dirt, ice and stone each respond to the blow."
+      },
+      {
+        "icon": "map",
+        "category": "relic",
+        "title": "THE EARTH BREAKS OPEN",
+        "body": "World Breaker ignites brighter fissures. Earth Shaker adds broader glowing cracks and brilliant cores while preserving Kael's slam animation."
+      },
+      {
+        "icon": "map",
+        "category": "relic",
+        "title": "POWER AT ANY SPEED",
+        "body": "Wind-up and shock fronts compress with attack speed. Visual overlap stays bounded while damage waves complete independently."
+      }
+    ]
+  },
+  {
     "version": "0.11.5",
     "title": "Relics in Stone",
     "entries": [

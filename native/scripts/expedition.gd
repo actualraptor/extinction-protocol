@@ -667,7 +667,7 @@ func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "imp
 		e.pulse_times[pulse_key] = time
 	var crit_tier = roll_crit_tier(crit_chance()) if can_crit else 0
 	var critical = crit_tier>0
-	if critical: amount *= 1.0+0.9*crit_tier
+	if critical: amount *= pow(1.9,crit_tier)
 	if e.slow>0: amount *= 1+Relics.modifiers(self).get("chilled_damage",0)
 	if e.boss and boss_stage == 3:
 		if boss_time<3 or boss.get("reform",0)>0: return 0.0
@@ -676,7 +676,8 @@ func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "imp
 		if e.get("role","")=="armor" and "PHYSICAL" in damage_tags: amount *= 0.8
 		for tag in Bestiary.DATA[e.kind].get("resists",{}):
 			if tag in damage_tags: amount *= Bestiary.DATA[e.kind].resists[tag]
-	var dealt = effective_damage(amount*BossResistance.multiplier(self,e),e.hp)
+	var hit_damage=maxf(0,amount*BossResistance.multiplier(self,e))
+	var dealt = effective_damage(hit_damage,e.hp)
 	if e.boss and boss_stage==2 and phase==1:
 		dealt = minf(dealt,maxf(0,e.hp-e.max_hp*0.5))
 	if e.boss and boss_stage == 3 and phase<3:
@@ -730,7 +731,7 @@ func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "imp
 				hit(other,amount*Relics.modifiers(self).critical_chain,"relic",false)
 				break
 	if e.elite or e.boss or critical:
-		effect.emit("crit_number_%s"%crit_tier if critical else "number",e.p,crit_color(crit_tier) if critical else Color.WHITE,dealt)
+		effect.emit("crit_number_%s"%crit_tier if critical else "number",e.p,crit_color(crit_tier) if critical else Color.WHITE,dealt if e.boss else hit_damage)
 		if critical: effect.emit("crit",e.p,crit_color(crit_tier),crit_tier)
 	if e.hp<=0: kill(e)
 	elif e.boss and boss_stage==2 and phase==1 and e.hp<=e.max_hp*0.5+0.1:
@@ -1288,6 +1289,6 @@ func finish(victory):
 	ended.emit(victory)
 
 func report():
-	return {"version":"native-0.11.6","halloween":halloween,"daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"relic_stacks":relic_stacks.duplicate(true),"buff_stacks":buff_stacks.duplicate(true),"reward_schema":3,"events":event_log,"samples":samples}
+	return {"version":"native-0.11.7","halloween":halloween,"daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"relic_stacks":relic_stacks.duplicate(true),"buff_stacks":buff_stacks.duplicate(true),"reward_schema":3,"events":event_log,"samples":samples}
 
 

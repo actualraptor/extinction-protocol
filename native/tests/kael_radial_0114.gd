@@ -27,8 +27,8 @@ func _initialize():
 			check(foes[1].hp<1e6 and foes[2].hp==1e6,"Middle ring follows before outer")
 			for i in range(3):g.time+=.07;g.update_weapons(.07)
 			check(foes[2].hp<1e6 and foes[0].hp==near,"Outer propagation; no duplicate near damage")
-			var prefix="kael_slam_"+("ice" if map=="frostbreak" else "stone" if map=="observatory" else "dirt")
-			check(effects.filter(func(k):return k.begins_with(prefix)).size()==(3 if weapon=="club" else 4),"Biome material and evolved extra band")
+			var prefix="kael_crater_"+("ice" if map=="frostbreak" else "stone" if map=="observatory" else "dirt")
+			check(effects.filter(func(k):return k.begins_with(prefix)).size()==1,"One biome crack stamp per slam")
 			g.echoes.clear();Slam.impact(g,id,Vector2.RIGHT,s);g.weapons.clear();g.update_weapons(.3)
 			check(g.echoes.is_empty(),"Retired weapon removes queued radial pulses")
 	for id in ["club","earthshaker"]:

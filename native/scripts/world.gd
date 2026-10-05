@@ -130,14 +130,14 @@ func fx(kind,p,color,size):
 		return
 	var life = 0.10 if kind in ["muzzle","crit"] else 1.15 if kind in ["level","evolve","victory"] else 0.52
 	if kind.begins_with("kael_slam_") or kind.begins_with("kael_crater_"):
-		life=clampf(float(kind.get_slice("_",5))*.001,.10,.46)
+		life=clampf(float(kind.get_slice("_",5))*.001,.10,1.6)
 		# Retire only old visual fronts; all queued damage bands still execute.
 		var count=0;var oldest=-1
 		for i in range(effects.size()):
 			if effects[i].kind.begins_with("kael_"):
 				count+=1
 				if oldest<0:oldest=i
-		if count>=16 and oldest>=0:effects.remove_at(oldest)
+		if count>=64 and oldest>=0:effects.remove_at(oldest)
 	if effects.size()<160: effects.append({"kind":kind,"p":p,"color":color,"size":size,"life":life,"max":life})
 	if kind in ["level","evolve","victory","hurt","impact"]:
 		shake = maxf(shake,18 if kind=="victory" else 8 if kind=="hurt" else 4)
