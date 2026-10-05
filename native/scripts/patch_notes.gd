@@ -1,7 +1,7 @@
 extends RefCounted
 ## Player-facing changes only.
 const VERSION="0.11.6"
-const TITLE="Earth Awakens"
+const TITLE="Hollow Harvest: The Earth Awakens"
 const ENTRIES=[
  {
   "icon": "map",

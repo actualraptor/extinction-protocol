@@ -1,4 +1,4 @@
-# Extinction Protocol 0.11.6 — Earth Awakens
+# Extinction Protocol 0.11.6 — Hollow Harvest: The Earth Awakens
 
 ## FEEL THE IMPACT
 
