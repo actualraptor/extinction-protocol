@@ -1473,7 +1473,7 @@ func cheat_gate():
 	var password=LineEdit.new();password.secret=true;password.placeholder_text="Password";v.add_child(password);password.grab_focus()
 	var feedback=label(v,"",18,"ff877e")
 	var enter=func():
-		if password.text.sha256_text()=="74fca0325b5fdb3a34badb40a2581cfbd5344187e8d3432952a5abc0929c1246":cheat_options()
+		if password.text.sha256_text()=="73717a3a56032f6e8e429bc78c1434c00a3044cb26f8e7c983bce81bf4103a2a":cheat_options()
 		else:feedback.text="Incorrect password"
 	password.text_submitted.connect(func(_text):enter.call())
 	button(v,"Unlock",enter,true)
