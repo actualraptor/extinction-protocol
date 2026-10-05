@@ -1,25 +1,25 @@
 extends RefCounted
 ## Player-facing changes only.
-const VERSION="0.11.5"
-const TITLE="Relics in Stone"
+const VERSION="0.11.6"
+const TITLE="Earth Awakens"
 const ENTRIES=[
  {
-  "icon": "prism",
+  "icon": "map",
   "category": "relic",
-  "title": "POWER DESERVES A BETTER FRAME",
-  "body": "Every rarity now has its own detailed painted card. Common is fossil stone and bone; Uncommon is emerald roots; Rare is silver and blue crystal; Epic is thorned bronze and violet arcane stone; Legendary burns with gold and fire; Artifact breaks into prismatic cosmic crystal."
+  "title": "FEEL THE IMPACT",
+  "body": "Kael slams a crater into the ground, sending staggered fracture fronts and lifted debris outward. Dirt, ice and stone each respond to the blow."
  },
  {
-  "icon": "lens",
+  "icon": "map",
   "category": "relic",
-  "title": "YOUR REWARD TAKES THE SPOTLIGHT",
-  "body": "Larger item artwork, engraved title plaques and clear stat panels make each offer easier to read. The cards keep their proportions across screen sizes, including long upgrade descriptions. Your functional tags and affected weapons remain visible."
+  "title": "THE EARTH BREAKS OPEN",
+  "body": "World Breaker ignites brighter fissures. Earth Shaker adds broader glowing cracks and brilliant cores while preserving Kael's slam animation."
  },
  {
-  "icon": "wrap",
+  "icon": "map",
   "category": "relic",
-  "title": "CHOOSE. OR BANISH.",
-  "body": "Take and Banish now sit inside the card artwork. Banish has a compact dedicated position beside the bottom ornament. Rarity changes the whole card, while your actual rewards and upgrade values remain unchanged."
+  "title": "POWER AT ANY SPEED",
+  "body": "Wind-up and shock fronts compress with attack speed. Visual overlap stays bounded while damage waves complete independently."
  }
 ]
 static func releases():

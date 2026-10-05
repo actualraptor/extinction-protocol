@@ -62,7 +62,9 @@ var progress_path = "user://progress.json"
 
 func _ready():
 	# Package smoke checks never touch a player's real progression.
-	if "--verify-package" in OS.get_cmdline_user_args():
+	if "--slam-test" in OS.get_cmdline_user_args():
+		progress_path=OS.get_executable_path().get_base_dir().path_join("slam-test-profile.json")
+	elif "--verify-package" in OS.get_cmdline_user_args():
 		progress_path=OS.get_executable_path().get_base_dir().path_join("verification-profile.json")
 	elif "--capture" in OS.get_cmdline_user_args():
 		progress_path="res://build/capture-profile.json"
@@ -115,6 +117,13 @@ func _ready():
 		if item is Control and not item is ColorRect and item != xp_bar and item.get_script()!=preload("res://scripts/player_health.gd") and item.get_script()!=preload("res://scripts/navigation.gd"):
 			hud_layout.append({"node":item,"position":item.position})
 	main_menu()
+	if "--slam-test" in OS.get_cmdline_user_args():
+		var lab=preload("res://scripts/kael_slam_lab.gd").new();lab.game=self;add_child(lab)
+		if "--verify-slam-test" in OS.get_cmdline_user_args():
+			await get_tree().create_timer(3).timeout
+			await RenderingServer.frame_post_draw
+			get_viewport().get_texture().get_image().save_png(OS.get_executable_path().get_base_dir().path_join("slam-test-preview.png"))
+			audio.shutdown();survivor_voice.stop();release_run();get_tree().quit()
 	if "--verify-package" in OS.get_cmdline_user_args():
 		selected = 1 if "--verify-kael" in OS.get_cmdline_user_args() else 0 if "--verify-voss" in OS.get_cmdline_user_args() else 2
 		if "--verify-original" in OS.get_cmdline_user_args():

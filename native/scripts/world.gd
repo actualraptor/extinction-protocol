@@ -39,6 +39,10 @@ func _ready():
 	ground_layer.world = self
 	ground_layer.z_index = -2
 	add_child(ground_layer)
+	var kael_ground=preload("res://scripts/kael_ground_fracture.gd").new()
+	kael_ground.world=self
+	kael_ground.z_index=-1
+	add_child(kael_ground)
 	for r in JSON.parse_string(FileAccess.get_file_as_string("res://assets/monster-regions.json"))[0]: monster_regions.append(Rect2(r[0],r[1],r[2],r[3]))
 	for r in JSON.parse_string(FileAccess.get_file_as_string("res://assets/frontier-regions.json")): frontier_regions.append(Rect2(r[0],r[1],r[2],r[3]))
 	var swarm = preload("res://scripts/swarm_renderer.gd").new()
@@ -125,6 +129,15 @@ func fx(kind,p,color,size):
 			numbers.append({"p":p,"color":color,"text":str(int(size)),"tier":tier,"life":duration,"max":duration,"sway":sin(p.x*.071+p.y*.093)})
 		return
 	var life = 0.10 if kind in ["muzzle","crit"] else 1.15 if kind in ["level","evolve","victory"] else 0.52
+	if kind.begins_with("kael_slam_") or kind.begins_with("kael_crater_"):
+		life=clampf(float(kind.get_slice("_",5))*.001,.10,.46)
+		# Retire only old visual fronts; all queued damage bands still execute.
+		var count=0;var oldest=-1
+		for i in range(effects.size()):
+			if effects[i].kind.begins_with("kael_"):
+				count+=1
+				if oldest<0:oldest=i
+		if count>=16 and oldest>=0:effects.remove_at(oldest)
 	if effects.size()<160: effects.append({"kind":kind,"p":p,"color":color,"size":size,"life":life,"max":life})
 	if kind in ["level","evolve","victory","hurt","impact"]:
 		shake = maxf(shake,18 if kind=="victory" else 8 if kind=="hurt" else 4)
