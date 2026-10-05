@@ -13,6 +13,7 @@ class Harness extends RefCounted:
  func can_take_buff(id):return passives.has(id) or augments.has(id) or passives.size()+augments.size()<8
  func log_event(kind,data):events.append({"kind":kind,"data":data})
  func open_choices(_relic):cache_calls+=1;choosing=true
+ func spawn_enemy(_elite,_at,_kind,_announce):return {"dead":false,"p":_at}
 var checks=0
 var failures=0
 func check(ok,text):
@@ -62,4 +63,15 @@ func _initialize():
  g.depth=1;markers=preload("res://scripts/discoveries.gd").landmarks(g)
  check(markers.size()==1 and markers[0].id=="mara","Changing depth uses that depth's curated signals")
  g.stage={"signals":[]};check(preload("res://scripts/discoveries.gd").landmarks(g).is_empty(),"No fallback duplicate mapless signals")
+ g=Harness.new();g.stage={"caches":[{"id":"challenge","name":"Cursed Reliquary","p":Vector2(6000,0),"encounter":"ambush","guards":8}]};Objects.setup(g)
+ g.pos=g.stage_objects[0].p;Objects.update(g)
+ item=g.stage_objects[0]
+ check(item.started and item.guards.size()==8 and g.cache_calls==0,"Ambush starts a bounded pack before reward")
+ Objects.update(g);check(item.guards.size()==8,"Ambush cannot continuously spawn more guardians")
+ for guardian in item.guards:guardian.dead=true
+ Objects.update(g);check(item.collected and g.cache_calls==1,"Defeated guardians unlock the reward once")
+ g=Harness.new();g.stage={"caches":[{"id":"forge","name":"Ancient Forge","p":Vector2(6000,0),"reward":"forge"}]};g.weapons.club.level=9;Objects.setup(g);g.pos=g.stage_objects[0].p;Objects.update(g)
+ check(g.weapons.club.level==10 and g.cache_calls==0,"Forge advances unfinished weapon to evolution readiness without random chest")
+ g.collected_stage_objects.clear();Objects.setup(g);Objects.update(g)
+ check(g.weapons.club.level==10 and g.amber==40,"Completed arsenal gets amber instead of a wasted forge")
  print("STAGE OBJECTS / %s checks / %s failures"%[checks,failures]);quit(1 if failures else 0)

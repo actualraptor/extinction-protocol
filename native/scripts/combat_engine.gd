@@ -1,14 +1,20 @@
 extends RefCounted
 const Rules = preload("res://scripts/combat_rules.gd")
 const Chain = preload("res://scripts/chain_system.gd")
+const Starter = preload("res://scripts/starter_attack.gd")
+const Slam = preload("res://scripts/kael_slam.gd")
 
 static func update(g,dt):
+	Slam.update(g)
+	Starter.update(g)
 	var pending = g.volleys
 	g.volleys = []
 	for volley in pending:
 		volley.wait -= dt
 		if volley.wait<=0:
-			if g.weapons.has(volley.id): g.shoot(volley.id,g.pos,volley.dir,volley.power,volley.velocity,volley.life,volley.pierce)
+			if g.weapons.has(volley.id):
+				if volley.get("starter",false):Starter.volley(g,volley)
+				else:g.shoot(volley.id,g.pos,volley.dir,volley.power,volley.velocity,volley.life,volley.pierce)
 		else: g.volleys.append(volley)
 	if g.weapons.has("bastion"):
 		g.relic_state.bastion_cd = g.relic_state.get("bastion_cd",0.0)-dt
@@ -29,8 +35,11 @@ static func update(g,dt):
 		w.casts = w.get("casts",0)+1
 		g.ledger.cast(id,g.time)
 		g.Relics.on_cast(g,d,w.casts,s)
-		g.sound.emit(id)
+		if not Slam.applies(g,id) and not Starter.applies(g,id):g.sound.emit(id)
 		var aim = (target.p-g.pos).normalized() if target!=null else Vector2(g.facing,0)
+		if Starter.applies(g,id):
+			Starter.start(g,id,aim,s)
+			continue
 		if d.has("secondary") and target!=null:
 			var extra = d.secondary
 			for j in range(extra.count):
@@ -48,6 +57,9 @@ static func update(g,dt):
 					if j==0: g.shoot(id,g.pos,aim.rotated(spread),s.power,s.velocity,s.lifetime,pierce)
 					elif g.volleys.size()<80: g.volleys.append({"wait":j*d.projectile_interval,"id":id,"dir":aim.rotated(spread),"power":s.power,"velocity":s.velocity,"life":s.lifetime,"pierce":pierce})
 			"melee":
+				if Slam.applies(g,id):
+					Slam.start(g,id,aim,s)
+					continue
 				if w.evolved and "SWEEP" in d.tags: s.arc = TAU
 				melee(g,id,g.pos,aim,s)
 				for i in range(s.repeat):
@@ -80,10 +92,15 @@ static func update(g,dt):
 			"utility":
 				g.buffs["freeze" if w.level>=7 else "slow"] = 2+s.duration+w.level*0.15+(2 if w.evolved else 0)
 				g.effect.emit("level",g.pos,Color(d.color),350)
-	for echo in g.echoes:
+	var pending_echoes=g.echoes
+	g.echoes=[]
+	for echo in pending_echoes:
 		echo.wait -= dt
-		if echo.wait<=0: melee(g,echo.id,g.pos,echo.aim,echo.stats)
-	g.echoes = g.echoes.filter(func(e):return e.wait>0)
+		if echo.wait<=0 and g.weapons.has(echo.id):
+			if echo.has("radial"):Slam.pulse(g,echo.radial,echo.band)
+			elif echo.get("slam",false):Slam.impact(g,echo.id,echo.aim,echo.stats,true)
+			else:melee(g,echo.id,g.pos,echo.aim,echo.stats)
+		elif echo.wait>0 and g.weapons.has(echo.id) and g.echoes.size()<96:g.echoes.append(echo)
 	for zone in g.zones:
 		var active_step = maxf(0.0,dt-maxf(0.0,zone.wait))
 		zone.wait -= dt

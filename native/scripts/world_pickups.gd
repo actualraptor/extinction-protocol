@@ -2,7 +2,7 @@ extends RefCounted
 const DEFINITIONS = {
 	"amber":{"name":"AMBER CACHE","desc":"+8 amber","duration":0.0,"icon":7,"color":"ffc76e"},
 	"freeze":{"name":"TIME FRACTURE","desc":"Ecosystem frozen for 6s. Bosses resist.","duration":6.0,"icon":0,"color":"91eaff"},
-	"magnet":{"name":"GRAVITY WELL","desc":"All experience gems are coming to you.","duration":0.0,"icon":1,"color":"81ffd0"},
+	"magnet":{"name":"GRAVITY WELL","desc":"Draw in all experience, including new drops, for 5 seconds.","duration":5.0,"icon":1,"color":"81ffd0"},
 	"heal":{"name":"SECOND CHANCE","desc":"35% maximum health restored.","duration":0.0,"icon":2,"color":"ff819a"},
 	"nuke":{"name":"LOCAL EXTINCTION","desc":"Lesser creatures erased. Bosses endure.","duration":0.0,"icon":3,"color":"ffb36f"},
 	"frenzy":{"name":"BLOOD RUSH","desc":"65% faster attacks for 10s.","duration":10.0,"icon":4,"color":"ff8073"},

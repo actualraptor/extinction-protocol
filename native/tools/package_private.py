@@ -12,6 +12,10 @@ common={
  'SourceSans3-OFL.txt':native/'assets/fonts/SourceSans3-OFL.txt',
  'PROVENANCE.md':native/'PROVENANCE-0.8.md',
 }
+if (native/f'PROVENANCE-{v}.md').exists():
+ common['PROVENANCE-THIS-UPDATE.md']=native/f'PROVENANCE-{v}.md'
+elif (native/f'PROVENANCE-{v.split(".")[0]}.{v.split(".")[1]}.md').exists():
+ common['PROVENANCE-THIS-UPDATE.md']=native/f'PROVENANCE-{v.split(".")[0]}.{v.split(".")[1]}.md'
 for platform,exe in [('windows','Extinction Protocol.exe'),('linux','Extinction Protocol.x86_64')]:
  folder=native/'build'/f'release-{v}{"-linux" if platform=="linux" else ""}'
  assert (folder/exe).is_file()

@@ -1,0 +1,244 @@
+{
+  "standing_body_height": 68,
+  "source_body_height": 380,
+  "pixel_scale": 0.17894736842105263,
+  "impact_progress": 0.62,
+  "impact_offset": [
+    29,
+    5
+  ],
+  "variants": {
+    "normal": [
+      {
+        "pose": "anticipation",
+        "file": "res://assets/kael-slam-0111/normal/00-anticipation.png",
+        "anchor": [
+          182,
+          419
+        ],
+        "size": [
+          366,
+          429
+        ],
+        "source_bounds": [
+          103,
+          98,
+          469,
+          527
+        ],
+        "phase_from": 0.0
+      },
+      {
+        "pose": "lift",
+        "file": "res://assets/kael-slam-0111/normal/01-lift.png",
+        "anchor": [
+          236,
+          498
+        ],
+        "size": [
+          407,
+          508
+        ],
+        "source_bounds": [
+          555,
+          20,
+          962,
+          528
+        ],
+        "phase_from": 0.12
+      },
+      {
+        "pose": "overhead",
+        "file": "res://assets/kael-slam-0111/normal/02-overhead.png",
+        "anchor": [
+          212,
+          518
+        ],
+        "size": [
+          378,
+          529
+        ],
+        "source_bounds": [
+          1084,
+          0,
+          1462,
+          529
+        ],
+        "phase_from": 0.3
+      },
+      {
+        "pose": "downstroke",
+        "file": "res://assets/kael-slam-0111/normal/03-downstroke.png",
+        "anchor": [
+          178,
+          420
+        ],
+        "size": [
+          470,
+          434
+        ],
+        "source_bounds": [
+          80,
+          547,
+          550,
+          981
+        ],
+        "phase_from": 0.5
+      },
+      {
+        "pose": "impact",
+        "file": "res://assets/kael-slam-0111/normal/04-impact.png",
+        "anchor": [
+          174,
+          350
+        ],
+        "size": [
+          432,
+          395
+        ],
+        "source_bounds": [
+          585,
+          616,
+          1017,
+          1011
+        ],
+        "phase_from": 0.62
+      },
+      {
+        "pose": "recovery",
+        "file": "res://assets/kael-slam-0111/normal/05-recovery.png",
+        "anchor": [
+          169,
+          413
+        ],
+        "size": [
+          396,
+          436
+        ],
+        "source_bounds": [
+          1123,
+          555,
+          1519,
+          991
+        ],
+        "phase_from": 0.8
+      }
+    ],
+    "halloween": [
+      {
+        "pose": "anticipation",
+        "file": "res://assets/kael-slam-0111/halloween/00-anticipation.png",
+        "anchor": [
+          197,
+          437
+        ],
+        "size": [
+          382,
+          450
+        ],
+        "source_bounds": [
+          88,
+          80,
+          470,
+          530
+        ],
+        "phase_from": 0.0
+      },
+      {
+        "pose": "lift",
+        "file": "res://assets/kael-slam-0111/halloween/01-lift.png",
+        "anchor": [
+          237,
+          518
+        ],
+        "size": [
+          412,
+          529
+        ],
+        "source_bounds": [
+          554,
+          0,
+          966,
+          529
+        ],
+        "phase_from": 0.12
+      },
+      {
+        "pose": "overhead",
+        "file": "res://assets/kael-slam-0111/halloween/02-overhead.png",
+        "anchor": [
+          214,
+          518
+        ],
+        "size": [
+          381,
+          530
+        ],
+        "source_bounds": [
+          1082,
+          0,
+          1463,
+          530
+        ],
+        "phase_from": 0.3
+      },
+      {
+        "pose": "downstroke",
+        "file": "res://assets/kael-slam-0111/halloween/03-downstroke.png",
+        "anchor": [
+          180,
+          422
+        ],
+        "size": [
+          487,
+          442
+        ],
+        "source_bounds": [
+          78,
+          545,
+          565,
+          987
+        ],
+        "phase_from": 0.5
+      },
+      {
+        "pose": "impact",
+        "file": "res://assets/kael-slam-0111/halloween/04-impact.png",
+        "anchor": [
+          175,
+          350
+        ],
+        "size": [
+          446,
+          405
+        ],
+        "source_bounds": [
+          584,
+          616,
+          1030,
+          1021
+        ],
+        "phase_from": 0.62
+      },
+      {
+        "pose": "recovery",
+        "file": "res://assets/kael-slam-0111/halloween/05-recovery.png",
+        "anchor": [
+          171,
+          411
+        ],
+        "size": [
+          415,
+          446
+        ],
+        "source_bounds": [
+          1121,
+          557,
+          1536,
+          1003
+        ],
+        "phase_from": 0.8
+      }
+    ]
+  }
+}

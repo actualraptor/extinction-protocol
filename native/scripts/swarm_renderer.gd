@@ -4,6 +4,8 @@ extends MultiMeshInstance2D
 var world
 var extra = false
 var frontier = false
+var seasonal_active = false
+var seasonal_regions = []
 var buffer = PackedFloat32Array()
 const CAPACITY = 2400
 func _ready():
@@ -29,15 +31,34 @@ func _ready():
 		shader.set_shader_parameter("regions",regions)
 	material = shader
 
+func _apply_seasonal(enabled: bool):
+	seasonal_active = enabled
+	if enabled:
+		var theme = preload("res://scripts/seasonal_theme.gd")
+		var group = 2 if frontier else 1 if extra else 0
+		texture = theme.texture_for(group)
+		seasonal_regions = theme.regions_for(group)
+	else:
+		texture = world.frontier_sheet if frontier else world.monster_sheet if extra else world.atlas
+	material.set_shader_parameter("custom_regions",enabled or extra or frontier)
+	if enabled or extra or frontier:
+		var regions = PackedVector4Array()
+		var source = seasonal_regions if enabled else world.frontier_regions if frontier else world.monster_regions
+		for r in source:
+			regions.append(Vector4(r.position.x/texture.get_width(),r.position.y/texture.get_height(),r.size.x/texture.get_width(),r.size.y/texture.get_height()))
+		while regions.size()<9: regions.append(Vector4.ZERO)
+		material.set_shader_parameter("regions",regions)
+
 func _process(dt):
 	var s = world.sim
 	if s==null:
 		multimesh.visible_instance_count = 0
 		return
+	if seasonal_active != s.halloween: _apply_seasonal(s.halloween)
 	var count = 0
 	var frozen = s.buffs.get("freeze",0)>0
 	for e in s.enemies:
-		if e.dead or e.boss or e.anchor or e.elite or e.get("breakable",false): continue
+		if e.dead or e.boss or e.anchor or e.elite or e.get("breakable",false) or e.get("boss_prop",false): continue
 		if frontier:
 			if e.kind<14: continue
 		elif e.kind>=14 or (e.kind>=5)!=extra: continue
@@ -48,8 +69,8 @@ func _process(dt):
 		var size_value = e.size*3
 		var index = e.kind-14 if frontier else e.kind-5 if extra else 3+e.kind
 		var aspect = Vector2.ONE
-		if extra or frontier:
-			var dimensions = (world.frontier_regions if frontier else world.monster_regions)[index].size
+		if extra or frontier or seasonal_active:
+			var dimensions = (seasonal_regions if seasonal_active else world.frontier_regions if frontier else world.monster_regions)[index].size
 			aspect = dimensions/maxf(dimensions.x,dimensions.y)
 		var tint = Color(1.8,1.8,1.8) if e.flash>0 else Color("a2c3ff") if frozen or e.slow>0 or e.get("frozen",0)>0 else Color("eabcff") if e.mutated else Color.WHITE
 		var offset = count*16

@@ -59,7 +59,7 @@ func _initialize():
      check(g.daily_loop==1 and g.depth==0 and g.boss_stage==0 and ending.is_empty(),"Daily loops without ending")
      check(not g.explored[0].has(Vector2i(99,99)) and g.breakable_cells.is_empty(),"New Daily map resets exploration and breakables")
      g.time=g.next_boss;g.transition_time=0;g.tick(.01,Vector2.ZERO)
-     check(g.boss!=null and g.boss.max_hp==18000,"Next Daily circuit schedules stronger boss")
+     check(g.boss!=null and g.boss.max_hp==180000,"Next Daily circuit schedules stronger boss")
  var g=game();g.spawn_boss(1);g.boss.hp=1;g.build_grid()
  g.hostile_shots.append({"p":g.pos,"v":Vector2.ZERO,"life":1,"damage":999})
  g.brood_queue.append(g.pos)

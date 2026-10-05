@@ -1,6 +1,7 @@
 extends Node2D
 
 const C = preload("res://scripts/catalog.gd")
+const Seasonal = preload("res://scripts/seasonal_theme.gd")
 var sim = null
 var atlas = preload("res://assets/characters-v2.png")
 var monster_sheet = preload("res://assets/monsters-04.png")
@@ -14,6 +15,9 @@ var pickup_sheet = preload("res://assets/pickups.png")
 var feature_sheet = preload("res://assets/terrain-features.png")
 var clock = 0.0
 var next_crit_flash = 0.0
+var crit_bursts = []
+const MAX_CRIT_BURSTS = 24
+const MAX_DAMAGE_NUMBERS = 65
 var shake = 0.0
 var shake_enabled = true
 var flashes = 0.0
@@ -108,9 +112,17 @@ func screen(p): return p-(camera_pos if sim != null else Vector2.ZERO)+Vector2(7
 func fx(kind,p,color,size):
 	if kind=="crit":
 		if clock<next_crit_flash: return
-		next_crit_flash=clock+0.025
+		next_crit_flash=clock+0.045
+		var tier=maxi(1,int(size))
+		if crit_bursts.size()<MAX_CRIT_BURSTS:
+			var duration=.18+mini(tier,7)*.025
+			crit_bursts.append({"p":p,"tier":tier,"life":duration,"max":duration,"seed":crit_bursts.size()*1.37+clock})
+		return
 	if kind=="number" or kind.begins_with("crit_number_"):
-		if numbers.size()<65: numbers.append({"p":p,"color":color,"text":str(int(size))+("!".repeat(mini(3,int(kind.get_slice("_",2)))) if kind.begins_with("crit_number_") else ""),"life":0.65})
+		var tier=int(kind.get_slice("_",2)) if kind.begins_with("crit_number_") else 0
+		if numbers.size()<MAX_DAMAGE_NUMBERS:
+			var duration=.75 if tier>1 else .65
+			numbers.append({"p":p,"color":color,"text":str(int(size)),"tier":tier,"life":duration,"max":duration,"sway":sin(p.x*.071+p.y*.093)})
 		return
 	var life = 0.10 if kind in ["muzzle","crit"] else 1.15 if kind in ["level","evolve","victory"] else 0.52
 	if effects.size()<160: effects.append({"kind":kind,"p":p,"color":color,"size":size,"life":life,"max":life})
@@ -142,6 +154,8 @@ func _process(dt):
 	camera_offset = Vector2(randf_range(-shake,shake),randf_range(-shake,shake)) if shake_enabled else Vector2.ZERO
 	for e in effects: e.life -= dt
 	effects = effects.filter(func(e):return e.life>0)
+	for burst in crit_bursts: burst.life-=dt
+	crit_bursts=crit_bursts.filter(func(burst):return burst.life>0)
 	for p in particles:
 		p.life -= dt
 		p.p += p.v*dt
@@ -149,7 +163,7 @@ func _process(dt):
 	particles = particles.filter(func(p):return p.life>0)
 	for n in numbers:
 		n.life -= dt
-		n.p.y -= dt*42
+		n.p.y -= dt*(42+mini(n.get("tier",0),7)*5)
 	numbers = numbers.filter(func(n):return n.life>0)
 	if vignette != null:
 		vignette.set_shader_parameter("danger",0.0 if sim==null else maxf(0,1-sim.hp/sim.max_hp*2))
@@ -161,8 +175,12 @@ func sprite(index,p,size,flip = false,tint = Color.WHITE,angle = 0.0,target = nu
 	if target==null: target = self
 	var cell_size = Vector2(atlas.get_size())/3.0
 	var source = Rect2(Vector2(index%3,floori(index/3.0))*cell_size,cell_size)
+	var sheet = atlas
+	if sim!=null and sim.halloween and index>=3 and index!=8:
+		sheet=Seasonal.texture_for(0)
+		source=Seasonal.regions_for(0)[index]
 	target.draw_set_transform(p,angle,Vector2(-1 if flip else 1,1))
-	target.draw_texture_rect_region(atlas,Rect2(Vector2(-size/2,-size*0.75),Vector2(size,size)),source,tint)
+	target.draw_texture_rect_region(sheet,Rect2(Vector2(-size/2,-size*0.75),Vector2(size,size)),source,tint)
 	target.draw_set_transform(Vector2.ZERO)
 
 func glow(p,radius,color):
@@ -239,6 +257,9 @@ func _draw():
 			draw_texture_rect(preload("res://scripts/atlas_icons.gd").frontier(landmark.frontier_art),Rect2(at-Vector2.ONE*size_value*0.5,Vector2.ONE*size_value),false,Color(0.75,0.82,0.8))
 		else: prop(landmark.get("art",6),at,size_value,Color(0.75,0.82,0.8))
 		if landmark.p.distance_to(sim.pos)<500: draw_string(font,at+Vector2(-110,size_value*0.4),landmark.name,HORIZONTAL_ALIGNMENT_CENTER,220,14,Color("99aaa5"))
+		if sim.halloween:
+			Seasonal.draw_prop(self,at+Vector2(95,35),0,55,sim.time)
+			Seasonal.draw_prop(self,at+Vector2(-85,20),1,37,sim.time)
 	for chest in sim.relic_chests: draw_cache(screen(chest))
 	for item in sim.pickups:
 		var d = sim.Pickups.DEFINITIONS[item.id]
@@ -263,12 +284,13 @@ func _draw():
 		if not visible_rect().grow(30).has_point(p): continue
 		prop(3,p,17 if g.value<10 else 28)
 	for e in sim.enemies:
-		if e.dead: continue
+		if e.dead or e.get("boss_prop",false): continue
 		if e.get("breakable",false):
 			var at=screen(e.p)
 			if visible_rect().grow(80).has_point(at):
 				draw_texture_rect(preload("res://scripts/atlas_icons.gd").field(e.prop_art+1),Rect2(at-Vector2(30,47),Vector2(60,60)),false,Color(1.7,1.7,1.7) if e.flash>0 else Color.WHITE)
 			continue
+		if e.boss and sim.boss_stage<3:continue
 		if not e.boss and not e.elite and not e.anchor: continue
 		var p = screen(e.p)
 		if not visible_rect().grow(220).has_point(p): continue
@@ -287,9 +309,14 @@ func _draw():
 			var tint = Color(1.8,1.8,1.8) if e.flash>0 else Color("a2c3ff") if e.slow>0 or e.get("frozen",0)>0 or sim.buffs.get("freeze",0)>0 else Color("eabcff") if e.mutated else Color.WHITE
 			if e.kind>=5:
 				var region = frontier_regions[e.kind-14] if e.kind>=14 else monster_regions[e.kind-5]
+				var sheet=frontier_sheet if e.kind>=14 else monster_sheet
+				if sim.halloween:
+					var group=2 if e.kind>=14 else 1
+					sheet=Seasonal.texture_for(group)
+					region=Seasonal.regions_for(group)[e.kind-14 if e.kind>=14 else e.kind-5]
 				var dimensions = region.size/maxf(region.size.x,region.size.y)*size
 				draw_set_transform(p,0,Vector2(-1 if e.p.x>sim.pos.x else 1,1))
-				draw_texture_rect_region(frontier_sheet if e.kind>=14 else monster_sheet,Rect2(Vector2(-dimensions.x/2,-dimensions.y*0.75),dimensions),region,tint)
+				draw_texture_rect_region(sheet,Rect2(Vector2(-dimensions.x/2,-dimensions.y*0.75),dimensions),region,tint)
 				draw_set_transform(Vector2.ZERO)
 			else: sprite(3+e.kind,p+Vector2(0,0 if sim.rooted(e) else sin(clock*9+e.uid)*2),size,e.p.x>sim.pos.x,tint,0 if sim.rooted(e) else sin(clock*7+e.uid)*0.035)
 			if e.elite: draw_arc(p,e.size+8,0,TAU,32,Color("fca25c"),2,true)

@@ -1,0 +1,43 @@
+extends SceneTree
+const E=preload("res://scripts/expedition.gd")
+const Copy=preload("res://scripts/upgrade_copy.gd")
+const Store=preload("res://scripts/profile_store.gd")
+const Campaign=preload("res://scripts/campaign.gd")
+var failures=0
+var checks=0
+func check(ok,message):
+ checks+=1
+ if not ok:failures+=1;printerr("FAIL / ",message)
+func _initialize():
+ var g=E.new();g.setup(2,"expedition",{},99)
+ check(Copy.tags(g,{"type":"weapon","id":"lightning"}).contains("Chain"),"Stormbinder tag")
+ check(Copy.tags(g,{"type":"weapon","id":"frost"}).contains("Projectile"),"Winterglass projectile tag")
+ g.open_choices(false)
+ var selected=g.options[0].duplicate()
+ var rerolls=g.rerolls
+ check(g.banish_choice(0),"Banish succeeds")
+ check(g.choosing and g.options.size()>0,"Banish keeps level-up open")
+ check(g.rerolls==rerolls and g.banishes==0,"Banish uses its own budget")
+ check(not g.upgrade_pool().any(func(o):return o.type==selected.type and o.id==selected.id),"Banish removes future offers")
+ check(not g.banish_choice(0),"Cannot banish twice")
+ g=E.new();g.setup(1,"daily",{},99);g.open_choices(false)
+ check(not g.banish_choice(0),"Daily stays pure RNG")
+ var profile=Store.migrate({"version":1,"amber":100,"unlocks":["vesper"],"discoveries":["vesper"],"settings":{"halloween":true},"campaign":{"weapon_damage":{"club":555},"survivor_runs":{"KAEL":2},"tracked_goal":"ballistics"}})
+ check(Store.validate(profile),"New counters validate")
+ check(profile.unlocks.has("vesper") and profile.settings.halloween and profile.campaign.weapon_damage.club==555,"Progression and toggle survive migration")
+ check(Campaign.tracked_goal(profile).id=="ballistics","Tracked goal survives migration")
+ check(Store.defaults().settings.halloween,"Halloween defaults on")
+ var opted_out=Store.migrate({"version":1,"settings":{"halloween":false}})
+ check(not opted_out.settings.halloween,"Explicit opt-out persists")
+ g=E.new();g.setup(1,"expedition",{},45)
+ var speech=[];g.voice_event.connect(func(event):speech.append(event))
+ g.xp=g.xp_goal;g.tick(.01,Vector2.ZERO)
+ check(speech==["level_up"],"Natural level triggers speech once")
+ g.reroll_choices()
+ check(speech==["level_up"],"Reroll does not spam level speech")
+ g.choosing=false;g.hp=g.max_hp;g.invul=0;g.hurt(10,"Test")
+ check(speech.has("hurt"),"Actual health loss triggers hurt speech")
+ g.spawn_boss(1);g.kill(g.boss)
+ check(speech.has("boss_spawn") and speech.has("boss_killed"),"Boss lifecycle speech triggers")
+ print("HARVEST BUILD / ",checks," checks / ",failures," failures")
+ quit(1 if failures else 0)

@@ -2,6 +2,13 @@ extends RefCounted
 
 const C = preload("res://scripts/catalog.gd")
 const Rules = preload("res://scripts/combat_rules.gd")
+const BossEncounters = preload("res://scripts/boss_encounters.gd")
+const BossResistance = preload("res://scripts/boss_resistance.gd")
+const BuffRewards = preload("res://scripts/buff_rewards.gd")
+var halloween = false
+var banishes=1
+var banished={}
+signal voice_event(event)
 const Combat = preload("res://scripts/combat_engine.gd")
 const Pickups = preload("res://scripts/world_pickups.gd")
 const Relics = preload("res://scripts/relic_system.gd")
@@ -87,7 +94,11 @@ var invul = 0.0
 var depth = 0
 var weapons = {}
 var passives = {}
+var buff_stacks = {}
+var kael_attack = {}
+var starter_attack = {}
 var relics = []
+var relic_stacks = {}
 var enemies = []
 var shots = []
 var gems = []
@@ -144,6 +155,7 @@ var extinction_timeout = false
 var death_reason = "The ecosystem won."
 
 func setup(character, run_mode, research = {}, seed_value = 0, selected_map = "cradle"):
+	starter_attack.clear()
 	map_id = selected_map if Maps.DATA.has(selected_map) else "cradle"
 	terrain.layout = Maps.DATA[map_id].layout
 	hero = character
@@ -199,6 +211,7 @@ func log_event(type, data = {}):
 		event_log.append(entry)
 
 func rank_of(id): return passives.get(id,0)
+func buff_power(id): return BuffRewards.power(self,id)
 func content_allowed(category,id): return mode=="daily" or content_profile.is_empty() or Discoveries.allowed(content_profile,category,id)
 func configure_content(profile):
 	content_profile = profile.duplicate(true)
@@ -218,13 +231,14 @@ func update_exploration():
 			marker.found = true
 			discovered.append(marker.id)
 			amber += 20
+			Discoveries.field_reward(self,marker.id)
 			banner.emit("DISCOVERY / "+marker.name,"UNLOCKED / AVAILABLE IN FUTURE RUNS" if Discoveries.ENTRIES[marker.id].cost==0 else "RECORDED IN THE ARCHIVE / UNLOCK WITH AMBER BETWEEN RUNS")
 			sound.emit("loot")
 			effect.emit("evolve",marker.p,Color("83ddff"),220)
 			log_event("discovery",{"id":marker.id})
 			discovered_content.emit(marker.id)
-func area_scale(): return 1.0 + rank_of("area")*0.12
-func speed(): return stage.modifiers.get("player_speed",1.0)*C.HEROES[hero].speed*(1+rank_of("speed")*0.08)*(1+minf(0.15,(level-1)*0.005) if hero==3 else 1.0)
+func area_scale(): return 1.0 + buff_power("area")*0.12
+func speed(): return stage.modifiers.get("player_speed",1.0)*C.HEROES[hero].speed*(1+buff_power("speed")*0.08)*(1+minf(0.15,(level-1)*0.005) if hero==3 else 1.0)
 func trait_text():
 	match hero:
 		0: return "GUNSLINGER / +%s projectiles (one per 10 levels; max 3)"%mini(3,level/10)
@@ -233,13 +247,17 @@ func trait_text():
 		3: return "POLAR HUNTER / +%.1f%% movement (0.5%% per level; max 15%%)"%minf(15,(level-1)*0.5)
 	return "ASTRONOMER / +%.1f%% arcane attack speed (0.5%% per level; max 20%%)"%minf(20,(level-1)*0.5)
 static func crit_curve(raw):
-	return minf(raw,1.0)+clampf(raw-1.0,0,1)*0.65+clampf(raw-2.0,0,2)*0.4+maxf(0,raw-4)*0.25
-func crit_chance(): return crit_curve(C.HEROES[hero].crit+rank_of("crit")*0.07+research_ranks.get("critical",0)*0.02)
+	return maxf(0.0,raw)
+func crit_chance(): return crit_curve(C.HEROES[hero].crit+buff_power("crit")*0.07+research_ranks.get("critical",0)*0.02)
 func roll_crit_tier(chance): return floori(chance)+int(rng.randf()<fposmod(chance,1.0))
+static func crit_color(tier):
+	if tier<=0:return Color.WHITE
+	if tier<=4:return Color(["ffe564","ff963f","f06bdf","69eaff"][tier-1])
+	return Color.from_hsv(fposmod((tier-5)*.137+.13,1.0),.45,1.0)
 func damage_scale(id):
 	var tags = C.WEAPONS.get(id,{}).get("tags",[])
 	var growth=1.0+minf(0.5,(level-1)*0.01) if hero==1 and "PHYSICAL" in tags else 1.0+minf(0.4,(level-1)*0.01) if hero==2 and "SPELL" in tags else 1.0
-	return growth*base_damage*(1+rank_of("damage")*0.14)*(1+Relics.modifiers(self).get("damage",0))*(1.2 if (hero==2 and "SPELL" in tags) or (hero==3 and "ICE" in tags) or (hero==4 and "ARCANE" in tags) else 1.0)*(1+relic_state.get("momentum",0.0)*Relics.modifiers(self).get("momentum_damage",0))
+	return growth*base_damage*(1+buff_power("damage")*0.14)*(1+Relics.modifiers(self).get("damage",0))*(1.2 if (hero==2 and "SPELL" in tags) or (hero==3 and "ICE" in tags) or (hero==4 and "ARCANE" in tags) else 1.0)*(1+relic_state.get("momentum",0.0)*Relics.modifiers(self).get("momentum_damage",0))
 func effective_damage(amount, health): return minf(maxf(amount,0),maxf(health,0))
 func rooted(e): return not e.boss and not e.anchor and (e.get("frozen",0)>0 or buffs.get("freeze",0)>0)
 func linger_pressure(): return maxf(0.0,linger-20.0) if portal!=null else 0.0
@@ -278,7 +296,7 @@ func tick(dt, direction):
 	invul = maxf(0,invul-dt)
 	combo_time = maxf(0,combo_time-dt)
 	if combo_time == 0: streak = 0
-	hp = minf(max_hp,hp+(rank_of("regen")*0.35+research_ranks.get("recovery",0)*0.15)*dt)
+	hp = minf(max_hp,hp+(buff_power("regen")*0.35+research_ranks.get("recovery",0)*0.15)*dt)
 	for key in relic_timers: relic_timers[key] = maxf(0,relic_timers[key]-dt)
 	director.update(self,dt)
 	var spawn_rate = 2.4+time/18.0 if time<120 else 3+time/14.0+depth*5
@@ -319,6 +337,7 @@ func tick(dt, direction):
 	if xp >= xp_goal and active and not choosing and mode != "safari":
 		xp -= xp_goal
 		level += 1
+		voice_event.emit("level_up")
 		xp_goal = 9+pow(level,1.45)*4.8
 		open_choices(false)
 
@@ -362,7 +381,7 @@ func update_enemies(dt):
 	crowd.build(enemies)
 	for e in enemies:
 		if e.dead or e.get("breakable",false): continue
-		if not e.boss and not e.anchor and e.p.distance_squared_to(pos)>pow(maxf(2400,spawn_view.length()*0.9),2):
+		if not e.boss and not e.anchor and not e.get("encounter_guard",false) and e.p.distance_squared_to(pos)>pow(maxf(2400,spawn_view.length()*0.9),2):
 			e.dead = true
 			continue
 		var step = dt
@@ -387,7 +406,7 @@ func update_enemies(dt):
 			if e.burn_tick <= 0:
 				e.burn_tick = 0.5
 				hit(e,e.get("burn_damage",8.0),e.get("burn_source","fire"),false,false)
-		if e.dead or e.anchor: continue
+		if e.dead or e.anchor or e.get("boss_prop",false): continue
 		if not e.boss and (buffs.get("freeze",0)>0 or e.frozen>0): continue
 		var delta = pos-e.p
 		var move = delta.normalized()
@@ -443,10 +462,20 @@ func update_enemies(dt):
 						e.spit_wait = 0.65
 						e.spit_dir = (pos-e.p).normalized()
 					else: add_hazard("circle",pos if role!="slam" else e.p,0,42 if role!="slam" else 85,1.65,0.3,12+depth*5)
+		if e.boss and boss_stage<3 and e.get("action","recover")=="recover" and e.get("reform",0)<=0:
+			# Recovery is a mobile pursuit, while committed tells stay anchored.
+			var speeds={"thorn":76.0,"basalt":58.0,"hunt":112.0,"aurora":88.0,"warden":66.0,"bloom":52.0}
+			if delta.length()>e.size+45:
+				var chase=terrain.direction(e.p,pos,e.uid)
+				e.p=terrain.move(e.p,chase*speeds.get(e.get("identity","thorn"),76.0)*(1.12 if phase==2 else 1.0)*step,32)
+				e.aim=chase
+			delta=pos-e.p
+		# Boss contact hurts the player, but never shoves the boss.
 		if delta.length()<e.size+15:
 			hurt(16+depth*8+(18 if e.elite else 0),"Overwhelmed by the horde")
-			if e.kind==2: e.p -= move*15
-			else: e.p = terrain.move(e.p,-move*15,10)
+			if not e.boss and not e.anchor and not e.get("boss_prop",false):
+				if e.kind==2: e.p -= move*15
+				else: e.p = terrain.move(e.p,-move*15,10)
 	enemies = enemies.filter(func(e): return not e.dead)
 	var hatchlings = brood_queue
 	brood_queue = []
@@ -460,6 +489,13 @@ func update_enemies(dt):
 func update_hostile_shots(dt):
 	for shot in hostile_shots:
 		shot.life -= dt
+		if shot.get("arc",false):
+			shot.p = shot.start.lerp(shot.target,clampf(1-shot.life/shot.flight,0,1))
+			if shot.life<=0:
+				BossEncounters.hazard(self,"circle",shot.target,0,55,0.1,0.25,shot.damage,shot.theme)
+				if shot.theme=="bloom" and boss!=null: BossEncounters.pod(self,shot.target,"growth",7.0)
+				sound.emit("impact_fire" if shot.theme=="basalt" else "miasma")
+			continue
 		var scale_value = 0.0 if buffs.get("freeze",0)>0 else 0.48 if buffs.get("slow",0)>0 else 1.0
 		var travel = shot.v*dt*scale_value
 		# Swept substeps provide wall cover and prevent tunnelling on slow frames.
@@ -471,7 +507,7 @@ func update_hostile_shots(dt):
 				shot.life = 0
 				break
 			if Geometry2D.get_closest_point_to_segment(pos,old,shot.p).distance_squared_to(pos)<21*21:
-				hurt(shot.damage,"Struck by venom spit")
+				hurt(shot.damage,shot.get("reason","Struck by venom spit"))
 				shot.life = 0
 				break
 	hostile_shots = hostile_shots.filter(func(s):return s.life>0)
@@ -613,7 +649,7 @@ func blast(p,radius,damage,id,hit_channel = "impact"):
 	effect.emit("blast_"+visual,p,Color(C.WEAPONS.get(id,{"color":"ffad68"}).color),radius)
 	for e in nearby(p,radius):
 		hit(e,damage,id,true,true,hit_channel)
-		if not e.boss and not e.anchor and not rooted(e) and "KNOCKBACK" in tags: e.p = terrain.move(e.p,(e.p-p).normalized()*35)
+		if not e.boss and not e.anchor and not e.get("boss_prop",false) and not rooted(e) and "KNOCKBACK" in tags: e.p = terrain.move(e.p,(e.p-p).normalized()*35)
 
 func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "impact"):
 	if not active or e.dead: return 0.0
@@ -635,13 +671,12 @@ func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "imp
 	if e.slow>0: amount *= 1+Relics.modifiers(self).get("chilled_damage",0)
 	if e.boss and boss_stage == 3:
 		if boss_time<3 or boss.get("reform",0)>0: return 0.0
-		if not anchors.is_empty(): amount *= 0.12
 	var damage_tags = C.WEAPONS.get(id,{}).get("tags",[])
 	if not e.boss and not e.anchor:
 		if e.get("role","")=="armor" and "PHYSICAL" in damage_tags: amount *= 0.8
 		for tag in Bestiary.DATA[e.kind].get("resists",{}):
 			if tag in damage_tags: amount *= Bestiary.DATA[e.kind].resists[tag]
-	var dealt = effective_damage(amount,e.hp)
+	var dealt = effective_damage(amount*BossResistance.multiplier(self,e),e.hp)
 	if e.boss and boss_stage==2 and phase==1:
 		dealt = minf(dealt,maxf(0,e.hp-e.max_hp*0.5))
 	if e.boss and boss_stage == 3 and phase<3:
@@ -695,15 +730,18 @@ func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "imp
 				hit(other,amount*Relics.modifiers(self).critical_chain,"relic",false)
 				break
 	if e.elite or e.boss or critical:
-		effect.emit("crit_number_%s"%crit_tier if critical else "number",e.p,Color("ffe2a2") if critical else Color.WHITE,dealt)
-		if critical: effect.emit("crit",e.p,Color("ffe2a2"),crit_tier)
+		effect.emit("crit_number_%s"%crit_tier if critical else "number",e.p,crit_color(crit_tier) if critical else Color.WHITE,dealt)
+		if critical: effect.emit("crit",e.p,crit_color(crit_tier),crit_tier)
 	if e.hp<=0: kill(e)
 	elif e.boss and boss_stage==2 and phase==1 and e.hp<=e.max_hp*0.5+0.1:
 		phase = 2
 		boss.reform = 1.8
 		boss_timer = 0
-		banner.emit("THE CARAPACE BREAKS","MOLTEN ARMOR / READ THE CROSSING LANES")
-		effect.emit("impact",boss.p,Color("ffb078"),250)
+		var phase_names={"basalt":["THE CARAPACE BREAKS","MOLTEN FISSURES / MORE FALLING ROCKS"],"aurora":["THE VEIL THINS","WATCH THE BREATH / FLANK THE SPECTER"],"bloom":["THE BLOOM AWAKENS","BREAK THE PODS / DENY THE BROOD"]}
+		var announcement=phase_names.get(boss.get("identity",""),["THE HUNT INTENSIFIES","WATCH THE NEXT WINDUP"])
+		banner.emit(announcement[0],announcement[1])
+		effect.emit("evolve",boss.p,Color(BossEncounters.COLORS.get(boss.get("identity",""),"ffb078")),250)
+		BossEncounters.begin(self,"recover",2.2)
 		sound.emit("boss")
 		log_event("boss-phase",{"stage":2,"phase":2,"hp":e.hp})
 	elif e.boss and boss_stage == 3 and phase<3 and e.hp<=e.max_hp*(0.67 if phase==1 else 0.34)+0.1:
@@ -717,6 +755,9 @@ func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "imp
 func kill(e):
 	if not active or e.dead: return
 	e.dead = true
+	if e.get("boss_prop",false):
+		BossEncounters.prop_destroyed(self,e)
+		return
 	if e.get("breakable",false):
 		Breakables.destroy(self,e)
 		return
@@ -752,6 +793,9 @@ func kill(e):
 				relic_chests.append(terrain.open_position(e.p))
 				if e.get("event_spawn",false): elite_chest_ready = time+35
 	if e.boss:
+		# One sweep of existing XP. This does not start a timed magnet.
+		for gem in gems: gem.magnet=true
+		voice_event.emit("boss_killed")
 		encounter_epoch += 1
 		hostile_shots.clear()
 		brood_queue.clear()
@@ -764,10 +808,11 @@ func kill(e):
 		amber += 75
 		score += 10000
 		if boss_stage == 3 and mode!="daily":
+			update_gems(1000000.0)
 			finish(true)
 			return
 		hazards.clear()
-		enemies.clear()
+		enemies=enemies.filter(func(other):return other.get("encounter_guard",false) and not other.dead)
 		grid.clear()
 		portal = terrain.open_position(e.p+Vector2(170,100))
 		linger = 0.0
@@ -804,6 +849,8 @@ func enter_portal():
 	zones.clear()
 	strikes.clear()
 	echoes.clear()
+	kael_attack.clear()
+	starter_attack.clear()
 	volleys.clear()
 	gems.clear()
 	pickups.clear()
@@ -837,7 +884,7 @@ func enter_portal():
 
 func add_gem(p,value):
 	if gems.size()<800:
-		gems.append({"p":p,"value":value,"magnet":false})
+		gems.append({"p":p,"value":value,"magnet":buffs.get("magnet",0)>0})
 		return
 	# Preserve a fresh drop at the kill location. Compact two older distant
 	# gems instead of silently sending new XP to an arbitrary off-screen gem.
@@ -859,15 +906,15 @@ func add_gem(p,value):
 		gems[0].value += value
 		return
 	gems[receiver].value += gems[donor].value
-	gems[donor] = {"p":p,"value":value,"magnet":false}
+	gems[donor] = {"p":p,"value":value,"magnet":buffs.get("magnet",0)>0}
 func update_gems(dt):
-	var radius = 95+rank_of("pickup")*35+research_ranks.get("magnet",0)*12
+	var radius = 95+buff_power("pickup")*35+research_ranks.get("magnet",0)*12
 	for gem in gems:
 		var distance = gem.p.distance_to(pos)
-		if distance<radius: gem.magnet = true
+		if distance<radius or buffs.get("magnet",0)>0: gem.magnet = true
 		if gem.magnet: gem.p = gem.p.move_toward(pos,(420+distance*3)*dt)
 		if gem.p.distance_to(pos)<20:
-			xp += gem.value*stage.modifiers.get("xp",1.0)*(1+research_ranks.get("growth",0)*0.03)*(1+rank_of("pickup")*0.08)*(1+Relics.modifiers(self).get("xp",0))*(2 if buffs.get("surge",0)>0 else 1)
+			xp += gem.value*stage.modifiers.get("xp",1.0)*(1+research_ranks.get("growth",0)*0.03)*(1+buff_power("pickup")*0.08)*(1+Relics.modifiers(self).get("xp",0))*(2 if buffs.get("surge",0)>0 else 1)
 			gem.value = 0
 	gems = gems.filter(func(g): return g.value>0)
 
@@ -905,6 +952,7 @@ func hurt(amount, reason, piercing = false):
 	log_event("hit",{"damage":amount,"hp":hp,"source":reason})
 	effect.emit("hurt",pos,Color("ff626e"),amount)
 	sound.emit("hit")
+	if hp>0:voice_event.emit("hurt")
 	if hp<=0 and revives>0:
 		revives-=1
 		hp=max_hp*0.5
@@ -928,7 +976,8 @@ func hazard_contains(h,p):
 	match h.kind:
 		"line":
 			var rotated = d.rotated(-h.angle)
-			return rotated.x>0 and rotated.x<1000 and absf(rotated.y)<h.radius
+			return rotated.x>0 and rotated.x<h.get("length",1000.0) and absf(rotated.y)<h.radius
+		"cone": return d.length()<h.radius and absf(Vector2.from_angle(h.angle).angle_to(d))<h.get("arc",1.25)*0.5
 		"ring": return absf(d.length()-h.radius)<20
 		_: return d.length()<h.radius
 
@@ -938,17 +987,18 @@ func update_hazards(dt):
 	var pending = hazards
 	hazards = []
 	for h in pending:
+		if h.has("source_uid") and not enemies.any(func(e):return e.uid==h.source_uid and not e.dead): continue
 		h.wait -= dt
 		if h.wait<=0:
 			if not h.fired:
 				h.fired = true
-				effect.emit("impact",h.p,Color("ff9b68"),h.radius)
+				effect.emit("blast_frost" if h.get("theme","") in ["hunt","aurora"] else "blast_miasma" if h.get("theme","")=="bloom" else "blast_orbital" if h.get("theme","")=="warden" else "blast_club" if h.get("theme","")=="thorn" else "impact",h.p,Color(BossEncounters.COLORS.get(h.get("theme",""),"ff9b68")),h.radius)
 				if h.kind == "friendly":
 					blast(h.p,h.radius,h.damage,h.id)
 					sound.emit("impact_fire")
-				else: sound.emit("club")
+				elif not h.get("marker_only",false): sound.emit("impact_frost" if h.get("theme","") in ["hunt","aurora"] else "miasma" if h.get("theme","")=="bloom" else "lightning" if h.get("theme","")=="warden" else "club")
 			h.life -= dt
-			if h.kind != "friendly" and hazard_contains(h,pos): hurt(h.damage,"Caught in an extinction strike")
+			if h.kind != "friendly" and not h.get("marker_only",false) and hazard_contains(h,pos): hurt(h.damage,h.get("reason","Caught in an extinction strike"))
 		# A killing impact may finish the encounter and clear its attacks.
 		if not active or epoch!=encounter_epoch: return
 		if h.life>0: hazards.append(h)
@@ -964,13 +1014,15 @@ func spawn_boss(stage):
 	terrain.arena = p
 	terrain.refresh = 0
 	next_uid += 1
-	var health = [9000.0,90000.0,6000000.0][stage-1]*pow(2.0,minf(daily_loop,25))
+	var health = [90000.0,900000.0,30000000.0][stage-1]*pow(2.0,minf(daily_loop,25))
 	boss = {"uid":next_uid,"p":p,"hp":health,"max_hp":health,"kind":8 if stage==3 else 11 if stage==2 else 1,"elite":false,"mutated":false,"boss":true,"anchor":false,"size":110.0 if stage==3 else 65.0,"speed":30.0,"flash":0.0,"slow":0.0,"burn":0.0,"burn_tick":0.0,"attack":0.0,"dead":false,"reform":0.0}
 	if stage<3 and map_id!="cradle": boss.kind=([14,15] if map_id=="frostbreak" else [16,17])[stage-1]
 	enemies.append(boss)
 	if stage==3: make_anchors()
+	else: BossEncounters.setup(self)
 	banner.emit(Maps.boss_name(map_id,stage),"APEX ENCOUNTER" if stage<3 else "BREAK THE ORBITAL ANCHORS / EXPOSE THE CORE")
 	sound.emit("boss")
+	voice_event.emit("boss_spawn")
 	log_event("boss-arrived",{"stage":stage})
 
 func make_anchors():
@@ -991,8 +1043,9 @@ func update_boss(dt):
 	if buffs.get("freeze",0)>0 or buffs.get("slow",0)>0: dt *= 0.7
 	boss.reform = maxf(0,boss.reform-dt)
 	if boss_stage<3:
-		boss.p = boss.p.move_toward(pos,25*dt)
 		phase = 2 if boss.hp <= boss.max_hp*0.5 else 1
+		BossEncounters.update(self,dt)
+		return
 	else:
 		if anchors.is_empty():
 			core_time -= dt
@@ -1014,48 +1067,22 @@ func update_boss(dt):
 	boss_timer = (3.3 if phase==1 else 2.65 if phase==2 else 2.15)*(0.68 if boss_time>150 else 1.0)
 	var damage = 28+boss_stage*14+phase*6
 	var aim = (pos-boss.p).angle()
-	if boss_stage<3 and map_id=="frostbreak":
-		boss_timer=4.5
-		if boss_pattern%2==0:
-			for side in [-1,0,1]: add_hazard("line",boss.p+Vector2.from_angle(aim).orthogonal()*side*130,aim,24,1.4+abs(side)*0.25,0.3,damage)
-		else:
-			for radius in [150,320]: add_hazard("ring",boss.p,0,radius,1.3+radius/350.0,0.3,damage)
-	elif boss_stage<3 and map_id=="observatory":
-		boss_timer=4.8
-		if boss_pattern%2==0:
-			for spoke in range(3): add_hazard("line",boss.p,aim+spoke*TAU/3,26,1.5,0.3,damage)
-		else:
-			for side in [-1,1]: add_hazard("circle",pos+Vector2(side*140,0),0,70,1.7,0.35,damage)
-	elif boss_stage == 1:
-		if boss_pattern%2==0:
-			add_hazard("line",boss.p,aim,38,1.1,0.35,damage)
-			for side in [-1,1]: add_hazard("line",boss.p,aim+side*0.45,28,1.5,0.3,damage)
-		else:
-			for r in [130,240,350]: add_hazard("ring",boss.p,0,r,1.2+(r-130)/300.0,0.35,damage)
-	elif boss_stage == 2:
-		boss_timer = 5.5 if phase==1 else 4.7
-		damage = 27 if phase==1 else 33
-		if boss_pattern%2==0:
-			for j in range(4): add_hazard("line",boss.p,j*PI/2+boss_pattern*0.3,28,1.6,0.4,damage)
-		else:
-			for j in range(2): add_hazard("circle",pos+Vector2.from_angle(j*PI)*100,0,55,1.7,0.55,damage)
-	else:
-		match boss_pattern%3:
-			0:
-				var safe = boss_pattern*0.71
-				for j in range(8):
-					if j in [0,1]: continue
-					add_hazard("line",boss.p,safe+j*TAU/8,35,1.35,0.55,damage)
-				banner.emit("CORONAL FLARE","READ THE LANES / MOVE INTO THE GAP")
-			1:
-				for j in range(5+phase*2):
-					var p = pos+velocity*0.3 if j==0 else boss.p+Vector2.from_angle(rng.randf()*TAU)*rng.randf_range(100,620)
-					add_hazard("circle",p,0,62+phase*6,1.1+j*0.08,0.5,damage)
-				banner.emit("HEAVEN FALLS","LEAVE THE IMPACT MARKERS")
-			2:
-				for j in range(4): add_hazard("ring",boss.p,0,120+j*120,1.0+j*0.4,0.35,damage)
-				banner.emit("SEISMIC COLLAPSE","CROSS BETWEEN THE PULSES")
-		if phase>=2: add_hazard("circle",pos-velocity*0.2,0,85,1.4,1.4,damage)
+	match boss_pattern%3:
+		0:
+			var safe = boss_pattern*0.71
+			for j in range(8):
+				if j in [0,1]: continue
+				add_hazard("line",boss.p,safe+j*TAU/8,35,1.35,0.55,damage)
+			banner.emit("CORONAL FLARE","READ THE LANES / MOVE INTO THE GAP")
+		1:
+			for j in range(5+phase*2):
+				var p = pos+velocity*0.3 if j==0 else boss.p+Vector2.from_angle(rng.randf()*TAU)*rng.randf_range(100,620)
+				add_hazard("circle",p,0,62+phase*6,1.1+j*0.08,0.5,damage)
+			banner.emit("HEAVEN FALLS","LEAVE THE IMPACT MARKERS")
+		2:
+			for j in range(4): add_hazard("ring",boss.p,0,120+j*120,1.0+j*0.4,0.35,damage)
+			banner.emit("SEISMIC COLLAPSE","CROSS BETWEEN THE PULSES")
+	if phase>=2: add_hazard("circle",pos-velocity*0.2,0,85,1.4,1.4,damage)
 	boss_pattern += 1
 	log_event("boss-pattern",{"stage":boss_stage,"pattern":boss_pattern})
 
@@ -1103,7 +1130,7 @@ func upgrade_pool(owned_only = false):
 		if can_take_buff(id) and rank_of(id)<C.PASSIVES[id].max and Rules.eligible(weapons,C.WEAPONS,C.PASSIVES[id].filter): pool.append({"type":"passive","id":id})
 	for id in C.AUGMENTS:
 		if can_take_buff(id) and content_allowed("augments",id) and augments.get(id,0)<C.AUGMENTS[id].max and Rules.eligible(weapons,C.WEAPONS,C.AUGMENTS[id].filter): pool.append({"type":"augment","id":id})
-	return pool
+	return pool.filter(func(o):return not banished.has(o.type+":"+o.id))
 
 func open_choices(relic):
 	if choosing or not active: return
@@ -1116,19 +1143,30 @@ func open_choices(relic):
 		if not transformations.is_empty():
 			options = [transformations[rng.randi_range(0,transformations.size()-1)]]
 		else:
-			var reward = Relics.roll(self)
-			var rarity = C.RELICS[reward].rarity if reward!="" else "COMMON"
-			if reward!="" and relics.size()<RELIC_SLOTS:
-				options = [{"type":"relic","id":reward}]
+			var reward = Relics.roll_reward(self)
+			if not reward.is_empty():options=[reward]
 			if options.is_empty():
+				var rarity=Relics.roll_tier(self)
 				var improvements = upgrade_pool(true)
 				var reward_option = {"type":"supplies","id":"supplies"} if improvements.is_empty() else improvements[rng.randi_range(0,improvements.size()-1)].duplicate()
 				reward_option.rarity = rarity
 				reward_option.refinement = true
+				reward_option.rank_gain=Relics.RANK_GAINS[maxi(0,Relics.TIERS.find(rarity))]
+				if reward_option.type!="supplies":
+					var max_rank=10 if reward_option.type=="weapon" else C.PASSIVES[reward_option.id].max if reward_option.type=="passive" else C.AUGMENTS[reward_option.id].max
+					var current_rank=weapons[reward_option.id].level if reward_option.type=="weapon" else rank_of(reward_option.id) if reward_option.type=="passive" else augments.get(reward_option.id,0)
+					reward_option.rank_gain=mini(reward_option.rank_gain,max_rank-current_rank)
+				if reward_option.type=="supplies":
+					reward_option.amber_gain=[25,35,50,75,100,150][maxi(0,Relics.TIERS.find(rarity))]
+					reward_option.heal_gain=[15,20,25,35,45,60][maxi(0,Relics.TIERS.find(rarity))]
+				reward_option.source="chest"
+				reward_option.quantity=1
+				reward_option.effects={"ranks":reward_option.rank_gain} if reward_option.type!="supplies" else {"amber":reward_option.amber_gain,"heal":reward_option.heal_gain}
+				if reward_option.type!="supplies":reward_option=BuffRewards.decorate(self,reward_option,rarity,reward_option.rank_gain,"chest")
 				options = [reward_option]
 	else:
 		var pool = upgrade_pool()
-		var fresh = pool.filter(func(o):return o not in reroll_exclude)
+		var fresh = pool.filter(func(o):return not reroll_exclude.any(func(old):return old.type==o.type and old.id==o.id))
 		if fresh.size()>=3: pool = fresh
 		reroll_exclude.clear()
 		var owned = pool.filter(func(o):return o.type=="weapon" and weapons.has(o.id))
@@ -1140,6 +1178,8 @@ func open_choices(relic):
 			var i = rng.randi_range(0,pool.size()-1)
 			options.append(pool[i])
 			pool.remove_at(i)
+	if not relic:
+		for i in range(options.size()):options[i]=BuffRewards.decorate(self,options[i])
 	if options.is_empty():
 		options = [{"type":"supplies","id":"supplies"}]
 	choosing = true
@@ -1168,6 +1208,17 @@ func reroll_choices():
 	open_choices(false)
 	return true
 
+func banish_choice(index):
+	if mode=="daily" or not choosing or option_is_relic or banishes<=0 or index<0 or index>=options.size():return false
+	var option=options[index]
+	if option.type not in ["weapon","passive","augment"]:return false
+	banished[option.type+":"+option.id]=true
+	banishes-=1
+	log_event("banish",{"type":option.type,"id":option.id})
+	choosing=false
+	open_choices(false)
+	return true
+
 func choose(index):
 	if not choosing or index<0 or index>=options.size(): return
 	var o = options[index]
@@ -1182,10 +1233,12 @@ func choose(index):
 			banner.emit(C.WEAPONS[o.id].name,"WEAPON UNION / ONE BACKPACK SLOT FREED")
 		"augment":
 			if not can_take_buff(o.id) or augments.get(o.id,0)>=C.AUGMENTS[o.id].max: return
-			augments[o.id] = augments.get(o.id,0)+1
+			var gain=mini(C.AUGMENTS[o.id].max-augments.get(o.id,0),o.get("rank_gain",1))
+			augments[o.id] = augments.get(o.id,0)+gain
+			BuffRewards.grant(self,o,gain)
 		"weapon":
-			if weapons.has(o.id): weapons[o.id].level += 1
-			elif weapons.size()<BACKPACK_SLOTS and Rules.can_add_weapon(weapons,C.WEAPONS,o.id): weapons[o.id] = {"level":1,"evolved":false,"timer":0.1}
+			if weapons.has(o.id): weapons[o.id].level = mini(10,weapons[o.id].level+o.get("rank_gain",1))
+			elif weapons.size()<BACKPACK_SLOTS and Rules.can_add_weapon(weapons,C.WEAPONS,o.id): weapons[o.id] = {"level":mini(10,o.get("rank_gain",1)),"evolved":false,"timer":0.1}
 			else: return
 		"evolution":
 			weapons[o.id].evolved = true
@@ -1194,27 +1247,22 @@ func choose(index):
 			banner.emit(C.WEAPONS[o.id].evolution,"LEGENDARY EVOLUTION / LET THEM COME")
 		"passive":
 			if not can_take_buff(o.id) or rank_of(o.id)>=C.PASSIVES[o.id].max: return
-			passives[o.id] = rank_of(o.id)+1
+			var gain=mini(C.PASSIVES[o.id].max-rank_of(o.id),o.get("rank_gain",1))
+			passives[o.id] = rank_of(o.id)+gain
+			BuffRewards.grant(self,o,gain)
 			if o.id == "armor":
-				armor += 2
-				max_hp += 12
-				hp += 12
+				var strength=o.get("stat_gain",float(gain))*gain/maxf(1,o.get("rank_gain",gain))
+				armor += 2*strength
+				max_hp += roundi(12*strength)
+				hp += roundi(12*strength)
 		"supplies":
-			amber += 25
-			hp = minf(max_hp,hp+15)
+			amber += o.get("amber_gain",25)
+			hp = minf(max_hp,hp+o.get("heal_gain",15))
 		"relic":
 			if o.has("replace"):
-				var old = C.RELICS[o.replace].get("acquire",{})
-				max_hp -= old.get("health",0)
-				hp = minf(hp,max_hp)
-				armor -= old.get("armor",0)
-				relics.erase(o.replace)
-			relic_state.mods_key = -1
-			relics.append(o.id)
-			var gain = C.RELICS[o.id].get("acquire",{})
-			max_hp += gain.get("health",0)
-			hp += gain.get("health",0)
-			armor += gain.get("armor",0)
+				Relics.remove(self,o.replace)
+			if not Relics.apply(self,o):
+				amber+=25
 	log_event("upgrade",o)
 	modifier_cache.clear()
 	choosing = false
@@ -1222,10 +1270,12 @@ func choose(index):
 	# Short protection does not stack into permanent invulnerability.
 	effect.emit("ring",pos,Color("ffe2ad"),200)
 	for e in nearby(pos,180):
-		if not e.boss and not e.anchor and not rooted(e): e.p = terrain.move(e.p,(e.p-pos).normalized()*80)
+		if not e.boss and not e.anchor and not e.get("boss_prop",false) and not rooted(e): e.p = terrain.move(e.p,(e.p-pos).normalized()*80)
 
 func finish(victory):
 	if not active: return
+	kael_attack.clear()
+	starter_attack.clear()
 	active = false
 	encounter_epoch += 1
 	won = victory
@@ -1238,6 +1288,6 @@ func finish(victory):
 	ended.emit(victory)
 
 func report():
-	return {"version":"native-0.9.1","daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"events":event_log,"samples":samples}
+	return {"version":"native-0.11.5","halloween":halloween,"daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"relic_stacks":relic_stacks.duplicate(true),"buff_stacks":buff_stacks.duplicate(true),"reward_schema":3,"events":event_log,"samples":samples}
 
 

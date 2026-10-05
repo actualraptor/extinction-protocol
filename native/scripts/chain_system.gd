@@ -1,7 +1,7 @@
 extends RefCounted
 ## Bounded work queue shared by weapons and proc effects. Each target is visited
 ## once, or at most twice when rechain triggers. No recursive chain spawning.
-static func cast(g,origin,power,id,count,radius,falloff = 0.85,fork = 0.0,rechain = 0.0):
+static func cast(g,origin,power,id,count,radius,falloff = 0.85,fork = 0.0,rechain = 0.0,initial_range_origin = Vector2.INF):
 	var queue = [{"p":origin,"damage":power,"first":true}]
 	var visits = {}
 	var hits = 0
@@ -10,11 +10,12 @@ static func cast(g,origin,power,id,count,radius,falloff = 0.85,fork = 0.0,rechai
 		var source = queue.pop_front()
 		var target = null
 		var distance = 680.0 if source.first else radius
+		var search_origin=initial_range_origin if source.first and initial_range_origin!=Vector2.INF else source.p
 		var repeat_allowed = g.rng.randf()<rechain
-		for e in g.nearby(source.p,distance):
+		for e in g.nearby(search_origin,distance):
 			var n = visits.get(e.uid,0)
 			if n>=2 or (n>0 and not repeat_allowed) or e.p.distance_squared_to(source.p)<1: continue
-			var d = source.p.distance_to(e.p)
+			var d = search_origin.distance_to(e.p)
 			if d<distance:
 				distance = d
 				target = e

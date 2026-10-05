@@ -1,4 +1,6 @@
-# Extinction Protocol — Hobby playtest 0.9.1
+# Extinction Protocol — Hobby playtest 0.11.4 / Aftershock
+
+Halloween is enabled by default for this release. Settings → Hollow Harvest theme restores the original art and music when disabled. Your choice is saved. Kael, Voss and Vesper have event-based voice lines with chances and cooldowns; mute Sound effects to silence them.
 
 Windows: extract the ZIP, then run Extinction Protocol.exe. No installer needed. Close the old build before starting this one.
 
@@ -10,6 +12,8 @@ Windows saves: %APPDATA%/Godot/app_userdata/Extinction Protocol
 Linux default saves: ~/.local/share/godot/app_userdata/Extinction Protocol
 
 Private test focus:
+- Stack different tiers of the same relic; check XP growth and the eight-type satchel limit.
+- Try the local atlas, O overview, F recenter, middle-drag pan and wheel zoom.
 - Complete an Expedition through every boss and portal, then restart.
 - Evolve a weapon and create a union from a chest. Confirm the freed weapon slot.
 - Play Daily: each level and chest should spin, pause on the result, then continue once.

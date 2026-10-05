@@ -99,6 +99,22 @@ const DATA={
 }
 static func stage(id):
  var data=DATA.get(id,DATA.cradle).duplicate(true)
+ # Preserve authored identities while shortening empty travel between regions.
+ # Scale from the source every time: rebuilding a biome cannot shrink it twice.
+ data.bounds=Rect2(-22000,-19000,44000,38000)
+ for group in ["passives","signals","caches","regions","landmarks"]:
+  for item in data[group]:
+   item.p*=0.46
+   if item.has("radius"):item.radius*=0.65
+ # The first supply is a short detour; the first unlock is reachable in a minute.
+ var first_positions={"cradle":Vector2(4200,-700),"frostbreak":Vector2(-4300,0),"observatory":Vector2(3400,2800)}
+ data.passives[0].p=first_positions.get(id,first_positions.cradle)
+ var first_signal={"cradle":"ironbriar","frostbreak":"iona","observatory":"riftcraft"}.get(id,"ironbriar")
+ for signal_data in data.signals:
+  if signal_data.id==first_signal:signal_data.p=Vector2(6200,4600)
+ var encounter_position={"cradle":Vector2(-6000,-1000),"frostbreak":Vector2(7400,-1000),"observatory":Vector2(-6200,1800)}.get(id,Vector2(-6000,-1000))
+ data.caches.append({"id":"cursed_reliquary","name":"Cursed Reliquary","p":encounter_position,"encounter":"ambush","guards":8})
+ data.caches.append({"id":"ancient_forge","name":"Ancient Forge","p":Vector2(10000,2500),"encounter":"ambush","guards":5,"reward":"forge"})
  data.id=id;data.routes=[]
  for group in ["passives","signals","caches","landmarks"]:
   for item in data[group]:data.routes.append(item.p)
@@ -108,7 +124,7 @@ static func validate(id):
  for group in ["passives","signals","caches"]:
   for item in s[group]:
    if not s.bounds.grow(-1200).has_point(item.p):errors.append("Outside safe bounds: "+item.id)
-   if item.p.distance_to(s.spawn)<4500:errors.append("Too close to spawn: "+item.id)
+   if item.p.distance_to(s.spawn)<3500:errors.append("Too close to spawn: "+item.id)
    for other in objectives:
     if item.p.distance_to(other.p)<1200:errors.append("Overlapping objectives: "+item.id+" / "+other.id)
    objectives.append(item)

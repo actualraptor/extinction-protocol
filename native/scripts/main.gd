@@ -15,6 +15,7 @@ var campaign_save_clock = 0.0
 const Icons = preload("res://scripts/atlas_icons.gd")
 var world
 var audio
+var survivor_voice
 var sim = null
 var layer
 var menu_root
@@ -38,6 +39,9 @@ var selected = 1
 var chosen_mode = "expedition"
 var daily_date = ""
 var page = "menu"
+var reset_countdown = 0
+var reset_confirm_button = null
+var reset_countdown_label = null
 var finish_delay = -1.0
 var defeat_cinematic = null
 var save_data = {"version":1,"amber":0,"wins":0,"runs":0,"research":{},"records":[],"settings":{"sound":true,"music":true,"shake":true}}
@@ -69,6 +73,10 @@ func _ready():
 	add_child(world)
 	audio = Sound.new()
 	add_child(audio)
+	survivor_voice=preload("res://scripts/survivor_voice.gd").new()
+	add_child(survivor_voice)
+	survivor_voice.speech_started.connect(func(_duration):audio.voice_duck=true)
+	survivor_voice.speech_finished.connect(func():audio.voice_duck=false)
 	apply_settings()
 	layer = CanvasLayer.new()
 	add_child(layer)
@@ -108,11 +116,29 @@ func _ready():
 			hud_layout.append({"node":item,"position":item.position})
 	main_menu()
 	if "--verify-package" in OS.get_cmdline_user_args():
-		selected = 2
+		selected = 1 if "--verify-kael" in OS.get_cmdline_user_args() else 0 if "--verify-voss" in OS.get_cmdline_user_args() else 2
+		if "--verify-original" in OS.get_cmdline_user_args():
+			save_data.settings.halloween=false
+			apply_settings()
 		chosen_mode = "safari"
 		start_run()
 		await get_tree().create_timer(3).timeout
 		paused = true
+		if "--verify-cards" in OS.get_cmdline_user_args():
+			var preview_options=[]
+			for pair in [["weapon","club","RARE"],["weapon","lightning","EPIC"],["passive","crit","ARTIFACT"]]:
+				preview_options.append(sim.BuffRewards.decorate(sim,{"type":pair[0],"id":pair[1]},pair[2]))
+			upgrade_menu(preview_options,false)
+			await get_tree().create_timer(.7).timeout
+		elif "--verify-kael" in OS.get_cmdline_user_args():
+			preload("res://scripts/kael_slam.gd").start(sim,"club",Vector2.RIGHT,sim.Rules.stats(sim,"club"))
+			sim.time+=sim.kael_attack.duration*.65
+			preload("res://scripts/kael_slam.gd").update(sim)
+		elif "--verify-voss" in OS.get_cmdline_user_args() or "--verify-vesper" in OS.get_cmdline_user_args():
+			var starter_id="revolver" if sim.hero==0 else "lightning"
+			preload("res://scripts/starter_attack.gd").start(sim,starter_id,Vector2.RIGHT,sim.Rules.stats(sim,starter_id))
+			sim.time+=sim.starter_attack.duration*.65
+			preload("res://scripts/starter_attack.gd").update(sim)
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png(OS.get_executable_path().get_base_dir().path_join("package-preview.png"))
 		get_tree().quit()
@@ -194,8 +220,10 @@ func main_menu():
 	paused = false
 	hud_root.hide()
 	clear_menu()
+	var seasonal=save_data.settings.get("halloween",true)
+	if seasonal:preload("res://scripts/seasonal_menu.gd").create(menu_root)
 	var v = column(menu_root,Vector2(90,78),Vector2(590,730),13)
-	label(v,"A WORLD OUT OF TIME. A SPECIES OUT OF LUCK.",15,"b9ac91")
+	label(v,"HOLLOW HARVEST / HALLOWEEN EVENT" if seasonal else "A WORLD OUT OF TIME. A SPECIES OUT OF LUCK.",15,"dca573" if seasonal else "b9ac91")
 	label(v,"EXTINCTION\nPROTOCOL",65,"f1e5cf")
 	label(v,"The end of the world has a health bar.",24,"c0cbc8")
 	label(v,"Guns. Ancient fury. Forbidden magic.\nSurvive the ecosystem. Kill the extinction.",18,"8daba8")
@@ -218,8 +246,8 @@ func main_menu():
 	label(v,"%s AMBER    /    %s EXTINCTIONS DENIED    /    NATIVE %s"%[save_data.amber,save_data.wins,ProjectSettings.get_setting("application/config/version")],14,"c5ac82")
 	if save_error!="": label(v,save_error,14,"ff877e")
 	var caption = column(menu_root,Vector2(870,715),Vector2(475,100))
-	label(caption,"THE EXTINCTION ENGINE",23,"f2bc88")
-	label(caption,"It ended an era. You brought a revolver.",16,"bcb4b5")
+	label(caption,"THE HOLLOW HARVEST" if seasonal else "THE EXTINCTION ENGINE",23,"f2bc88")
+	label(caption,"Ancient bones. Borrowed souls. One more night." if seasonal else "It ended an era. You brought a revolver.",16,"bcb4b5")
 	var news=PanelContainer.new()
 	news.position=Vector2(875,110);news.size=Vector2(450,250)
 	news.add_theme_stylebox_override("panel",UIArt.button_style())
@@ -232,8 +260,13 @@ func main_menu():
 	button(info,"Open patch notes",patch_notes,true)
 	audio.tension = 0.1
 	audio.biome = -1
+	audio.halloween=seasonal
 
 func texture(index):
+	var hero_id=["voss","kael","vesper","iona","orin"][index]
+	var seasonal_portrait="res://assets/clean-icons/portrait-halloween-"+hero_id+".png"
+	if save_data.get("settings",{}).get("halloween",true) and ResourceLoader.exists(seasonal_portrait):return load(seasonal_portrait)
+	if index==3:return load("res://assets/clean-icons/portrait-iona-normal.png")
 	if index==2:
 		var portrait=AtlasTexture.new()
 		portrait.atlas=preload("res://assets/vesper-walk-v2.png")
@@ -265,7 +298,9 @@ func characters():
 	row.size = Vector2(1280,540)
 	row.add_theme_constant_override("separation",22)
 	menu_root.add_child(row)
-	for i in range(C.HEROES.size()):
+	# Kael is the entry point for new players, so keep him first without
+	# changing the stable hero IDs used by saves, daily seeds and records.
+	for i in [1,0,2,3,4]:
 		var data = C.HEROES[i]
 		var panel = PanelContainer.new()
 		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -287,7 +322,14 @@ func characters():
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.custom_minimum_size.y = 110
 		var unlocked = chosen_mode!="expedition" or Discoveries.hero_open(save_data,i)
-		var choose = button(v,"SELECTED" if selected==i and unlocked else "CHOOSE" if unlocked else "LOCKED",func():selected=i;characters(),selected==i and unlocked)
+		var spacer=Control.new()
+		spacer.size_flags_vertical=Control.SIZE_EXPAND_FILL
+		v.add_child(spacer)
+		var choose = button(v,"SELECTED" if selected==i and unlocked else "CHOOSE" if unlocked else "LOCKED",func():
+			selected=i
+			survivor_voice.set_hero(i)
+			survivor_voice.play_event("chosen")
+			characters(),selected==i and unlocked)
 		choose.add_theme_font_size_override("font_size",13)
 		choose.disabled = not unlocked
 	var bottom = column(menu_root,Vector2(80,742),Vector2(1280,120),8)
@@ -310,14 +352,26 @@ func maps_menu():
 	for id in Maps.DATA:
 		var d=Maps.DATA[id]
 		var v=column(menu_root,Vector2(80+index*435,195),Vector2(405,520),18)
-		Icons.control(v,"camp" if index==0 else "frost" if index==1 else "clock","relic",125)
+		Icons.control(v,"camp" if index==0 else "frost" if index==1 else "clock","relic",85)
 		label(v,d.name,27,d.color)
 		var desc=label(v,d.desc,18,"bcd0d5")
 		desc.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-		desc.custom_minimum_size.y=105
+		desc.custom_minimum_size.y=72
 		label(v," → ".join(d.biomes),15,"acbec6").autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 		var unlocked=Maps.available(save_data,id)
 		label(v,"READY TO EXPLORE" if unlocked else Campaign.requirement(save_data,d.unlock),16,d.color)
+		if unlocked:
+			label(v,"SUGGESTED DISCOVERIES",13,"d5b67d")
+			for goal in Campaign.suggested_goals(save_data,id,3):
+				var goal_label=label(v,goal.name,14,"b7c9bb")
+				goal_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+				goal_label.tooltip_text=goal.requirement+"\nClick to track this discovery."
+				goal_label.mouse_filter=Control.MOUSE_FILTER_STOP
+				goal_label.mouse_default_cursor_shape=Control.CURSOR_POINTING_HAND
+				if save_data.campaign.get("tracked_goal","")==goal.id:goal_label.text="◆ "+goal.name
+				goal_label.gui_input.connect(func(event):
+					if event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:
+						Campaign.track_goal(save_data,goal.id);persist();maps_menu())
 		var play=button(v,"ENTER MAP" if unlocked else "LOCKED",func():selected_map=id;start_run(),unlocked)
 		play.disabled=not unlocked
 		index+=1
@@ -353,6 +407,10 @@ func start_run():
 	paused = false
 	finish_delay = -1
 	sim = Expedition.new()
+	survivor_voice.set_hero(selected)
+	survivor_voice.reset_run()
+	sim.voice_event.connect(func(event):
+		if sim!=null:survivor_voice.play_event(event))
 	sim.effect.connect(world.fx)
 	sim.sound.connect(func(id):audio.play(id))
 	sim.banner.connect(show_toast)
@@ -368,6 +426,8 @@ func start_run():
 	campaign_save_clock=0
 	if chosen_mode=="expedition" and not Maps.available(save_data,selected_map): selected_map="cradle"
 	sim.setup(selected,chosen_mode,save_data.research,seed_value,selected_map if chosen_mode=="expedition" else "cradle")
+	survivor_voice.set_hero(sim.hero)
+	sim.halloween=save_data.settings.get("halloween",true)
 	if chosen_mode=="expedition": sim.configure_content(save_data)
 	sim.update_exploration()
 	hud_root.show()
@@ -540,7 +600,7 @@ func update_hud_scale():
 	xp_bar.position = Vector2(24*factor,viewport.y-130*factor)
 	xp_bar.size = Vector2(viewport.x/factor-48,106)
 	var dock_visible=sim!=null and not sim.choosing and page!="upgrade"
-	if sim!=null:hud_root.visible=page not in ["upgrade","summary"]
+	if sim!=null:hud_root.visible=page not in ["upgrade","summary","map"]
 	xp_bar.visible=dock_visible
 	weapons_hud.visible=dock_visible
 	loadout_label.visible=dock_visible
@@ -550,7 +610,8 @@ func update_hud_scale():
 			child.size = Vector2(viewport.x,110)
 			child.visible=false
 	for child in menu_root.get_children():
-		if child is ColorRect:
+		if child is ColorRect or child.has_meta("fullscreen_background"):
+			child.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
 			child.position = -offset
 			child.size = viewport
 
@@ -561,11 +622,12 @@ func _process(dt):
 	if toast_label: toast_label.modulate.a = minf(1,toast_time)
 	if toast_panel:
 		toast_panel.modulate.a = minf(1,toast_time)
-		toast_panel.visible = sim!=null and not sim.choosing and toast_time>0
+		toast_panel.visible = sim!=null and not sim.choosing and toast_time>0 and page!="map"
 	if finish_delay>=0:
 		finish_delay -= dt
 		if finish_delay<0: summary()
 	if sim == null: return
+	if sim.active and not paused:survivor_voice.observe_health(sim.hp/sim.max_hp)
 	if sim.active and not paused:
 		campaign_clock+=dt
 		campaign_save_clock+=dt
@@ -602,6 +664,7 @@ func _process(dt):
 		boss_bar.value = sim.boss.hp/sim.boss.max_hp*100
 		boss_bar.health=sim.boss.hp
 		boss_bar.maximum=sim.boss.max_hp
+		boss_bar.set_encounter(sim)
 		boss_label.text = Maps.boss_name(sim.map_id,sim.boss_stage)+" / PHASE %s"%sim.phase
 		if sim.boss_stage<3:
 			boss_label.text += " / %s%%"%ceili(sim.boss.hp/sim.boss.max_hp*100)
@@ -616,6 +679,7 @@ func _process(dt):
 	audio.tension = clampf(sim.time/1000+(0.3 if sim.boss!=null else 0),0,1)
 	audio.biome = sim.depth
 	audio.map_index = Maps.DATA[sim.map_id].music
+	audio.halloween = sim.halloween
 	var buffs = []
 	if sim.shield>0: buffs.append("BARRIER %s"%int(sim.shield))
 	for id in sim.buffs:
@@ -673,6 +737,7 @@ func item_icon(parent,index,pickup = true,size_value = 76):
 
 func daily_reel_data(o):
 	var data=(C.WEAPONS.get(o.id,C.PASSIVES.get(o.id,C.AUGMENTS.get(o.id,C.RELICS.get(o.id,{"name":"Field supplies","desc":"Gain amber and restore health."}))))).duplicate(true)
+	data.desc=UpgradeCopy.description(sim,o) if o.type in ["relic","weapon","passive","augment","supplies"] else data.desc
 	data.art_id=o.id;data.art_type=o.type;data.rarity=o.get("rarity",data.get("rarity","COMMON"));data.color=data.get("color","d6b878")
 	return data
 
@@ -689,6 +754,7 @@ func present_upgrade(opts,relic):
 		var chest_data = (C.RELICS[o.id] if o.type=="relic" else C.PASSIVES[o.id] if o.type=="passive" else C.AUGMENTS[o.id] if o.type=="augment" else {"name":"Field Supplies","desc":"+25 amber and restore 15 health.","color":"eac786"} if o.type=="supplies" else C.WEAPONS[o.id]).duplicate(true)
 		chest_data.art_id = o.id
 		chest_data.art_type = o.type
+		if o.type=="relic":chest_data.desc=sim.Relics.description(o)+"\nCopy %s / 10"%(sim.Relics.tiers(sim,o.id).size()+1)
 		chest_data.color = chest_data.get("color","c4dfff")
 		if o.type in ["fusion","evolution"]:
 			chest_data.name = chest_data.evolution
@@ -702,13 +768,19 @@ func present_upgrade(opts,relic):
 		else:
 			reel.odds = sim.relic_state.get("chest_odds",sim.Relics.odds(sim))
 			chest_data.rarity = o.get("rarity",chest_data.get("rarity","COMMON"))
+			chest_data.color=sim.Relics.tier_color(chest_data.rarity)
 			if o.get("refinement",false):
 				reel.reveal_title = "SATCHEL FULL / THE RIFT REFINES YOUR BUILD"
-				chest_data.desc = "Rank +1 / "+chest_data.desc if o.type!="supplies" else chest_data.desc
-				reel.odds_caption = "RELIC RARITY ODDS / NON-REPLACEMENT FINDS BECOME A COMPATIBLE UPGRADE OR SUPPLIES"
+				var catalog=C.PASSIVES if o.type=="passive" else C.AUGMENTS if o.type=="augment" else C.WEAPONS
+				var current=sim.rank_of(o.id) if o.type=="passive" else sim.augments.get(o.id,0) if o.type=="augment" else sim.weapons.get(o.id,{}).get("level",0)
+				var cap=catalog.get(o.id,{}).get("max",10)
+				chest_data.desc = "+%s ranks / "%mini(cap-current,o.get("rank_gain",1))+chest_data.desc if o.type!="supplies" else chest_data.desc
+				if o.type=="supplies":chest_data.desc="+%s amber and heal %s HP."%[o.get("amber_gain",25),o.get("heal_gain",15)]
+				reel.odds_caption = "RARITY ODDS / INCLUDES LUCK & BAD-LUCK PROTECTION"
 			if o.has("replace") and sim.mode!="daily":
 				reel.reveal_title = "RELIC CHALLENGER / YOUR SATCHEL IS FULL"
-				reel.replacement_data = C.RELICS[o.replace]
+				reel.replacement_data = sim.Relics.inventory_data(sim,o.replace)
+		if o.type in ["weapon","passive","augment","supplies"]:chest_data.desc=UpgradeCopy.description(sim,o).replace("\n"," / ")
 		if sim.mode=="daily" and not relic:
 			reel.daily_level=true
 			reel.reveal_title="FATE CHOOSES / LEVEL %s"%sim.level
@@ -735,53 +807,88 @@ func upgrade_menu(opts,relic):
 	page = "upgrade"
 	clear_menu()
 	shade(0.82)
-	var head = column(menu_root,Vector2(95,95),Vector2(1250,110))
+	var head = column(menu_root,Vector2(95,65),Vector2(1250,110))
 	var tier=label(head,"RELIC RECOVERED" if relic else "LEVEL %s / CHOOSE YOUR POWER"%sim.level,17,"c7a76b")
 	tier.add_theme_font_override("font",UIArt.heading_font())
 	label(head,"Take something dangerous" if relic else "Become their extinction",32,"d9bd83")
-	label(menu_root,"Weapons %s / 5  ·  Upgrade your build or fill an empty slot."%sim.weapons.size(),16,"c6baa3").position = Vector2(95,202)
+	label(menu_root,"Weapons %s / 5  ·  Upgrade your build or fill an empty slot."%sim.weapons.size(),16,"c6baa3").position = Vector2(95,169)
 	var row = HBoxContainer.new()
-	var reward_width = minf(1250,opts.size()*400+maxi(0,opts.size()-1)*22)
-	row.position = Vector2((1440-reward_width)/2,230)
-	row.size = Vector2(reward_width,535)
+	var reward_width = minf(1250,opts.size()*380+maxi(0,opts.size()-1)*22)
+	row.position = Vector2((1440-reward_width)/2,205)
+	row.size = Vector2(reward_width,570)
 	row.add_theme_constant_override("separation",22)
 	menu_root.add_child(row)
 	for i in range(opts.size()):
 		var o = opts[i]
-		var panel = PanelContainer.new()
-		panel.custom_minimum_size = Vector2(400,535)
-		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		panel.add_theme_stylebox_override("panel",UIArt.style())
+		var panel = preload("res://scripts/stone_card.gd").new()
+		panel.custom_minimum_size = Vector2(380,570)
+		panel.size_flags_horizontal = Control.SIZE_FILL
 		row.add_child(panel)
-		var v = VBoxContainer.new()
-		v.add_theme_constant_override("separation",6)
+		var v = Control.new()
+		v.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		panel.add_child(v)
 		var data = C.RELICS[o.id] if o.type=="relic" else C.PASSIVES[o.id] if o.type=="passive" else C.AUGMENTS[o.id] if o.type=="augment" else {"name":"Amber Supplies","desc":"+25 amber and restore 15 health."} if o.type=="supplies" else C.WEAPONS[o.id]
-		var rarity = "EVOLUTION" if o.type=="evolution" else data.get("rarity","RARE" if o.type=="augment" else "")
-		if rarity in ["LEGENDARY","EVOLUTION"]: panel.self_modulate=Color("fff0cd")
+		var rarity = "EVOLUTION" if o.type=="evolution" else o.get("rarity",data.get("rarity","RARE" if o.type=="augment" else ""))
+		panel.rarity=rarity if rarity!="" else "COMMON"
+		var rarity_label=label(v,panel.rarity,12,panel.COLORS.get(panel.rarity,"a7a99e"))
+		rarity_label.add_theme_font_override("font",UIArt.heading_font())
+		panel.place(rarity_label,Rect2(.23 if panel.rarity=="COMMON" else .11,.065,.65,.04),12)
 		if not rarity.is_empty(): panel.tooltip_text=rarity
-		Icons.control(v,"lens" if o.type=="supplies" else o.id,"relic" if o.type=="supplies" else o.type,32)
+		var main_icon=Icons.control(v,"lens" if o.type=="supplies" else o.id,"relic" if o.type=="supplies" else o.type,1)
+		panel.place(main_icon,Rect2(.37,.135,.26,.17))
 		var title = data.evolution if o.type=="evolution" else data.name
-		var name_label = label(v,title,23)
+		var name_label = label(v,title,23,"e6dec5")
 		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		name_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+		name_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+		panel.place(name_label,Rect2(.13,.315,.74,.083),23)
+		name_label.add_theme_color_override("font_shadow_color",Color("050a08"))
+		name_label.add_theme_constant_override("shadow_offset_y",2)
+		var tag_text=UpgradeCopy.tags(sim,o)
+		if tag_text!="":
+			var tags_label=label(v,tag_text,13,"c7a76b")
+			tags_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+			tags_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
+			tags_label.add_theme_color_override("font_outline_color",Color("080a0a"))
+			tags_label.add_theme_constant_override("outline_size",3)
+			panel.place(tags_label,Rect2(.12,.408,.76,.035),13)
 		var desc = UpgradeCopy.description(sim,o)
 		var affected=UpgradeCopy.affected(sim,o)
-		label(v,"AFFECTED WEAPONS" if not affected.is_empty() else "NEW WEAPON" if o.type=="weapon" else "SURVIVOR BONUS",13,"e2c691")
-		var icon_row=HBoxContainer.new();icon_row.add_theme_constant_override("separation",6);v.add_child(icon_row)
+		var affects=label(v,"AFFECTS" if not affected.is_empty() else "NEW WEAPON" if o.type=="weapon" else "SURVIVOR BONUS",11,"e2c691")
+		panel.place(affects,Rect2(.13,.452,.29,.035),11)
+		var icon_row=HBoxContainer.new();icon_row.add_theme_constant_override("separation",4);v.add_child(icon_row)
+		panel.place(icon_row,Rect2(.40,.445,.47,.047))
 		for id in affected:
-			var icon=Icons.control(icon_row,id,"weapon",36)
+			var icon=Icons.control(icon_row,id,"weapon",25)
 			icon.tooltip_text=C.WEAPONS[id].name
 			icon.mouse_filter=Control.MOUSE_FILTER_PASS
 		if o.type=="weapon":
 			desc+="\nMax rank + chest: evolves."
 			var hint=sim.Evolutions.hint(o.id,C.WEAPONS)
 			if hint!="": panel.tooltip_text=hint
-		var description = label(v,desc,16,"c6cbbf")
+		var description = label(v,desc,17,"e1e0d3")
 		description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		description.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		panel.place(description,Rect2(.13,.515,.74,.258),17)
 		var take=button(v,"TAKE IT / %s"%(i+1),func():pick_upgrade(i),true)
-		take.set_meta("inset_button",true)
-		for state in ["normal","hover","pressed","disabled"]:take.add_theme_stylebox_override(state,UIArt.inset_button_style(state))
+		take.custom_minimum_size=Vector2(0,0)
+		panel.place(take,Rect2(.17,.805,.66,.077))
+		for state in ["normal","hover","pressed","disabled"]:take.add_theme_stylebox_override(state,panel.action_style(state=="hover"))
+		if not relic and sim.mode!="daily" and sim.banishes>0 and o.type in ["weapon","augment","passive"]:
+			var banish=Button.new()
+			banish.text="BANISH"
+			banish.tooltip_text="One banish per run. This upgrade stops appearing in rewards. Does not spend a reroll."
+			banish.custom_minimum_size.y=0
+			banish.add_theme_font_size_override("font_size",11)
+			banish.add_theme_font_override("font",UIArt.heading_font())
+			banish.add_theme_color_override("font_color",Color("ceb583"))
+			for state in ["normal","hover","pressed","disabled"]:
+				var banish_style=StyleBoxEmpty.new()
+				banish_style.set_content_margin(SIDE_TOP,5)
+				banish_style.set_content_margin(SIDE_BOTTOM,5)
+				banish.add_theme_stylebox_override(state,banish_style)
+			banish.pressed.connect(func():sim.banish_choice(i))
+			v.add_child(banish)
+			panel.place(banish,Rect2(.18,.899,.25,.043))
 		panel.modulate.a = 0
 		panel.pivot_offset = Vector2(200,245)
 		panel.scale = Vector2.ONE*0.96
@@ -922,6 +1029,8 @@ func ledger_menu():
 	menu_root.add_child(panel)
 
 func run_ended(victory):
+	if not victory:survivor_voice.play_event("death",true)
+	if sim.mode=="expedition": Campaign.record_build(save_data,sim.report())
 	flush_campaign(true)
 	if sim.mode=="expedition" and victory:
 		save_data.campaign.map_wins[sim.map_id]=save_data.campaign.map_wins.get(sim.map_id,0)+1
@@ -1000,8 +1109,10 @@ func research_menu():
 	label(menu_root,"Permanent upgrades · expedition only",21,"b9ced3").position=Vector2(100,88)
 	var refund=button(menu_root,"Reset upgrades / refund amber",func():archive_refund_menu(true))
 	refund.position=Vector2(885,65);refund.size=Vector2(455,56)
+	var reset=button(menu_root,"Reset all progress",reset_all_confirm)
+	reset.position=Vector2(885,125);reset.size=Vector2(455,46)
 	refund.disabled=preload("res://scripts/archive_respec.gd").research_total(save_data)<=0
-	var grid=GridContainer.new();grid.columns=3;grid.position=Vector2(100,145);grid.size=Vector2(1240,590)
+	var grid=GridContainer.new();grid.columns=3;grid.position=Vector2(100,180);grid.size=Vector2(1240,555)
 	grid.add_theme_constant_override("h_separation",14);grid.add_theme_constant_override("v_separation",12);menu_root.add_child(grid)
 	for id in C.RESEARCH:
 		var r=C.RESEARCH[id];var rank_value=int(save_data.research.get(id,0));var cost=int(r.cost*pow(1.65,rank_value))
@@ -1047,6 +1158,46 @@ func archive_refund_menu(research_only):
 		else:discovery_menu(),true)
 	button(v,"Keep my upgrades" if research_only else "Keep my unlocks",research_menu if research_only else discovery_menu)
 
+func reset_all_confirm():
+	clear_menu();shade(0.97);page="reset-confirm"
+	var v=column(menu_root,Vector2(250,210),Vector2(940,430),20)
+	label(v,"RESET ALL PROGRESS",38,"f0b77d")
+	var warning=label(v,"This permanently clears amber, survivors, discoveries, research, recipes, records and campaign progress.\nYour current save will still be copied to its safety backup before replacement.",22,"e0d6c2")
+	warning.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	reset_countdown_label=label(v,"ARE YOU SURE? 5",32,"f4d18c")
+	reset_countdown_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	reset_countdown_label.custom_minimum_size.y=58
+	reset_confirm_button=button(v,"YES, RESET EVERYTHING (5)",reset_all_progress,true)
+	reset_confirm_button.disabled=true
+	reset_confirm_button.custom_minimum_size.y=68
+	var no=button(v,"NO, KEEP MY PROGRESS",research_menu)
+	no.custom_minimum_size.y=62
+	_reset_countdown()
+
+func _reset_countdown():
+	reset_countdown=5
+	while reset_countdown>0 and page=="reset-confirm":
+		if reset_countdown_label!=null:reset_countdown_label.text="ARE YOU SURE? %s"%reset_countdown
+		if reset_confirm_button!=null:reset_confirm_button.text="YES, RESET EVERYTHING (%s)"%reset_countdown
+		await get_tree().create_timer(1.0).timeout
+		reset_countdown-=1
+	if page!="reset-confirm":return
+	if reset_countdown_label!=null:reset_countdown_label.text="ARE YOU SURE?"
+	if reset_confirm_button!=null:
+		reset_confirm_button.text="YES, RESET EVERYTHING"
+		reset_confirm_button.disabled=false
+
+func reset_all_progress():
+	if page!="reset-confirm" or reset_countdown>0:return
+	var store=preload("res://scripts/profile_store.gd")
+	save_data=store.defaults()
+	Discoveries.migrate(save_data)
+	Campaign.ensure(save_data)
+	selected=1
+	selected_map="cradle"
+	persist()
+	main_menu()
+
 func manual():
 	clear_menu()
 	shade(0.95)
@@ -1054,7 +1205,7 @@ func manual():
 	label(v,"FIELD MANUAL",45)
 	label(v,"WASD / arrows: move. Every attack aims and fires automatically.\n1 / 2 / 3: upgrades. Tab: overlay map. B: backpack & stats. Esc: pause. F11: fullscreen.",21)
 	label(v,"THE BUILD",18,"d6b27e")
-	label(v,"Five weapons. Eight passive/augment types. Eight relics. Max weapon rank + chest evolves.\nTwo compatible rank-10 weapons + chest merge, freeing one slot.\nChest odds include Luck and Fortune research. Rocks block; mud slows; lava burns.",21,"b4c6c9")
+	label(v,"Five weapons. Eight passive/augment types. Eight relic types, ten copies each.\nRepeat relics add strength. Rarity controls their power. XP bonuses add together.\nTwo compatible rank-10 weapons + chest merge, freeing one slot.\nLuck improves chest tiers. Rocks block; mud slows; lava burns.",21,"b4c6c9")
 	label(v,"THE DESCENT",18,"d6b27e")
 	label(v,"Bosses arrive at 5, 10 and 15 minutes. The first two open harder biomes.\nThe meteor is an endgame build check: destroy three anchors to expose its core.\nYou have 12 seconds per opening. Phase transitions restore its armor.\nIt enrages at 150 seconds and completes extinction at 210. Read the ground warnings.",21,"b4c6c9")
 	label(v,"Explore map signals, then spend amber on discoveries in the archive.\nFull slots: improve equipped buffs. Maxed builds receive amber and healing.\nDeath banks amber. Daily rolls each reward automatically; trial uses prepared gear. Records are local.",18,"adc1bd")
@@ -1063,12 +1214,12 @@ func manual():
 func settings():
 	clear_menu()
 	shade(0.94)
-	var v = column(menu_root,Vector2(410,170),Vector2(620,560),22)
+	var v = column(menu_root,Vector2(380,95),Vector2(680,690),15)
 	label(v,"Make the apocalypse yours.",36)
-	for key in ["sound","music","shake"]:
+	for key in ["sound","music","shake","halloween"]:
 		var check = CheckButton.new()
-		check.text = {"sound":"Sound effects","music":"Procedural soundtrack","shake":"Screen shake"}[key]
-		check.button_pressed = save_data.settings[key]
+		check.text = {"sound":"Sound effects","music":"Music","shake":"Screen shake","halloween":"Hollow Harvest theme / next run"}[key]
+		check.button_pressed = save_data.settings.get(key,false)
 		check.custom_minimum_size.y = 55
 		check.toggled.connect(func(value):save_data.settings[key]=value;apply_settings();persist())
 		v.add_child(check)
@@ -1086,6 +1237,9 @@ func settings():
 
 func apply_settings():
 	audio.enabled = save_data.settings.sound
+	if survivor_voice!=null:
+		survivor_voice.enabled=save_data.settings.sound
+		if not survivor_voice.enabled:survivor_voice.stop()
 	audio.music_enabled = save_data.settings.music
 	world.shake_enabled = save_data.settings.shake
 
@@ -1110,15 +1264,18 @@ func export_report(open_folder):
 	if open_folder: OS.shell_open(ProjectSettings.globalize_path("user://reports"))
 
 func _exit_tree():
+	if survivor_voice!=null:survivor_voice.stop()
+	if audio!=null:audio.shutdown()
 	release_run()
 	Icons.cache.clear()
 
 func release_run():
+	if survivor_voice!=null:survivor_voice.stop()
 	if is_instance_valid(defeat_cinematic): defeat_cinematic.queue_free()
 	defeat_cinematic=null
 	if world!=null: world.sim = null
 	if sim!=null:
-		for signal_name in ["effect","sound","banner","choice_requested","ended","discovered_content"]:
+		for signal_name in ["effect","sound","banner","choice_requested","ended","discovered_content","voice_event"]:
 			for connection in sim.get_signal_connection_list(signal_name):
 				sim.disconnect(signal_name,connection.callable)
 	sim = null
@@ -1162,7 +1319,7 @@ func patch_notes(index=0):
 	var content=VBoxContainer.new();content.size_flags_horizontal=Control.SIZE_EXPAND_FILL;content.add_theme_constant_override("separation",14);scroll.add_child(content)
 	for entry in selected_release.entries:
 		var row=HBoxContainer.new();row.add_theme_constant_override("separation",22);content.add_child(row)
-		var icon=TextureRect.new();icon.texture=Icons.get_icon(entry.icon,entry.get("category","weapon"));icon.custom_minimum_size=Vector2(60,60);icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;row.add_child(icon)
+		var icon=TextureRect.new();icon.texture=Icons.get_icon(entry.icon,entry.get("category","weapon"),save_data.settings.get("halloween",true));icon.custom_minimum_size=Vector2(60,60);icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;row.add_child(icon)
 		var copy=VBoxContainer.new();copy.size_flags_horizontal=Control.SIZE_EXPAND_FILL;copy.add_theme_constant_override("separation",4);row.add_child(copy)
 		if entry.title!="":
 			var heading=label(copy,entry.title,23,"dfbd7b");heading.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART

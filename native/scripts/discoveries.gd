@@ -3,8 +3,8 @@ extends RefCounted
 const BASE_WEAPONS = ["lightning","frost","fire","winter","revolver","club"]
 const KITS = [["revolver","club","shotgun"],["club","spear","thorns"],["lightning","frost","fire"],["harpoon","frost","return"],["lantern","fire","orbital"]]
 const ENTRIES = {
-	"vesper":{"name":"Vesper / The Riftwalker","desc":"Recruit Vesper. Reach the distant rift signal in the Lost Cradle.","cost":0,"depth":0,"pos":Vector2(16000,-16000),"map":"cradle","hero":2},
-	"ironbriar":{"name":"The Ironbriar Cache","desc":"Unlock Ironbriar: armor-scaling thorn bursts and retaliation.","cost":0,"depth":0,"pos":Vector2(-510,980),"map":"cradle","weapons":["thorns"],"goal":"kills","target":800},
+	"vesper":{"name":"Vesper / The Riftwalker","desc":"Recruit Vesper. Find the rift camp in the Lost Cradle.","cost":0,"depth":0,"pos":Vector2(12000,-12000),"map":"cradle","hero":2},
+	"ironbriar":{"name":"The Ironbriar Cache","desc":"Unlock Ironbriar: armor-scaling thorn bursts and retaliation.","cost":0,"depth":0,"pos":Vector2(-510,980),"map":"cradle","weapons":["thorns"],"goal":"kills","target":800,"alternate":{"goal":"weapon_damage","weapon":"club","weapon_name":"Ancestor's Wrath","target":60000}},
 	"map_frost":{"name":"Frostbreak Expanse","desc":"Open a new expedition map: glacial avenues, ice packs and three original score cues.","cost":0,"depth":0,"pos":Vector2.ZERO,"map":"frostbreak","goal":"kills","target":250,"discoverable":false},
 	"map_observatory":{"name":"The Sunken Observatory","desc":"Open the second new expedition: courtyard arenas, constructs and three original score cues.","cost":0,"depth":0,"pos":Vector2.ZERO,"map":"observatory","goal":"bosses","target":1,"discoverable":false},
 	"iona":{"name":"Iona / Polar Arsenal","desc":"Recruit Iona and unlock Fossil Harpoon. Find her expedition camp on Frostbreak's first biome.","cost":0,"depth":0,"pos":Vector2(700,-620),"map":"frostbreak","hero":3,"weapons":["harpoon"]},
@@ -12,8 +12,8 @@ const ENTRIES = {
 	"glacier":{"name":"Glacier Wheel","desc":"Unlock a ricocheting ice chakram. Kill 1,000 creatures in Frostbreak across expeditions.","cost":0,"depth":1,"pos":Vector2(1080,330),"map":"frostbreak","weapons":["glacier"],"goal":"map_kills","target":1000},
 	"sunbow":{"name":"Helios Repeater","desc":"Unlock a rapid piercing sun crossbow. Kill 1,500 creatures in the Observatory.","cost":0,"depth":1,"pos":Vector2(-1050,-430),"map":"observatory","weapons":["sunbow"],"goal":"map_kills","target":1500},
 	"mara":{"goal":"kills","target":100,"name":"Mara Voss","desc":"Unlock the gunslinger. Graveshot, raw damage and critical shots.","cost":180,"depth":0,"pos":Vector2(820,-480),"hero":0},
-	"ballistics":{"goal":"kills","target":500,"name":"Lost Ballistics","desc":"Bone Rattler and Extinction Mortar enter the upgrade pool.","cost":140,"depth":0,"pos":Vector2(-760,610),"weapons":["shotgun","mortar"]},
-	"riftcraft":{"goal":"kills","target":1200,"name":"Riftcraft","desc":"Rift Blades, Thunderstorm and Prism Aegis enter the upgrade pool.","cost":180,"depth":0,"pos":Vector2(650,820),"weapons":["orbital","thunderstorm","aegis"]},
+	"ballistics":{"goal":"kills","target":500,"name":"Lost Ballistics","desc":"Bone Rattler and Extinction Mortar enter the upgrade pool.","cost":140,"depth":0,"pos":Vector2(-760,610),"weapons":["shotgun","mortar"],"alternate":{"goal":"weapon_damage","weapon":"revolver","weapon_name":"Graveshot","target":100000}},
+	"riftcraft":{"goal":"kills","target":1200,"name":"Riftcraft","desc":"Rift Blades, Thunderstorm and Prism Aegis enter the upgrade pool.","cost":180,"depth":0,"pos":Vector2(650,820),"weapons":["orbital","thunderstorm","aegis"],"alternate":{"goal":"weapon_damage","weapon":"lightning","weapon_name":"Stormbinder","target":180000}},
 	"tracking":{"name":"Predator Engineering","desc":"Unlock homing, ricochet and projectile accelerator upgrades.","cost":100,"depth":0,"pos":Vector2(-980,-590),"augments":["homing","bounce","velocity"]},
 	"kael":{"name":"Kael, the First Man","desc":"Your first survivor. Heavy melee, armor and endurance.","cost":0,"depth":0,"pos":Vector2.ZERO,"hero":1,"discoverable":false},
 	"ancients":{"name":"Voices of the Ancients","desc":"Epoch Lance and Ancestor Choir enter the upgrade pool.","cost":220,"depth":1,"pos":Vector2(-800,-620),"weapons":["spear","dread"]},
@@ -60,6 +60,15 @@ static func purchase(save,id):
 	save.amber -= ENTRIES[id].cost
 	save.unlocks.append(id)
 	return true
+
+static func field_reward(g,id):
+	# First discoveries already award 20 amber in expedition's discovery handler.
+	# Recovery gives even a costly archive discovery an immediate run benefit.
+	if not ENTRIES.has(id):return 0.0
+	var healing=minf(18.0,g.max_hp*0.12)
+	var received=minf(healing,maxf(0.0,g.max_hp-g.hp))
+	g.hp+=received
+	return received
 
 static func landmarks(g):
 	var out = []

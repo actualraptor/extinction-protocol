@@ -1,0 +1,83 @@
+[
+  {
+    "file": "hollow_0_0.wav",
+    "bpm": 136,
+    "seconds": 56.470588235294116,
+    "map": 0,
+    "depth": 0,
+    "peak": 0.75,
+    "title": "Lanterns in the Lost Canopy / movement 1"
+  },
+  {
+    "file": "hollow_0_1.wav",
+    "bpm": 140,
+    "seconds": 54.857142857142854,
+    "map": 0,
+    "depth": 1,
+    "peak": 0.75,
+    "title": "Lanterns in the Lost Canopy / movement 2"
+  },
+  {
+    "file": "hollow_0_2.wav",
+    "bpm": 144,
+    "seconds": 53.333333333333336,
+    "map": 0,
+    "depth": 2,
+    "peak": 0.75,
+    "title": "Lanterns in the Lost Canopy / movement 3"
+  },
+  {
+    "file": "hollow_1_0.wav",
+    "bpm": 124,
+    "seconds": 61.935483870967744,
+    "map": 1,
+    "depth": 0,
+    "peak": 0.75,
+    "title": "Witches over the Ivory Shelf / movement 1"
+  },
+  {
+    "file": "hollow_1_1.wav",
+    "bpm": 128,
+    "seconds": 60.0,
+    "map": 1,
+    "depth": 1,
+    "peak": 0.75,
+    "title": "Witches over the Ivory Shelf / movement 2"
+  },
+  {
+    "file": "hollow_1_2.wav",
+    "bpm": 132,
+    "seconds": 58.18181818181818,
+    "map": 1,
+    "depth": 2,
+    "peak": 0.75,
+    "title": "Witches over the Ivory Shelf / movement 3"
+  },
+  {
+    "file": "hollow_2_0.wav",
+    "bpm": 148,
+    "seconds": 51.891891891891895,
+    "map": 2,
+    "depth": 0,
+    "peak": 0.75,
+    "title": "Clockwork of the Hollow Sky / movement 1"
+  },
+  {
+    "file": "hollow_2_1.wav",
+    "bpm": 152,
+    "seconds": 50.526315789473685,
+    "map": 2,
+    "depth": 1,
+    "peak": 0.75,
+    "title": "Clockwork of the Hollow Sky / movement 2"
+  },
+  {
+    "file": "hollow_2_2.wav",
+    "bpm": 156,
+    "seconds": 49.23076923076923,
+    "map": 2,
+    "depth": 2,
+    "peak": 0.75,
+    "title": "Clockwork of the Hollow Sky / movement 3"
+  }
+]

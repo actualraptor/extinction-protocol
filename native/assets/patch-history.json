@@ -1,5 +1,380 @@
 [
   {
+    "version": "0.11.4",
+    "title": "Aftershock",
+    "entries": [
+      {
+        "icon": "club",
+        "category": "weapon",
+        "title": "MAKE THE EARTH ANSWER",
+        "body": "Kael smashes the ground and sends rapid, staggered shock fronts outward. Each front erupts around the impact, with dirt, ice or stone thrown upward to match the stage. World Breaker gains a stronger wave sequence. Each enemy takes one hit per shockwave, even when crossing its bands."
+      },
+      {
+        "icon": "earthshaker",
+        "category": "weapon",
+        "title": "EARTH SHAKER. STILL KAEL.",
+        "body": "Combining into Earth Shaker keeps Kael's painted slam animation and the new radial eruption effects. Its stronger shockwave replaces the old effect. High attack speed accelerates the slam without losing the impact frame."
+      },
+      {
+        "icon": "crit",
+        "category": "passive",
+        "title": "CRITS THAT SPEAK FOR THEMSELVES",
+        "body": "Damage numbers no longer show a crit multiplier suffix. Double, triple and higher crits have stronger colors, larger animated pops and expanding impact crowns. Extreme crit tiers become prismatic. Linear crit chance and damage scaling stay unchanged."
+      },
+      {
+        "icon": "magnet",
+        "category": "relic",
+        "title": "LEAVE NO EXPERIENCE BEHIND",
+        "body": "Gravity Well now lasts five seconds and keeps drawing in newly dropped XP. Buffs and other pickups stay where they fell. Defeating a boss sweeps up all XP already on the ground once, without granting a timed magnet."
+      },
+      {
+        "icon": "prism",
+        "category": "relic",
+        "title": "LET FORTUNE RUN WILD",
+        "body": "Luck now adds directly to the rarity roll: +10% Luck adds ten points to a roll from zero to 100. Overflow becomes Artifact, with no diminishing curve. At +10% Luck, Artifact odds are 10.3%; at +84%, they are 84.3%. The reel shows your actual odds. Bad-luck protection remains."
+      },
+      {
+        "icon": "meteor",
+        "category": "boss",
+        "title": "POWER DESERVES A NEW BALANCE",
+        "body": "Extinction now has 30,000,000 health, down from 60,000,000: five times its original health. First and second bosses retain 90,000 and 900,000 health. Daily circuit health scaling and boss resistance remain."
+      },
+      {
+        "icon": "prism",
+        "category": "relic",
+        "title": "A CARD WORTH ITS RARITY",
+        "body": "Common is chipped stone; Uncommon grows moss and vines; Rare is faceted ice; Epic is occult obsidian; Legendary is forged sun-metal; Artifact is celestial glass. Each tier has its own face, material and ornaments, with stronger animated accents for the highest rarities."
+      }
+    ]
+  },
+  {
+    "version": "0.11.3",
+    "title": "Impact and Instinct",
+    "entries": [
+      {
+        "icon": "thorn",
+        "category": "boss",
+        "title": "THE HUNT COMES TO YOU",
+        "body": "All six roaming bosses now pursue you between their attacks, with speeds suited to each creature. Committed windups still give you time to react. Extinction remains rooted in its arena. Boss health stays at 90,000 / 900,000 / 60,000,000 across the three encounters."
+      },
+      {
+        "icon": "revolver",
+        "category": "weapon",
+        "title": "FROM THE MUZZLE",
+        "body": "Voss fires her starter revolver from the tip of her gun, including follow-up shots. The muzzle follows her firing pose and facing direction. Moving and attacking quickly keep the shot connected to her current position."
+      },
+      {
+        "icon": "lightning",
+        "category": "weapon",
+        "title": "FROM THE STAFF",
+        "body": "Stormbinder now begins at Vesper's staff crystal. Normal and Halloween poses use their own emission points. The lightning keeps its existing targeting range and chain behavior."
+      },
+      {
+        "icon": "crit",
+        "category": "passive",
+        "title": "CRITICAL MASS",
+        "body": "Critical chance now stacks without diminishing returns. Every full 100% guarantees another crit tier: 250% means every hit is a double crit, with a 50% chance to become a triple crit. Higher tiers gain distinct colors, stronger outlines and larger numbers with an explicit multiplier."
+      },
+      {
+        "icon": "prism",
+        "category": "relic",
+        "title": "FORTUNE FAVORS THE BOLD",
+        "body": "Luck shifts Common odds toward every higher rarity, with more weight reaching Epic, Legendary and Artifact. At +84% Luck, ordinary chest odds include 5.71% Legendary and 1.05% Artifact. Bad-luck protection still guarantees Rare or better after four low-tier chests."
+      },
+      {
+        "icon": "lightning",
+        "category": "weapon",
+        "title": "POWER YOU CAN HEAR",
+        "body": "Voss's revolver gains a warmer crack, mechanical detail and a weightier tail. Stormbinder gains rounded thunder and electrical crackle, with softer chain impacts. Subtle sound variations keep repeated attacks less repetitive."
+      }
+    ]
+  },
+  {
+    "version": "0.11.2",
+    "title": "Voices and Power",
+    "entries": [
+      {
+        "icon": "revolver",
+        "category": "weapon",
+        "title": "THE GUNSLINGER FINDS HER VOICE",
+        "body": "Mara Voss now speaks when selected, hurt, low on health, leveling up, meeting a boss, defeating it and dying. Twenty-five recordings play through one speech channel. Important announcements take priority; frequent events have chances and cooldowns."
+      },
+      {
+        "icon": "lightning",
+        "category": "weapon",
+        "title": "THE RIFTWALKER ANSWERS",
+        "body": "Vesper brings twenty-three voice lines across the same seven events. Each survivor uses their own recordings. Switching heroes stops the previous voice; variants avoid consecutive repeats. Sound effects settings also control voices."
+      },
+      {
+        "icon": "prism",
+        "category": "relic",
+        "title": "RARITY YOU CAN RECOGNIZE",
+        "body": "Stone cards have stronger rarity-colored borders, corner gems and tier runes. Rare cards gain animated highlights, Epic glows violet, Legendary burns orange and Artifact shines with iridescent gold. The carved text area stays clear."
+      },
+      {
+        "icon": "revolver",
+        "category": "weapon",
+        "title": "A SHOT. A SPELL. A REAL ATTACK.",
+        "body": "Voss now draws, aims, fires and recoils with her starter revolver. Vesper gathers energy, lifts her staff and releases Stormbinder. Both have normal and Halloween attack poses. Attacks remain mobile, speed up with attack speed and release their damage and sound on the attack frame. Other weapons keep firing independently."
+      },
+      {
+        "icon": "thorn",
+        "category": "boss",
+        "title": "APEX MEANS APEX",
+        "body": "Boss health is now ten times higher across every map: 90,000 for first bosses, 900,000 for second bosses and 60,000,000 for Extinction. Innate resistance and earned vulnerable windows remain. Daily circuits retain their rising health. Extinction's anchors remain breakable weak points."
+      },
+      {
+        "icon": "frost",
+        "category": "weapon",
+        "title": "TAGS THAT EXPLAIN YOUR BUILD",
+        "body": "Weapon is no longer shown as a card tag: it was a category label. Frost stays because ice damage and status strength can be improved. Functional tags are prioritized so delivery and element bonuses remain visible."
+      }
+    ]
+  },
+  {
+    "version": "0.11.1",
+    "title": "Stone and Thunder",
+    "entries": [
+      {
+        "icon": "thorn",
+        "category": "boss",
+        "title": "BOSSES FIGHT BACK",
+        "body": "First bosses now resist 50% of damage. Second bosses resist 60%. The Extinction Engine resists 70%. Breaking a boss's defense lowers resistance by 25 percentage points. Destroy Extinction's anchors to open its core: resistance drops from 88% to 40% during the damage window."
+      },
+      {
+        "icon": "club",
+        "category": "weapon",
+        "title": "KAEL BRINGS THE HAMMER DOWN",
+        "body": "Kael's starter attack is now a full ground slam with anticipation, overhead swing, impact and recovery. Damage lands on impact in a circular shockwave. Move freely while attacking. Windup and recovery speed up with your attack speed, with a much faster maximum slam cadence. His pumpkin club joins the Halloween version."
+      },
+      {
+        "icon": "crit",
+        "category": "passive",
+        "title": "EVERY UPGRADE HAS A TIER",
+        "body": "Passive upgrades and weapon augments now roll Common through Artifact. Continuous bonuses scale by 1 / 1.2 / 1.5 / 1.8 / 2.2 / 3 by tier. Extra projectiles, piercing targets, bounces and echoes grant 1 / 1 / 1 / 2 / 2 / 3 per rank. Higher-quality copies add more power without spending another buff slot."
+      },
+      {
+        "icon": "haste",
+        "category": "passive",
+        "title": "READ YOUR POWER",
+        "body": "Upgrade cards are now inset stone slabs with carved borders, integrated Take and Banish actions, and richer glow for higher tiers. Cards retain weapon tags, show the weapons they affect and describe the actual rolled bonus. Daily rewards show the same tiered bonuses in their reel."
+      },
+      {
+        "icon": "prism",
+        "category": "relic",
+        "title": "LUCK REACHES ARTIFACT",
+        "body": "Luck now lowers the chance of Common and increases every higher tier, including Uncommon and Artifact. Artifact remains the rarest tier. Chest odds continue to show your current Luck and bad-luck protection; level-up rewards use Luck without consuming chest protection."
+      }
+    ]
+  },
+  {
+    "version": "0.11.0",
+    "title": "Fortune and Fang",
+    "entries": [
+      {
+        "icon": "lens",
+        "category": "relic",
+        "title": "EVERY FIND HAS A FUTURE",
+        "body": "Every relic can now roll Common, Uncommon, Rare, Epic, Legendary or Artifact. Its rarity changes its actual power. Eight distinct relics fit in your satchel; collect up to ten copies of each without spending another slot."
+      },
+      {
+        "icon": "crown",
+        "category": "relic",
+        "title": "BUILD A KINGDOM OF EXPERIENCE",
+        "body": "Amber Lens grants 5 / 7.5 / 10 / 15 / 20 / 30% more XP by tier. Copies add together. King of Nothing grants the same bonus to score and XP, but increases future horde health by that amount. Existing enemies and bosses keep their health."
+      },
+      {
+        "icon": "prism",
+        "category": "relic",
+        "title": "LUCK THAT YOU CAN FEEL",
+        "body": "Base chest odds: Common 40%, Uncommon 30%, Rare 18%, Epic 9%, Legendary 2.7%, Artifact 0.3%. Luck improves the higher tiers. After four Common or Uncommon chests, the next rarity roll is Rare or better. The reel displays your current odds."
+      },
+      {
+        "icon": "wrap",
+        "category": "relic",
+        "title": "BIG ROLLS. REAL REWARDS.",
+        "body": "Chest refinements grant 1 / 1 / 2 / 2 / 3 / 4 ranks by tier, stopping at the upgrade cap. A full relic satchel keeps improving your chosen relics. When all eligible improvements are complete, chests pay 25 / 35 / 50 / 75 / 100 / 150 amber by tier."
+      },
+      {
+        "icon": "map",
+        "category": "relic",
+        "title": "LESS WALKING. MORE DISCOVERY.",
+        "body": "All three maps have shorter authored routes. First supplies take about 20 seconds to reach with starter Kael; the farthest rewards take roughly a minute. Boss arenas and weapon ranges keep their room to breathe."
+      },
+      {
+        "icon": "map",
+        "category": "relic",
+        "title": "AN ATLAS WORTH OPENING",
+        "body": "The overlay opens in a readable local view, with terrain and route context. Press O for the whole stage, F to recenter, drag with the middle mouse button and use the wheel to zoom. Labels avoid each other; map instructions no longer collide with the XP bar."
+      },
+      {
+        "icon": "thorn",
+        "category": "boss",
+        "title": "FACES OF THE ECOSYSTEM",
+        "body": "Bosses have their own portraits, including normal and Hollow Harvest versions. Patch notes, map markers and boss windups now show the actual boss. Crown, Lens and the rest of the icon library have clean borders."
+      },
+      {
+        "icon": "camp",
+        "category": "relic",
+        "title": "DRESSED FOR THE HARVEST",
+        "body": "Character selection now joins the Halloween event. Kael brings his pumpkin club; Vesper wears her witch hat. All five survivors have seasonal portraits. Turn Hollow Harvest off to restore their original looks. Character buttons now share a baseline."
+      },
+      {
+        "icon": "reaper",
+        "category": "relic",
+        "title": "POWER WITHOUT THE PROC PILEUP",
+        "body": "Repeated effect relics strengthen one shared trigger instead of creating duplicate triggers. Status explosions cannot recursively trigger themselves. Critical cooldown reductions retain their cooldown; extra volleys respect the twelve-projectile ceiling."
+      }
+    ]
+  },
+  {
+    "version": "0.10.0",
+    "title": "The Hollow Harvest",
+    "entries": [
+      {
+        "icon": "camp",
+        "category": "relic",
+        "title": "HALLOWEEN HAS ARRIVED",
+        "body": "Hollow Harvest is on by default. A haunted main menu, witch-hatted Vesper, pumpkin-club Kael and 22 painted enemy skins bring the season to every expedition. Turn the theme off in Settings to restore the original look and music."
+      },
+      {
+        "icon": "clock",
+        "category": "relic",
+        "title": "A HAUNTED SOUNDTRACK",
+        "body": "Nine original chip-fantasy tracks give each map and biome its own spooky melody. Kael's pumpkin club lands with a new crunchy smash."
+      },
+      {
+        "icon": "club",
+        "category": "weapon",
+        "title": "KAEL FINDS HIS VOICE",
+        "body": "Kael speaks when selected, when bosses arrive or fall, and when he dies. Hurt, level-up and low-health lines use chances and cooldowns. Voice lines never overlap, and music softens while he speaks."
+      },
+      {
+        "icon": "map",
+        "category": "relic",
+        "title": "LESS TRAVEL. MORE TROUBLE.",
+        "body": "Map boundaries shrink by 20%. Authored routes shorten by 25%. Early supplies and discoveries are closer. Guarded Cursed Reliquaries award chests; Ancient Forges improve your strongest unfinished weapon, or award 40 amber to a complete arsenal."
+      },
+      {
+        "icon": "thorn",
+        "category": "boss",
+        "title": "THE THORN CROWN",
+        "body": "Locks a horn charge before rushing through its lane. Step aside during the windup. Alternates charges with a staggered thorn fan; its second phase adds a close-range horn sweep."
+      },
+      {
+        "icon": "basalt",
+        "category": "boss",
+        "title": "BASALT BEHEMOTH",
+        "body": "Stomps out sequential fissures and throws arcing volcanic rocks. Read the cracks and landing markers. Molten armor adds another rock in phase two."
+      },
+      {
+        "icon": "hunt",
+        "category": "boss",
+        "title": "THE PALE HUNT",
+        "body": "Locks a landing point, leaps high, then crashes down. Periodically calls a small hunting pack. Summoned hunters are capped so the pack cannot grow forever."
+      },
+      {
+        "icon": "aurora",
+        "category": "boss",
+        "title": "THE AURORA MAW",
+        "body": "Fades away and reforms at a marked position, releasing spectral projectiles. Alternates this with a frost-breath cone. Flank the committed breath to attack safely."
+      },
+      {
+        "icon": "warden",
+        "category": "boss",
+        "title": "THE MERIDIAN WARDEN",
+        "body": "Creates breakable lenses that aim crossing beams. Destroy a lens to cancel its beam and expose the Warden to 25% more damage for 2.5 seconds."
+      },
+      {
+        "icon": "bloom",
+        "category": "boss",
+        "title": "THE BLOOM BELOW",
+        "body": "Lobs spore pods that hatch if left alive, then releases a ring of slow spores. Destroy pods to deny the brood and expose the boss to 25% more damage for 2.5 seconds. The Extinction Engine keeps its meteor, fire-lane and anchor mechanics."
+      },
+      {
+        "icon": "lightning",
+        "category": "weapon",
+        "title": "READ AND SHAPE YOUR BUILD",
+        "body": "Upgrade cards once again show weapon types such as Spell, Projectile, Chain and Melee. One Banish per normal run removes an unwanted upgrade from future offers without spending a reroll. Daily remains pure RNG."
+      },
+      {
+        "icon": "chest",
+        "category": "relic",
+        "title": "DISCOVERIES THAT PAY OFF",
+        "body": "Finding a new discovery grants 20 amber and heals up to 12% maximum health, capped at 18. Suggested discoveries appear before a run; click one to track it. Ironbriar, Ballistics and Riftcraft can also unlock through damage dealt with their matching weapons. Existing kill milestones still work."
+      }
+    ]
+  },
+  {
+    "version": "0.9.2",
+    "title": "The World Opens Up",
+    "entries": [
+      {
+        "icon": "map",
+        "category": "relic",
+        "title": "THREE AUTHORED STAGES",
+        "body": "Lost Cradle, Frostbreak Expanse and the Sunken Observatory now use large continuous maps with distinct terrain, landmarks, routes and escalating stage modifiers."
+      },
+      {
+        "icon": "camp",
+        "category": "relic",
+        "title": "FAR OBJECTIVES",
+        "body": "World caches, build passives and discovery signals are placed across the stage. The atlas projects major objectives and lets you pin a route."
+      },
+      {
+        "icon": "meteor",
+        "category": "relic",
+        "title": "STAGE PRESSURE",
+        "body": "Each map now has its own horde density, XP, luck or movement identity. Distant ordinary enemies recycle safely while bosses and discoveries stay readable."
+      },
+      {
+        "icon": "camp",
+        "category": "relic",
+        "title": "KAEL LEADS THE EXPEDITION",
+        "body": "Kael is the guaranteed starting survivor. Other survivors remain unlockable through discoveries and milestones."
+      },
+      {
+        "icon": "frost",
+        "category": "relic",
+        "title": "VESPER RECAST",
+        "body": "Vesper now uses a new directional female mage walk cycle in-game, with readable front, side and back poses."
+      },
+      {
+        "icon": "lightning",
+        "title": "WEAPON UNIONS",
+        "body": "Both weapons must now reach rank 10 before they can merge. A qualifying chest creates the union and frees one weapon slot."
+      },
+      {
+        "icon": "thorns",
+        "title": "BUILD COMMITMENT",
+        "body": "Passive and augment upgrades share eight type slots. Owned upgrades can still reach maximum rank. Relics keep their separate eight slots; a full satchel no longer replaces your chosen relics. Full builds receive amber supplies."
+      },
+      {
+        "icon": "magnet",
+        "category": "relic",
+        "title": "MAGNET PICKUPS",
+        "body": "Magnets collect experience only. Amber, healing and other pickups stay on the ground until you collect them."
+      },
+      {
+        "icon": "mortar",
+        "title": "SCORCHED EARTH",
+        "body": "Mortar and Supernova shell impacts can no longer be blocked by weaker burn ticks. Each shell leaves a visible ember crater lasting as long as its damage. Ordinary mortar loses its extra expiry explosion; Supernova keeps its final eruption."
+      },
+      {
+        "icon": "chest",
+        "category": "relic",
+        "title": "THE ARCHIVE",
+        "body": "Reset permanent research to reclaim the amber you spent. Paid discovery unlocks can also be refunded without losing discoveries found during runs. Research and discoveries now use recognizable painted icons."
+      },
+      {
+        "icon": "chronicle",
+        "category": "relic",
+        "title": "RUN RESULTS",
+        "body": "Weapon damage rows fit inside the fossil frame. Large totals stay within their columns, and the gameplay HUD stays hidden behind the final scoreboard."
+      }
+    ]
+  },
+  {
     "version": "0.9.0",
     "title": "Lasting Expeditions",
     "entries": [

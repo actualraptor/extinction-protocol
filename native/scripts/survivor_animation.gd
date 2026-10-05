@@ -51,6 +51,12 @@ func frame_row():
 func frame_index(): return frame_row()*4+(int(phase)%4 if moving else 1)
 
 func draw(target,s,p,tint):
+	if not s.starter_attack.is_empty() and s.weapons.has(s.starter_attack.id):
+		preload("res://scripts/hero_attack_animation.gd").draw_pose(target,p,s.hero,preload("res://scripts/starter_attack.gd").progress(s),s.halloween,s.starter_attack.aim.x<0,tint)
+		return
+	if s.hero==1 and not s.kael_attack.is_empty():
+		preload("res://scripts/kael_attack_animation.gd").draw_pose(target,p,preload("res://scripts/kael_slam.gd").progress(s),s.halloween,s.kael_attack.aim.x<0,tint)
+		return
 	var region = regions[s.hero][frame_index()]
 	var dimensions = region.size*scales[s.hero]
 	var flip = -1.0 if frame_row()==1 and direction.x<0 else 1.0
@@ -58,4 +64,6 @@ func draw(target,s,p,tint):
 	var lean = direction.x*0.025 if moving else 0.0
 	target.draw_set_transform(p+Vector2(0,8+bounce),lean,Vector2(flip,1))
 	target.draw_texture_rect_region(SHEETS[s.hero],Rect2(Vector2(-dimensions.x*0.5,-dimensions.y),dimensions),region,tint)
+	if s.halloween:
+		preload("res://scripts/seasonal_theme.gd").draw_survivor(target,s.hero,frame_row(),dimensions,tint)
 	target.draw_set_transform(Vector2.ZERO)

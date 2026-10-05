@@ -1,0 +1,500 @@
+{
+  "release_progress": 0.62,
+  "standing_body_height": 68,
+  "heroes": {
+    "0": {
+      "name": "voss",
+      "pixel_scale": 0.15454545454545454,
+      "source_body_height": 440,
+      "variants": {
+        "normal": [
+          {
+            "pose": "reach",
+            "file": "res://assets/hero-attacks-0111/voss/normal/00-reach.png",
+            "anchor": [
+              223,
+              453
+            ],
+            "size": [
+              392,
+              462
+            ],
+            "source_bounds": [
+              65,
+              36,
+              457,
+              498
+            ],
+            "phase_from": 0
+          },
+          {
+            "pose": "draw",
+            "file": "res://assets/hero-attacks-0111/voss/normal/01-draw.png",
+            "anchor": [
+              223,
+              475
+            ],
+            "size": [
+              396,
+              489
+            ],
+            "source_bounds": [
+              584,
+              16,
+              980,
+              505
+            ],
+            "phase_from": 0.12
+          },
+          {
+            "pose": "aim",
+            "file": "res://assets/hero-attacks-0111/voss/normal/02-aim.png",
+            "anchor": [
+              242,
+              444
+            ],
+            "size": [
+              486,
+              460
+            ],
+            "source_bounds": [
+              1025,
+              45,
+              1511,
+              505
+            ],
+            "phase_from": 0.3
+          },
+          {
+            "pose": "brace",
+            "file": "res://assets/hero-attacks-0111/voss/normal/03-brace.png",
+            "anchor": [
+              245,
+              449
+            ],
+            "size": [
+              502,
+              459
+            ],
+            "source_bounds": [
+              36,
+              524,
+              538,
+              983
+            ],
+            "phase_from": 0.5
+          },
+          {
+            "pose": "fire",
+            "file": "res://assets/hero-attacks-0111/voss/normal/04-fire.png",
+            "anchor": [
+              317,
+              447
+            ],
+            "size": [
+              502,
+              457
+            ],
+            "source_bounds": [
+              541,
+              523,
+              1043,
+              980
+            ],
+            "phase_from": 0.62,
+            "emission": [
+              488,
+              55
+            ]
+          },
+          {
+            "pose": "recover",
+            "file": "res://assets/hero-attacks-0111/voss/normal/05-recover.png",
+            "anchor": [
+              232,
+              462
+            ],
+            "size": [
+              401,
+              472
+            ],
+            "source_bounds": [
+              1080,
+              510,
+              1481,
+              982
+            ],
+            "phase_from": 0.8
+          }
+        ],
+        "halloween": [
+          {
+            "pose": "reach",
+            "file": "res://assets/hero-attacks-0111/voss/halloween/00-reach.png",
+            "anchor": [
+              260,
+              484
+            ],
+            "size": [
+              454,
+              498
+            ],
+            "source_bounds": [
+              31,
+              23,
+              485,
+              521
+            ],
+            "phase_from": 0
+          },
+          {
+            "pose": "draw",
+            "file": "res://assets/hero-attacks-0111/voss/halloween/01-draw.png",
+            "anchor": [
+              268,
+              508
+            ],
+            "size": [
+              463,
+              522
+            ],
+            "source_bounds": [
+              534,
+              0,
+              997,
+              522
+            ],
+            "phase_from": 0.12
+          },
+          {
+            "pose": "aim",
+            "file": "res://assets/hero-attacks-0111/voss/halloween/02-aim.png",
+            "anchor": [
+              269,
+              483
+            ],
+            "size": [
+              508,
+              497
+            ],
+            "source_bounds": [
+              1010,
+              25,
+              1518,
+              522
+            ],
+            "phase_from": 0.3
+          },
+          {
+            "pose": "brace",
+            "file": "res://assets/hero-attacks-0111/voss/halloween/03-brace.png",
+            "anchor": [
+              261,
+              468
+            ],
+            "size": [
+              526,
+              482
+            ],
+            "source_bounds": [
+              19,
+              520,
+              545,
+              1002
+            ],
+            "phase_from": 0.5
+          },
+          {
+            "pose": "fire",
+            "file": "res://assets/hero-attacks-0111/voss/halloween/04-fire.png",
+            "anchor": [
+              310,
+              473
+            ],
+            "size": [
+              513,
+              485
+            ],
+            "source_bounds": [
+              542,
+              515,
+              1055,
+              1000
+            ],
+            "phase_from": 0.62,
+            "emission": [
+              481,
+              62
+            ]
+          },
+          {
+            "pose": "recover",
+            "file": "res://assets/hero-attacks-0111/voss/halloween/05-recover.png",
+            "anchor": [
+              238,
+              483
+            ],
+            "size": [
+              462,
+              494
+            ],
+            "source_bounds": [
+              1064,
+              506,
+              1526,
+              1000
+            ],
+            "phase_from": 0.8
+          }
+        ]
+      }
+    },
+    "2": {
+      "name": "vesper",
+      "pixel_scale": 0.15813953488372093,
+      "source_body_height": 430,
+      "variants": {
+        "normal": [
+          {
+            "pose": "gather",
+            "file": "res://assets/hero-attacks-0111/vesper/normal/00-gather.png",
+            "anchor": [
+              235,
+              442
+            ],
+            "size": [
+              394,
+              452
+            ],
+            "source_bounds": [
+              40,
+              90,
+              434,
+              542
+            ],
+            "phase_from": 0
+          },
+          {
+            "pose": "lift",
+            "file": "res://assets/hero-attacks-0111/vesper/normal/01-lift.png",
+            "anchor": [
+              240,
+              479
+            ],
+            "size": [
+              392,
+              491
+            ],
+            "source_bounds": [
+              556,
+              54,
+              948,
+              545
+            ],
+            "phase_from": 0.12
+          },
+          {
+            "pose": "channel",
+            "file": "res://assets/hero-attacks-0111/vesper/normal/02-channel.png",
+            "anchor": [
+              335,
+              534
+            ],
+            "size": [
+              467,
+              544
+            ],
+            "source_bounds": [
+              1036,
+              0,
+              1503,
+              544
+            ],
+            "phase_from": 0.3
+          },
+          {
+            "pose": "windup",
+            "file": "res://assets/hero-attacks-0111/vesper/normal/03-windup.png",
+            "anchor": [
+              324,
+              414
+            ],
+            "size": [
+              513,
+              427
+            ],
+            "source_bounds": [
+              28,
+              568,
+              541,
+              995
+            ],
+            "phase_from": 0.5
+          },
+          {
+            "pose": "release",
+            "file": "res://assets/hero-attacks-0111/vesper/normal/04-release.png",
+            "anchor": [
+              271,
+              414
+            ],
+            "size": [
+              671,
+              424
+            ],
+            "source_bounds": [
+              534,
+              568,
+              1205,
+              992
+            ],
+            "phase_from": 0.62,
+            "emission": [
+              654,
+              69
+            ]
+          },
+          {
+            "pose": "recover",
+            "file": "res://assets/hero-attacks-0111/vesper/normal/05-recover.png",
+            "anchor": [
+              216,
+              440
+            ],
+            "size": [
+              373,
+              452
+            ],
+            "source_bounds": [
+              1127,
+              543,
+              1500,
+              995
+            ],
+            "phase_from": 0.8
+          }
+        ],
+        "halloween": [
+          {
+            "pose": "gather",
+            "file": "res://assets/hero-attacks-0111/vesper/halloween/00-gather.png",
+            "anchor": [
+              247,
+              481
+            ],
+            "size": [
+              414,
+              491
+            ],
+            "source_bounds": [
+              25,
+              47,
+              439,
+              538
+            ],
+            "phase_from": 0
+          },
+          {
+            "pose": "lift",
+            "file": "res://assets/hero-attacks-0111/vesper/halloween/01-lift.png",
+            "anchor": [
+              269,
+              527
+            ],
+            "size": [
+              426,
+              535
+            ],
+            "source_bounds": [
+              539,
+              0,
+              965,
+              535
+            ],
+            "phase_from": 0.12
+          },
+          {
+            "pose": "channel",
+            "file": "res://assets/hero-attacks-0111/vesper/halloween/02-channel.png",
+            "anchor": [
+              352,
+              528
+            ],
+            "size": [
+              482,
+              535
+            ],
+            "source_bounds": [
+              1030,
+              0,
+              1512,
+              535
+            ],
+            "phase_from": 0.3
+          },
+          {
+            "pose": "windup",
+            "file": "res://assets/hero-attacks-0111/vesper/halloween/03-windup.png",
+            "anchor": [
+              328,
+              460
+            ],
+            "size": [
+              526,
+              471
+            ],
+            "source_bounds": [
+              14,
+              527,
+              540,
+              998
+            ],
+            "phase_from": 0.5
+          },
+          {
+            "pose": "release",
+            "file": "res://assets/hero-attacks-0111/vesper/halloween/04-release.png",
+            "anchor": [
+              293,
+              460
+            ],
+            "size": [
+              698,
+              470
+            ],
+            "source_bounds": [
+              504,
+              527,
+              1202,
+              997
+            ],
+            "phase_from": 0.62,
+            "emission": [
+              681,
+              92
+            ]
+          },
+          {
+            "pose": "recover",
+            "file": "res://assets/hero-attacks-0111/vesper/halloween/05-recover.png",
+            "anchor": [
+              229,
+              469
+            ],
+            "size": [
+              405,
+              479
+            ],
+            "source_bounds": [
+              1121,
+              519,
+              1526,
+              998
+            ],
+            "phase_from": 0.8
+          }
+        ]
+      }
+    }
+  }
+}

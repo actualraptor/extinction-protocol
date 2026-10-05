@@ -126,7 +126,7 @@ static func modifiers(g,id):
 	for key in g.augments:
 		var d = AUGMENTS[key]
 		if not matches(g.C.WEAPONS[id].tags,d.filter): continue
-		for stat in d.stats: out[stat] = out.get(stat,0.0)+d.stats[stat]*g.augments[key]
+		for stat in d.stats: out[stat] = out.get(stat,0.0)+d.stats[stat]*g.BuffRewards.power(g,key)
 	g.modifier_cache[id] = out
 	return out
 
@@ -137,12 +137,12 @@ static func stats(g,id):
 	var rank = w.level
 	var evo = w.evolved
 	var milestones = int(rank>=5)+int(rank>=10 if id=="lightning" else rank>=9)
-	var count = d.get("count",1)+g.rank_of("count")+milestones+(2 if evo else 0)
+	var count = d.get("count",1)+int(g.BuffRewards.power(g,"count"))+milestones+(2 if evo else 0)
 	if d.delivery=="chain": count+=g.research_ranks.get("chains",0)
 	elif d.delivery=="projectile": count+=g.research_ranks.get("projectiles",0)+(mini(3,g.level/10) if g.hero==0 else 0)
 	var radius = d.get("radius",100.0)*g.area_scale()*(1+m.get("radius",0)+rank*0.025)
 	if "AURA" in d.tags: radius *= 1+minf(0.65,g.relic_state.get("aura_growth",0.0))
-	var haste = 1+g.rank_of("haste")*0.1+m.get("haste",0)+rank*0.018
+	var haste = 1+g.BuffRewards.power(g,"haste")*0.1+m.get("haste",0)+rank*0.018
 	if g.hero==4 and "ARCANE" in d.tags: haste+=minf(0.2,(g.level-1)*0.005)
 	var relic_mods = g.Relics.modifiers(g)
 	haste += relic_mods.get("haste",0)
@@ -167,7 +167,7 @@ static func stats(g,id):
 	result.count = mini(12,result.count)
 	result.radius = minf(300,result.radius)
 	result.range = minf(470,result.range)
-	result.cooldown = maxf(d.cooldown*0.3,result.cooldown)
+	result.cooldown = maxf(d.cooldown*(.08 if g.hero==1 and id=="club" else .3),result.cooldown)
 	result.duration = minf(5,result.duration)
 	return result
 

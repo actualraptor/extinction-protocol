@@ -89,9 +89,9 @@ func _initialize():
 	g.update_enemies(1)
 	check(e.p==before,"Time pickup freezes ordinary enemies")
 	g.spawn_boss(1)
-	var boss_before = g.boss.p
+	var boss_before = g.boss.action_left
 	g.update_boss(1)
-	check(g.boss.p!=boss_before,"Boss resists time stop")
+	check(g.boss.action_left<boss_before,"Boss encounter advances during time stop, including stationary recovery")
 	g = game()
 	g.add_gem(Vector2(800,0),50)
 	g.pickups.append({"id":"heal","p":Vector2(700,0),"life":60.0,"magnet":false})
@@ -181,13 +181,19 @@ func _initialize():
 	g = game()
 	var t = g.terrain
 	check(t.walkable(Vector2.ZERO),"Safe starting clearing")
-	var wall = t.center(Vector2i(5,5))
+	var wall=Vector2.ZERO
+	var nearest_wall=INF
+	for x in range(-30,31):
+		for y in range(-30,31):
+			var c=Vector2i(x,y);var p=t.center(c)
+			if t.kind(c)==1 and t.walkable(p-Vector2(80,0)) and t.walkable(p+Vector2(80,0)) and p.length_squared()<nearest_wall:
+				wall=p;nearest_wall=p.length_squared()
 	check(not t.walkable(wall),"Terrain blocks movement")
 	var moved = t.move(wall-Vector2(80,0),Vector2(160,0))
 	check(moved.x<wall.x-30,"Fast movement cannot tunnel through wall")
 	t.update(1,Vector2.ZERO)
 	var route = wall+Vector2(110,0)
-	for i in range(1200): route = t.move(route,t.direction(route,Vector2.ZERO)*2,10)
+	for i in range(2400): route = t.move(route,t.direction(route,Vector2.ZERO)*2,10)
 	check(route.length()<70,"Shared navigation routes around solid terrain")
 	var connected = true
 	for x in range(-14,15):
@@ -222,8 +228,9 @@ func _initialize():
 	g.spawn_boss(2)
 	g.hit(g.boss,100000000,"revolver",false)
 	check(g.boss!=null and g.phase==2 and g.boss.hp==g.boss.max_hp*0.5,"Basalt carapace prevents burst from skipping its second phase")
-	g.update_boss(0.01)
-	check(g.hazards.size()>=2 and g.hazards.size()<=4 and g.boss.reform>0,"Basalt phase break telegraphs one readable pattern during temporary armor")
+	check(g.boss.reform>0,"Basalt phase break gives temporary armor")
+	for i in range(420):g.update_boss(1.0/60)
+	check(g.hazards.any(func(h):return h.get("theme","")=="basalt") or g.hostile_shots.any(func(h):return h.get("theme","")=="basalt"),"Basalt recovery leads to its own telegraphed pattern")
 	# Worst-case swarm, no damage, 2200 ground enemies and full navigation.
 	g = game()
 	g.time = 425

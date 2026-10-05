@@ -7,7 +7,7 @@ func check(ok,msg):
 func _initialize():
 	var g=E.new();g.setup(2,"expedition",{},88,"frostbreak")
 	check(is_equal_approx(g.crit_curve(1),1),"First 100 percent crit has no penalty")
-	check(g.crit_curve(2)-g.crit_curve(1)>g.crit_curve(3)-g.crit_curve(2),"Higher crit bands have diminishing gains")
+	check(is_equal_approx(g.crit_curve(3)-g.crit_curve(2),1.0),"Higher crit bands retain linear gains")
 	var doubles=0;var triples=0
 	for i in range(10000):
 		var tier=g.roll_crit_tier(2.5)
@@ -18,7 +18,7 @@ func _initialize():
 	check(g.crit_chance()>2.5,"An extreme crit build can exceed 250 percent")
 	var enemy=g.spawn_enemy(false,Vector2(40,0),0,false);enemy.hp=10000
 	var before=enemy.hp;g.hit(enemy,100,"revolver",true,false)
-	check(enemy.last_crit_tier in [2,3] and is_equal_approx(before-enemy.hp,100*(1+0.9*enemy.last_crit_tier)),"Multi-crit damage follows readable additive tiers")
+	check(enemy.last_crit_tier in [floori(g.crit_chance()),floori(g.crit_chance())+1] and is_equal_approx(before-enemy.hp,100*(1+0.9*enemy.last_crit_tier)),"Multi-crit damage follows readable additive tiers")
 	g.enemies.clear();g.depth=1;g.time=420
 	g.director.update(g,0.1)
 	for i in range(500):g.spawn_enemy(false,null,14,false)

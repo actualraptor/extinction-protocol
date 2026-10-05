@@ -18,12 +18,12 @@ func _process(_dt):
 			var icon = {"frenzy":"haste","freeze":"winterbite","immune":"ward","surge":"pickup"}.get(id,"luck")
 			entries.append({"id":icon,"kind":"passive","text":g.Pickups.DEFINITIONS.get(id,{"name":id,"desc":""}).name+"\n"+g.Pickups.DEFINITIONS.get(id,{"desc":""}).desc,"count":"%ss"%ceili(g.buffs[id])})
 		for id in g.relics:
-			var d = g.C.RELICS[id]
-			entries.append({"id":id,"kind":"relic","text":d.name+" / "+d.rarity+"\n"+d.desc,"count":""})
+			var d = g.Relics.inventory_data(g,id)
+			entries.append({"id":id,"kind":"relic","text":d.name+" / "+d.rarity+"\n"+d.desc,"count":str(g.Relics.tiers(g,id).size())})
 		for collection in [g.passives,g.augments]:
 			for id in collection:
-				var d = g.C.PASSIVES[id] if g.C.PASSIVES.has(id) else g.C.AUGMENTS[id]
-				entries.append({"id":id,"kind":"passive","text":d.name+" / Rank %s\n"%collection[id]+d.desc,"count":str(collection[id])})
+				var d = g.BuffRewards.inventory(g,id)
+				entries.append({"id":id,"kind":"passive","text":d.name+" / "+d.rarity+" / Rank %s\n"%collection[id]+d.desc,"count":str(collection[id])})
 	queue_redraw()
 func item_rect(i):
 	return Rect2(Vector2((7-i%8)*45 if buffs_only else 8+i*45,floori(i/8.0)*45 if buffs_only else 20),Vector2(40,40))
@@ -43,3 +43,4 @@ func _draw():
 		draw_texture_rect(Icons.get_icon(e.id,e.kind),rect.grow(-3),false)
 		if e.count!="":
 			draw_string(preload("res://scripts/ui_art.gd").body_font(),rect.position+Vector2(23,37),e.count,HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff0d4"))
+

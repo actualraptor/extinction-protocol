@@ -38,24 +38,24 @@ func _ready():
 	text_at("BACKPACK",Vector2(100,43),650,32,"f0d9ad")
 	text_at(g.trait_text(),Vector2(100,85),1200,17,"9eb5c2")
 	table("ATTACK",100,[
-		["Crit chance (tiers)","%.1f%%"%(g.crit_chance()*100)],
-		["Global damage","×%.2f"%(g.base_damage*(1+g.rank_of("damage")*0.14)*(1+mods.get("damage",0)))],
-		["Bonus attack speed","+%.0f%%"%((g.rank_of("haste")*0.1+mods.get("haste",0))*100)],
-		["Extra projectiles",str(g.rank_of("count")+int(mods.get("count",0))+g.research_ranks.get("projectiles",0)+(mini(3,g.level/10) if g.hero==0 else 0))],
+		["Crit chance (linear)","%.1f%%"%(g.crit_chance()*100)],
+		["Global damage","×%.2f"%(g.base_damage*(1+g.BuffRewards.power(g,"damage")*0.14)*(1+mods.get("damage",0)))],
+		["Bonus attack speed","+%.0f%%"%((g.BuffRewards.power(g,"haste")*0.1+mods.get("haste",0))*100)],
+		["Extra projectiles",str(g.BuffRewards.power(g,"count")+int(mods.get("count",0))+g.research_ranks.get("projectiles",0)+(mini(3,g.level/10) if g.hero==0 else 0))],
 		["Area bonus","+%.0f%%"%((g.area_scale()-1)*100)],
 		["Recent total DPS","%.0f"%total_dps(g)]])
 	table("DEFENSE",520,[
 		["Health","%s / %s"%[ceili(maxf(0,g.hp)),int(g.max_hp)]],
 		["Armor","%.0f"%g.armor],
 		["Barrier","%.0f"%g.shield],
-		["Regeneration","%.2f HP/s"%(g.rank_of("regen")*0.35+g.research_ranks.get("recovery",0)*0.15)],
+		["Regeneration","%.2f HP/s"%(g.BuffRewards.power(g,"regen")*0.35+g.research_ranks.get("recovery",0)*0.15)],
 		["Incoming damage","×%.2f"%(1+mods.get("incoming",0))],
 		["Revives remaining",str(g.revives)]])
 	table("UTILITY",940,[
 		["Movement speed","%.0f"%g.speed()],
-		["XP pickup radius",str(95+g.rank_of("pickup")*35+g.research_ranks.get("magnet",0)*12)],
-		["XP multiplier","×%.2f"%((1+g.research_ranks.get("growth",0)*0.03)*(1+g.rank_of("pickup")*0.08)*(1+mods.get("xp",0))*(2 if g.buffs.get("surge",0)>0 else 1))],
-		["Luck bonus","+%.0f%%"%((g.rank_of("luck")*0.1+g.permanent_luck)*100)],
+		["XP pickup radius",str(95+g.BuffRewards.power(g,"pickup")*35+g.research_ranks.get("magnet",0)*12)],
+		["XP multiplier","×%.2f"%((1+g.research_ranks.get("growth",0)*0.03)*(1+g.BuffRewards.power(g,"pickup")*0.08)*(1+mods.get("xp",0))*(2 if g.buffs.get("surge",0)>0 else 1))],
+		["Luck bonus","+%.0f%%"%((g.BuffRewards.power(g,"luck")*0.1+g.permanent_luck)*100)],
 		["Rerolls",str(g.rerolls)],
 		["Amber",str(g.amber)]])
 	panel(Rect2(100,370,820,297))
@@ -78,7 +78,7 @@ func _ready():
 	text_at("RELICS / %s OF 8"%g.relics.size(),Vector2(958,384),360,19,"e1bf86")
 	for i in range(g.relics.size()):
 		var id=g.relics[i]
-		var d=g.C.RELICS[id]
+		var d=g.Relics.inventory_data(g,id)
 		var p=Vector2(965+(i%4)*92,427+floori(i/4.0)*110)
 		icon(id,"relic",p,d.name+" / "+d.rarity+"\n"+d.desc,60)
 		var name_label = text_at(d.name,p+Vector2(-6,63),86,12,g.Relics.tier_color(d.rarity))
@@ -89,9 +89,9 @@ func _ready():
 	var index=0
 	for collection in [g.passives,g.augments]:
 		for id in collection:
-			var d=g.C.PASSIVES[id] if g.C.PASSIVES.has(id) else g.C.AUGMENTS[id]
+			var d=g.BuffRewards.inventory(g,id)
 			var p=Vector2(118+(index%25)*48,731+floori(index/25.0)*43)
-			icon(id,"passive",p,"%s / Rank %s\n%s"%[d.name,collection[id],d.desc],35)
+			icon(id,"passive",p,"%s / %s / Rank %s\n%s"%[d.name,d.rarity,collection[id],d.desc],35)
 			text_at(str(collection[id]),p+Vector2(26,22),20,12,"ffe9b6")
 			index+=1
 	var back=game.button(self,"B / ESC — Return to expedition",game.resume,true)
@@ -101,5 +101,6 @@ func total_dps(g):
 	var value=0.0
 	for id in g.damage_by_weapon: value+=g.ledger.recent(id,g.time)
 	return value
+
 
 

@@ -34,7 +34,7 @@ func _initialize():
   g.weapons={"lightning":{"level":10,"evolved":true,"timer":1.0}}
   for i in range(20):
    g.open_choices(true)
-   check(g.options[0].type!="relic","Full satchel never replaces chosen relic")
+   check(g.options[0].type!="relic" or g.options[0].id in original,"Full satchel improves owned relics without replacing")
    g.choose(0)
    check(g.relics==original,"Selected relics preserved")
  print("BUFF SLOTS / ",checks," checks / ",failures," failures")

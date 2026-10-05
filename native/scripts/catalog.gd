@@ -18,12 +18,12 @@ const BASE_WEAPONS = {
 	"mortar":{"name":"Extinction Mortar", "desc":"Calls delayed bombardments on clustered enemies.","color":"ff727a","damage":90.0,"cooldown":3.8,"evolution":"HEAVEN FALLS","requires":"pickup"}
 }
 const BASE_PASSIVES = {
-	"luck":{"name":"Fortune's Favor","desc":"Improves rare chest odds. Each rank weights higher tiers 10% more strongly.","max":5},
+	"luck":{"name":"Fortune's Favor","desc":"+10 points to rarity rolls. Luck stacks additively; rolls above 100 are Artifact.","max":5},
 	"damage":{"name":"Brutality","desc":"+14% damage", "max":5},
 	"haste":{"name":"Overclock","desc":"+10% attack speed", "max":5},
 	"area":{"name":"Cataclysm","desc":"+12% area radius", "max":5},
 	"count":{"name":"Double Down","desc":"+1 projectile / chain target", "max":3},
-	"crit":{"name":"Deadeye","desc":"+7% crit chance; smaller gains above 100%.", "max":60},
+	"crit":{"name":"Deadeye","desc":"+7% critical chance. Every 100% adds a guaranteed crit tier.", "max":60},
 	"armor":{"name":"Iron Will","desc":"+2 armor and +12 maximum health", "max":5},
 	"speed":{"name":"Afterimage","desc":"+8% movement speed", "max":5},
 	"pickup":{"name":"Gravitation","desc":"+35 pickup radius and +8% XP", "max":5},
@@ -52,7 +52,7 @@ static var PASSIVES = Rules.passive_data(BASE_PASSIVES)
 static var RELICS = preload("res://scripts/relic_system.gd").definitions(BASE_RELICS)
 const AUGMENTS = Rules.AUGMENTS
 const RESEARCH = {
-	"critical":{"name":"Hunter's Eye","desc":"+2% crit chance / rank (diminishes above 100%)","cost":200,"max":10},
+	"critical":{"name":"Hunter's Eye","desc":"+2% critical chance / rank. Stacks above 100%.","cost":200,"max":10},
 	"vitality":{"name":"Survivor's Blood", "desc":"+10 starting health / rank", "cost":70,"max":5},
 	"power":{"name":"Forbidden Knowledge", "desc":"+3% starting damage / rank", "cost":100,"max":5},
 	"fortune":{"name":"Scavenger's Legacy", "desc":"+5% amber and luck / rank", "cost":80,"max":5},

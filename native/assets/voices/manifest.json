@@ -1,0 +1,29 @@
+{
+  "kael": {
+    "chosen": 3,
+    "boss_spawn": 3,
+    "boss_killed": 2,
+    "death": 2,
+    "hurt": 3,
+    "level_up": 3,
+    "low_hp": 2
+  },
+  "voss": {
+    "death": 3,
+    "boss_killed": 4,
+    "boss_spawn": 4,
+    "chosen": 4,
+    "hurt": 3,
+    "level_up": 4,
+    "low_hp": 3
+  },
+  "vesper": {
+    "death": 2,
+    "boss_killed": 4,
+    "boss_spawn": 4,
+    "chosen": 4,
+    "hurt": 2,
+    "level_up": 4,
+    "low_hp": 3
+  }
+}

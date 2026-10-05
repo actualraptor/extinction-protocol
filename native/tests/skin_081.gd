@@ -34,7 +34,7 @@ func run():
 		game.upgrade_menu(opts.slice(start,start+3),false)
 		await process_frame;await process_frame;await process_frame
 		for p in all_controls(game.menu_root,PanelContainer):
-			check(p.size.y<=536,"Upgrade card fits allocated height / "+str(start))
+			check(p.size.y<=536,"Upgrade card fits allocated height / "+str(start)+" / actual "+str(p.size.y))
 			for c in all_controls(p,Control):check(p.get_global_rect().grow(1).encloses(c.get_global_rect()),"Upgrade contents inside panel / "+str(start))
 		button_bounds()
 	game.research_menu();await process_frame;await process_frame;await process_frame;button_bounds();await capture("archive")

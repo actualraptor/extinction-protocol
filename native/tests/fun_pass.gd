@@ -39,18 +39,23 @@ func _initialize():
 	var tiers = {}
 	var valid = true
 	for i in range(5000):
-		var id = g.Relics.roll(g)
-		var d = C.RELICS[id]
-		tiers[d.rarity] = tiers.get(d.rarity,0)+1
+		var reward = g.Relics.roll_reward(g)
+		var d = C.RELICS[reward.id]
+		tiers[reward.rarity] = tiers.get(reward.rarity,0)+1
 		valid = valid and C.Rules.eligible(g.weapons,C.WEAPONS,d.get("filter",{}))
 	check(valid and tiers.size()==6,"All six tiers reachable; all rewards compatible")
 	check(tiers.ARTIFACT<tiers.LEGENDARY and tiers.LEGENDARY<tiers.RARE,"Artifact is rarer than Legendary and Rare")
 	print("RARITY SAMPLE / ",tiers)
 	g.relics = ["flint","wrap","coil","lens","chronicle"]
-	for i in range(50): check(g.Relics.roll(g) not in g.relics,"No duplicate bound relic")
+	var repeat_seen=false
+	for i in range(50):
+		var reward=g.Relics.roll_reward(g)
+		repeat_seen=repeat_seen or reward.id in g.relics
+		check(not reward.is_empty(),"Owned relics remain eligible for tiered stacks")
+	check(repeat_seen,"Repeated relic identity can roll again")
 	g = game()
 	g.relic_state.dry_chests = 4
-	check(g.Relics.TIERS.find(C.RELICS[g.Relics.roll(g)].rarity)>=2,"Fifth dry chest guarantees Rare or better")
+	check(g.Relics.TIERS.find(g.Relics.roll_reward(g).rarity)>=2,"Fifth dry chest guarantees Rare or better")
 	var e = g.spawn_enemy(false,Vector2(50,0),0)
 	e.hp = 10000
 	e.frozen = 1.0

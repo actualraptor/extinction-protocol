@@ -4,7 +4,7 @@ const VERSION = 2
 const Discoveries = preload("res://scripts/discoveries.gd")
 
 static func defaults():
-	return {"version":VERSION,"starter_rules":2,"amber":0,"wins":0,"runs":0,"research":{},"records":[],"daily_records":[],"settings":{"sound":true,"music":true,"shake":true,"hud_scale":1.0},"campaign":{"kills":0,"bosses":0,"map_kills":{},"map_wins":{}}}
+	return {"version":VERSION,"starter_rules":2,"amber":0,"wins":0,"runs":0,"research":{},"records":[],"daily_records":[],"settings":{"sound":true,"music":true,"shake":true,"hud_scale":1.0,"halloween":true},"campaign":{"kills":0,"bosses":0,"map_kills":{},"map_wins":{}}}
 
 static func numeric(value):
 	return (value is int or value is float) and is_finite(float(value)) and value >= 0
@@ -27,13 +27,13 @@ static func validate(data):
 	for value in data.get("research",{}).values():
 		if not numeric(value): return false
 	var settings=data.get("settings",{})
-	for key in ["sound","music","shake"]:
+	for key in ["sound","music","shake","halloween"]:
 		if settings.has(key) and not settings[key] is bool: return false
 	if settings.has("hud_scale") and not numeric(settings.hud_scale): return false
 	var campaign=data.get("campaign",{})
 	for key in ["kills","bosses"]:
 		if campaign.has(key) and not numeric(campaign[key]): return false
-	for key in ["map_kills","map_wins"]:
+	for key in ["map_kills","map_wins","weapon_damage","survivor_runs"]:
 		if campaign.has(key):
 			if not campaign[key] is Dictionary: return false
 			for value in campaign[key].values():

@@ -2,6 +2,7 @@ extends RefCounted
 const WEAPONS = ["revolver","club","frost","fire","lightning","shotgun","orbital","mortar","spear","pyre","winter","miasma","dread","aegis","stasis","thunderstorm","whiteout","supernova","lastword","earthshaker","bastion","ricochet","return","compass","tablet"]
 const UPGRADES = ["luck","damage","haste","area","count","crit","armor","speed","pickup","regen","velocity","pierce","homing","bounce","reach","echo","conductor","fork","pulse","linger","ward","eternity","sorcery","winterbite","combustion"]
 const RELICS = ["ember","storm","blood","glass","clock","magnet","frost","boots","crown","shell","volley","branch","cyclone","shatter","wildfire","garden","reaper","laststand","momentum","apex","flint","wrap","coil","lens","prism","chronicle","portal","chest","camp","meteor"]
+const BOSSES = ["thorn","basalt","hunt","aurora","warden","bloom","meteor"]
 const RESEARCH_ICONS = {
  "critical":["crit","passive"],"vitality":["wrap","relic"],"power":["damage","passive"],
  "fortune":["crown","relic"],"reroll":["echo","augment"],"luck":["luck","passive"],
@@ -9,43 +10,58 @@ const RESEARCH_ICONS = {
  "greed":["ember","relic"],"growth":["lens","relic"],"magnet":["magnet","relic"],
  "armor":["armor","passive"],"recovery":["regen","passive"]}
 static var cache = {}
+static var missing = {}
 static func field(index):
-	var t=AtlasTexture.new();t.atlas=preload("res://assets/thorns-breakables-08.png")
-	var cell=Vector2(t.atlas.get_size())/2
-	t.region=Rect2(Vector2(index%2,floori(index/2.0))*cell,cell)
-	return t
+	if index<0 or index>3: return null
+	return _clean("field-"+["thorns","urn","crate","stump"][index])
 static func frontier(index):
-	var atlas = preload("res://assets/frontiers-07.png")
-	var region = AtlasTexture.new()
-	region.atlas=atlas
-	var cell=Vector2(atlas.get_size())/Vector2(4,3)
-	region.region=Rect2(Vector2(index%4,floori(index/4.0))*cell,cell)
-	return region
+	if index<0 or index>11: return null
+	return _clean("frontier-"+str(index))
 
+static func _clean(name):
+	var path="res://assets/clean-icons/"+name+".png"
+	if not cache.has(path): cache[path]=load(path)
+	return cache[path]
 
-static func get_icon(id,category = "weapon"):
-	if category=="research" and RESEARCH_ICONS.has(id):
-		return get_icon(RESEARCH_ICONS[id][0],RESEARCH_ICONS[id][1])
+static func _icon_name(id,category="weapon",halloween=false):
+	if category in ["fusion","evolution"]: category="weapon"
+	if category=="supplies":
+		if id in ["supplies","lens"]: return "relics-lens"
+		if id=="chest": return "relics-chest"
+		if id=="amber": return "relics-ember"
+		return ""
+	if category=="research":
+		if not RESEARCH_ICONS.has(id): return ""
+		return _icon_name(RESEARCH_ICONS[id][0],RESEARCH_ICONS[id][1],halloween)
+	if category=="boss":
+		return "boss-"+("halloween-" if halloween else "")+id if id in BOSSES else ""
 	if category=="discovery" and id in ["map_frost","map_observatory"]:
-		return frontier(8 if id=="map_frost" else 10)
-	var key = category+":"+id
-	if cache.has(key): return cache[key]
-	if id in ["thorns","thornking","spines","retribution"]: return field(0)
-	if id in ["harpoon","lantern","glacier","sunbow"]:
-		cache[key]=frontier(["harpoon","lantern","glacier","sunbow"].find(id))
-		return cache[key]
-	var list = RELICS if category=="relic" else UPGRADES if category in ["passive","augment"] else WEAPONS
-	var index = list.find(id)
-	if index<0: index = list.find("tablet") if list==WEAPONS else 0
-	var name = "relics" if category=="relic" else "upgrades" if category in ["passive","augment"] else "weapons"
-	var atlas = load("res://assets/icons-"+name+"-06.png")
-	var cols = 6 if name=="relics" else 5
-	var size = Vector2(atlas.get_size())/Vector2(cols,5)
-	var texture = AtlasTexture.new()
-	texture.atlas = atlas
-	texture.region = Rect2(Vector2(index%cols,floori(float(index)/cols))*size+Vector2.ONE*2,size-Vector2.ONE*4)
-	cache[key] = texture
-	return texture
+		return "frontier-"+str(8 if id=="map_frost" else 10)
+	# Explicit backward-compatible map alias also fixes historic patch entries.
+	if id=="map" and category in ["map","relic"]: return "weapons-compass"
+	if category=="map" and id=="compass": return "weapons-compass"
+	if id in ["thorns","thornking","spines","retribution"] and category in ["weapon","passive","augment"]: return "field-thorns"
+	if category=="weapon" and id in ["harpoon","lantern","glacier","sunbow"]:
+		return "frontier-"+str(["harpoon","lantern","glacier","sunbow"].find(id))
+	if category=="relic": return "relics-"+id if id in RELICS else ""
+	if category in ["passive","augment"]: return "upgrades-"+id if id in UPGRADES else ""
+	if category=="weapon": return "weapons-"+id if id in WEAPONS else ""
+	return ""
+
+static func has_icon(id,category="weapon",halloween=false):
+	var name=_icon_name(id,category,halloween)
+	return not name.is_empty() and ResourceLoader.exists("res://assets/clean-icons/"+name+".png")
+
+
+static func get_icon(id,category = "weapon",halloween = false):
+	var name=_icon_name(id,category,halloween)
+	if name.is_empty():
+		var key=category+":"+id
+		if not missing.has(key):
+			missing[key]=true
+			push_warning("Missing explicit icon mapping: "+key)
+		return null
+	return _clean(name)
 
 static func control(parent,id,category = "weapon",size = 76):
 	var icon = TextureRect.new()

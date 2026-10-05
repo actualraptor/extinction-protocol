@@ -224,6 +224,35 @@ func _draw():
 		if e.kind=="blast_club":
 			piece(7,p,Vector2.ONE*e.size*2,progress*TAU,1-progress)
 			piece(7,p,Vector2.ONE*e.size*1.6,progress*TAU+PI,(1-progress)*0.55)
+		if e.kind.begins_with("kael_slam_"):
+			var material_name=e.kind.get_slice("_",2)
+			var band=int(e.kind.get_slice("_",3))
+			var bands=int(e.kind.get_slice("_",4))
+			var strong=bands==4
+			var count=16 if strong else 12
+			var width=e.size/float(band+1)
+			# Each delayed band erupts in broken segments, rather than one
+			# uniform ring. Painted dust and ice carry the material identity.
+			for j in range(count):
+				var angle=j*TAU/count+band*.19
+				var local=clampf(progress*1.7-float(j%3)*.09,0,1)
+				var radial=e.size-width*.45+width*.5*local
+				var at=p+Vector2.from_angle(angle)*radial
+				var eruption_alpha=(1-local)*.95
+				var lift=sin(local*PI)*(24 if strong else 17)
+				var span=Vector2(58 if strong else 44,30)
+				piece(7,at,span*Vector2(1+local,.8),angle,eruption_alpha,e.color)
+				if material_name=="ice":
+					piece(1,at+Vector2(0,-lift),Vector2(36,16)*(1-local*.35),angle-PI*.5,eruption_alpha,Color("b4edff"))
+				else:
+					var rock=Vector2(12 if strong else 8,10 if material_name=="stone" else 7)*(1-local*.4)
+					var center=at+Vector2(0,-lift)
+					var vertices=PackedVector2Array([center+Vector2(-rock.x,0),center+Vector2(-rock.x*.4,-rock.y),center+Vector2(rock.x*.7,-rock.y*.7),center+Vector2(rock.x,rock.y*.2),center+Vector2(0,rock.y)])
+					draw_colored_polygon(vertices,Color(e.color.darkened(.15),eruption_alpha))
+					draw_line(vertices[1],vertices[2],Color(e.color.lightened(.4),eruption_alpha),1.3,true)
+				var crack_start=p+Vector2.from_angle(angle)*(e.size-width*.9)
+				var crack_end=p+Vector2.from_angle(angle+.025)*(e.size+width*.1)
+				draw_line(crack_start,crack_end,Color(e.color,eruption_alpha*.7),3 if strong else 2,true)
 	for h in s.hazards:
 		if h.has("launch") and h.wait>0:
 			var t=clampf(1.0-h.wait/h.flight,0,1)

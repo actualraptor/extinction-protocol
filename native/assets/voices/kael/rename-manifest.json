@@ -1,0 +1,164 @@
+[
+  {
+    "event": "chosen",
+    "number": 1,
+    "original_source": "Voicelines\\Kael\\Kael chosen in menu\\Kael - chosen PIcking Kael.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\chosen_0.mp3",
+    "source": "Voicelines\\Kael\\Kael chosen in menu\\kael_chosen_1.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_chosen_1.mp3",
+    "sha256": "9402f783356eb8aab8a9c9c39c527d1c5719c1df1422f4a4d55832fbd8bc9f23"
+  },
+  {
+    "event": "chosen",
+    "number": 2,
+    "original_source": "Voicelines\\Kael\\Kael chosen in menu\\Kael - chosen time to Bonk.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\chosen_1.mp3",
+    "source": "Voicelines\\Kael\\Kael chosen in menu\\kael_chosen_2.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_chosen_2.mp3",
+    "sha256": "c8248ccbc4520790e07804a598420b6960730ef7a95f23725e08485f1e5d2d78"
+  },
+  {
+    "event": "chosen",
+    "number": 3,
+    "original_source": "Voicelines\\Kael\\Kael chosen in menu\\kael - chosen unga bunga.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\chosen_2.mp3",
+    "source": "Voicelines\\Kael\\Kael chosen in menu\\kael_chosen_3.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_chosen_3.mp3",
+    "sha256": "10c1dee5104fb43ceb6ea35a2eb54d8c1a7d56adf0c59239fa48e97707e59257"
+  },
+  {
+    "event": "boss_spawn",
+    "number": 1,
+    "original_source": "Voicelines\\Kael\\Kael boss spawn\\kael - boss found dinner.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\boss_spawn_0.mp3",
+    "source": "Voicelines\\Kael\\Kael boss spawn\\kael_boss_spawn_1.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_boss_spawn_1.mp3",
+    "sha256": "6f99abd363bca7a5ad7f308de68482c8f2659f5d22bdd3550e93b459158f6829"
+  },
+  {
+    "event": "boss_spawn",
+    "number": 2,
+    "original_source": "Voicelines\\Kael\\Kael boss spawn\\Kael - have  strategy.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\boss_spawn_1.mp3",
+    "source": "Voicelines\\Kael\\Kael boss spawn\\kael_boss_spawn_2.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_boss_spawn_2.mp3",
+    "sha256": "acfd977bbe82983fd57fa73e5aadffb4ca7dd9d2d5da2a0074ce4b87b9202260"
+  },
+  {
+    "event": "boss_spawn",
+    "number": 3,
+    "original_source": "Voicelines\\Kael\\Kael boss spawn\\kael boss - that one ugly.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\boss_spawn_2.mp3",
+    "source": "Voicelines\\Kael\\Kael boss spawn\\kael_boss_spawn_3.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_boss_spawn_3.mp3",
+    "sha256": "84d6e26da29bf261fd344ba9af35b3ebaecdcc369a9a34e2ca402a29ef3b491a"
+  },
+  {
+    "event": "boss_killed",
+    "number": 1,
+    "original_source": "Voicelines\\Kael\\Kael boss killed\\kael - boss kill big thing now dead thing.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\boss_killed_0.mp3",
+    "source": "Voicelines\\Kael\\Kael boss killed\\kael_boss_killed_1.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_boss_killed_1.mp3",
+    "sha256": "74627e9b17bc7bc9b0faf1cad8bbe68308b30c501645aa5c06e75ab12192a57e"
+  },
+  {
+    "event": "boss_killed",
+    "number": 2,
+    "original_source": "Voicelines\\Kael\\Kael boss killed\\kael - boss kill stronger than history.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\boss_killed_1.mp3",
+    "source": "Voicelines\\Kael\\Kael boss killed\\kael_boss_killed_2.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_boss_killed_2.mp3",
+    "sha256": "abcfecb0b938f5b7aa8837594a26253a1b8dbd95afef5b93c14b580172f5e076"
+  },
+  {
+    "event": "death",
+    "number": 1,
+    "original_source": "Voicelines\\Kael\\Dead\\coughing dead.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\death_0.mp3",
+    "source": "Voicelines\\Kael\\Dead\\kael_death_1.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_death_1.mp3",
+    "sha256": "c9d43a01384572800b4f6be8cfb65bf25b9510ff9aa3d8b208b07d2b88c87285"
+  },
+  {
+    "event": "death",
+    "number": 2,
+    "original_source": "Voicelines\\Kael\\Dead\\dead.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\death_1.mp3",
+    "source": "Voicelines\\Kael\\Dead\\kael_death_2.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_death_2.mp3",
+    "sha256": "fa8cccb89a4d13e3b3c576f3093218ea7942f79ddb1f2a4907a3bf03e066cc2c"
+  },
+  {
+    "event": "hurt",
+    "number": 1,
+    "original_source": "Voicelines\\Kael\\Kael hurt\\OH.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\hurt_0.mp3",
+    "source": "Voicelines\\Kael\\Kael hurt\\kael_hurt_1.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_hurt_1.mp3",
+    "sha256": "4783934ce31b22fe683808ca209dc6fba06f6182ecc172e77871fac30da70274"
+  },
+  {
+    "event": "hurt",
+    "number": 2,
+    "original_source": "Voicelines\\Kael\\Kael hurt\\OWW.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\hurt_1.mp3",
+    "source": "Voicelines\\Kael\\Kael hurt\\kael_hurt_2.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_hurt_2.mp3",
+    "sha256": "848eb306cd0fd0e707f4f3e38895f1f39aca566e399c939e79e326e925c6ef6f"
+  },
+  {
+    "event": "hurt",
+    "number": 3,
+    "original_source": "Voicelines\\Kael\\Kael hurt\\UH.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\hurt_2.mp3",
+    "source": "Voicelines\\Kael\\Kael hurt\\kael_hurt_3.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_hurt_3.mp3",
+    "sha256": "25f04a376379d9d1ebf2000a6dc0d9175bdfc3cda0b78549e4d2fa9589823ff3"
+  },
+  {
+    "event": "level_up",
+    "number": 1,
+    "original_source": "Voicelines\\Kael\\Kael level up\\kael - level up muscle learn.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\level_up_0.mp3",
+    "source": "Voicelines\\Kael\\Kael level up\\kael_level_up_1.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_level_up_1.mp3",
+    "sha256": "998970bc2e08ffd9d25ea8f415b59de229048efeb13d95b3a8026cab4cbc7558"
+  },
+  {
+    "event": "level_up",
+    "number": 2,
+    "original_source": "Voicelines\\Kael\\Kael level up\\kael - level up unga bunga.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\level_up_1.mp3",
+    "source": "Voicelines\\Kael\\Kael level up\\kael_level_up_2.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_level_up_2.mp3",
+    "sha256": "87fc9874b6dcdf95f83c03539bb532a1e85cf01b8cadb9e9199b5b204ab5653b"
+  },
+  {
+    "event": "level_up",
+    "number": 3,
+    "original_source": "Voicelines\\Kael\\Kael level up\\kael -level up bigger brain.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\level_up_2.mp3",
+    "source": "Voicelines\\Kael\\Kael level up\\kael_level_up_3.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_level_up_3.mp3",
+    "sha256": "6041fdc5f3aec9aced3a6869a83c1d7e3f758528058ed7a0860c3a5cb33c6c73"
+  },
+  {
+    "event": "low_hp",
+    "number": 1,
+    "original_source": "Voicelines\\Kael\\Kael low hp\\kael - low hp leak red stuff.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\low_hp_0.mp3",
+    "source": "Voicelines\\Kael\\Kael low hp\\kael_low_hp_1.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_low_hp_1.mp3",
+    "sha256": "0aa8d791179f9bf56aaeced5b45e2abdfa01cbf0988eb42fd33ebb6bc1bc85da"
+  },
+  {
+    "event": "low_hp",
+    "number": 2,
+    "original_source": "Voicelines\\Kael\\Kael low hp\\kael - low hp ouchie ouchie.mp3",
+    "original_runtime": "native\\assets\\voices\\kael\\low_hp_1.mp3",
+    "source": "Voicelines\\Kael\\Kael low hp\\kael_low_hp_2.mp3",
+    "runtime": "native\\assets\\voices\\kael\\kael_low_hp_2.mp3",
+    "sha256": "4fc0767fce6af6fcf4493e941d215e868a89c9878d6923c58b1b8f20259947ce"
+  }
+]

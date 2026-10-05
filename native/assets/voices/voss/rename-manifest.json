@@ -1,0 +1,152 @@
+[
+  {
+    "original": "Voicelines\\Voss\\Dead\\1.mp3",
+    "source": "Voicelines\\Voss\\Dead\\voss_death_1.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_death_1.mp3",
+    "sha256": "bc7b6e2028b41090d4311b672f32887c190a9c82267a395e97048844f68287c9"
+  },
+  {
+    "original": "Voicelines\\Voss\\Dead\\2.mp3",
+    "source": "Voicelines\\Voss\\Dead\\voss_death_2.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_death_2.mp3",
+    "sha256": "36a860e7bb9bf2007380919f1b5916713da05086db4c8bab893c3c29b1e50c4d"
+  },
+  {
+    "original": "Voicelines\\Voss\\Dead\\3.mp3",
+    "source": "Voicelines\\Voss\\Dead\\voss_death_3.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_death_3.mp3",
+    "sha256": "af5af472a55fe13a1f046143c64672b51c5db1e8f78f4370c25e1db6a3dfbb32"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss boss killed\\1.mp3",
+    "source": "Voicelines\\Voss\\Voss boss killed\\voss_boss_killed_1.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_boss_killed_1.mp3",
+    "sha256": "1175be1ad34f9e49fb9ca967f25204f1db8a93551c7c7e13728d595d3f8d640f"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss boss killed\\2.mp3",
+    "source": "Voicelines\\Voss\\Voss boss killed\\voss_boss_killed_2.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_boss_killed_2.mp3",
+    "sha256": "b1f52fb2ed3a149153d9bfd3820d7f50c954700d48292562be31ec7ec392a5e0"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss boss killed\\3.mp3",
+    "source": "Voicelines\\Voss\\Voss boss killed\\voss_boss_killed_3.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_boss_killed_3.mp3",
+    "sha256": "5e125bfd1268926ab5c5789d87da95f08d1f17ad57b3074914b4ebb1377bbe81"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss boss killed\\4.mp3",
+    "source": "Voicelines\\Voss\\Voss boss killed\\voss_boss_killed_4.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_boss_killed_4.mp3",
+    "sha256": "9ec4f229e6356ea00abb06dc0c48b65632f0f3819c266eeb74a51db4b8afcc6b"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss boss spawn\\1.mp3",
+    "source": "Voicelines\\Voss\\Voss boss spawn\\voss_boss_spawn_1.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_boss_spawn_1.mp3",
+    "sha256": "8aa6084291a20b5deb70e3d0b81ce36baeaae7b39ef7fcf7dd30b61031b1d049"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss boss spawn\\2.mp3",
+    "source": "Voicelines\\Voss\\Voss boss spawn\\voss_boss_spawn_2.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_boss_spawn_2.mp3",
+    "sha256": "36f8b97dc2a1e58f6de12152ac6324d374e6fd9fd3d404f68261a726710d9651"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss boss spawn\\3.mp3",
+    "source": "Voicelines\\Voss\\Voss boss spawn\\voss_boss_spawn_3.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_boss_spawn_3.mp3",
+    "sha256": "1c47899e1a1aa1ec4f33ee6588ffb2ffcd6e0996566048ce0a9f43ddff718581"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss boss spawn\\4.mp3",
+    "source": "Voicelines\\Voss\\Voss boss spawn\\voss_boss_spawn_4.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_boss_spawn_4.mp3",
+    "sha256": "9abb7aa4059273174f394544b2fe5390721a7a1d8dcdd9596ef2db79123c25cf"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss chosen in menu\\1.mp3",
+    "source": "Voicelines\\Voss\\Voss chosen in menu\\voss_chosen_1.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_chosen_1.mp3",
+    "sha256": "a87a3951488f03ca6366560e25cd9fb957e6d560834d1e1c1dfe0d2031593a1f"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss chosen in menu\\mara_select_02.mp3",
+    "source": "Voicelines\\Voss\\Voss chosen in menu\\voss_chosen_2.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_chosen_2.mp3",
+    "sha256": "5cacd69993e47c71605e648da3b2e6b39fe584e531df3f31db26f42f68e97d57"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss chosen in menu\\3.mp3",
+    "source": "Voicelines\\Voss\\Voss chosen in menu\\voss_chosen_3.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_chosen_3.mp3",
+    "sha256": "31545b712ed19a5d8bec7baeafafe6918b33fcfc821861fbc555ed9a5f2168b4"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss chosen in menu\\4.mp3",
+    "source": "Voicelines\\Voss\\Voss chosen in menu\\voss_chosen_4.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_chosen_4.mp3",
+    "sha256": "0624f6dad9894939a8ff3a901c269456d43c3b41503aada2bfdc1b6d2f7ca993"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss hurt\\1.mp3",
+    "source": "Voicelines\\Voss\\Voss hurt\\voss_hurt_1.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_hurt_1.mp3",
+    "sha256": "4223d6c71f5059bc48d6807f59aba808285375f03ab47a5c080838f1f8f9958e"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss hurt\\2.mp3",
+    "source": "Voicelines\\Voss\\Voss hurt\\voss_hurt_2.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_hurt_2.mp3",
+    "sha256": "b7ee853ac9f85650c5303892f64741360484f20a8d284b3c0dfeabc2e151e525"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss hurt\\3.mp3",
+    "source": "Voicelines\\Voss\\Voss hurt\\voss_hurt_3.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_hurt_3.mp3",
+    "sha256": "a6fda41086e0bb94145ee8a7f338ba3bae99fc89adbb505212b510da84b376c0"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss level up\\1.mp3",
+    "source": "Voicelines\\Voss\\Voss level up\\voss_level_up_1.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_level_up_1.mp3",
+    "sha256": "535a9c17d29d6d84ac5b6d9d46db3b38e3196d586ec9061a69c1997f0fdf7c8c"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss level up\\2.mp3",
+    "source": "Voicelines\\Voss\\Voss level up\\voss_level_up_2.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_level_up_2.mp3",
+    "sha256": "8ef8c1ed02d76e7b46abb16a0d9917a1e77bccd9691b8d9a507eb27b6e72f61d"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss level up\\3.mp3",
+    "source": "Voicelines\\Voss\\Voss level up\\voss_level_up_3.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_level_up_3.mp3",
+    "sha256": "6f90378eb05f22c368e31cb957dc857feeeb7c0d49b29a1350807f762d6ba141"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss level up\\4.mp3",
+    "source": "Voicelines\\Voss\\Voss level up\\voss_level_up_4.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_level_up_4.mp3",
+    "sha256": "be989b08b3d5e2960d5b1e01575d2da309fb3be517a44a44693e308d622faf86"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss low hp\\1.mp3",
+    "source": "Voicelines\\Voss\\Voss low hp\\voss_low_hp_1.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_low_hp_1.mp3",
+    "sha256": "5ebb53f08abc1d87cbd96014e73c5347ce014ed769122ceb53e7db12cc3ac692"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss low hp\\2.mp3",
+    "source": "Voicelines\\Voss\\Voss low hp\\voss_low_hp_2.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_low_hp_2.mp3",
+    "sha256": "98c702d4c75f70ac6154547ac09302ec10daff21bb4dd91f230a0d608ef0c0c0"
+  },
+  {
+    "original": "Voicelines\\Voss\\Voss low hp\\3.mp3",
+    "source": "Voicelines\\Voss\\Voss low hp\\voss_low_hp_3.mp3",
+    "runtime": "native\\assets\\voices\\voss\\voss_low_hp_3.mp3",
+    "sha256": "53de1e451d2c63541726e9138db09cbfa1d827ab2253e203b828d40234db9a48"
+  }
+]

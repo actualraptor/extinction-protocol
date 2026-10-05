@@ -1,0 +1,1394 @@
+[
+  {
+    "file": "weapons-revolver.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 0,
+    "bounds": [
+      14,
+      50,
+      269,
+      250
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "weapons-club.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 1,
+    "bounds": [
+      271,
+      17,
+      496,
+      256
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "weapons-frost.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 2,
+    "bounds": [
+      515,
+      8,
+      765,
+      257
+    ],
+    "component_count": 14
+  },
+  {
+    "file": "weapons-fire.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 3,
+    "bounds": [
+      777,
+      36,
+      1003,
+      244
+    ],
+    "component_count": 17
+  },
+  {
+    "file": "weapons-lightning.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 4,
+    "bounds": [
+      1025,
+      9,
+      1238,
+      257
+    ],
+    "component_count": 3
+  },
+  {
+    "file": "weapons-shotgun.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 5,
+    "bounds": [
+      16,
+      288,
+      253,
+      481
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "weapons-orbital.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 6,
+    "bounds": [
+      258,
+      266,
+      510,
+      501
+    ],
+    "component_count": 4
+  },
+  {
+    "file": "weapons-mortar.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 7,
+    "bounds": [
+      509,
+      285,
+      747,
+      498
+    ],
+    "component_count": 9
+  },
+  {
+    "file": "weapons-spear.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 8,
+    "bounds": [
+      765,
+      252,
+      996,
+      500
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "weapons-pyre.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 9,
+    "bounds": [
+      1012,
+      267,
+      1243,
+      499
+    ],
+    "component_count": 27
+  },
+  {
+    "file": "weapons-winter.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 10,
+    "bounds": [
+      13,
+      501,
+      257,
+      747
+    ],
+    "component_count": 6
+  },
+  {
+    "file": "weapons-miasma.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 11,
+    "bounds": [
+      264,
+      510,
+      497,
+      749
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "weapons-dread.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 12,
+    "bounds": [
+      511,
+      500,
+      757,
+      751
+    ],
+    "component_count": 2
+  },
+  {
+    "file": "weapons-aegis.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 13,
+    "bounds": [
+      766,
+      506,
+      1000,
+      751
+    ],
+    "component_count": 8
+  },
+  {
+    "file": "weapons-stasis.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 14,
+    "bounds": [
+      1044,
+      505,
+      1222,
+      746
+    ],
+    "component_count": 6
+  },
+  {
+    "file": "weapons-thunderstorm.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 15,
+    "bounds": [
+      10,
+      743,
+      258,
+      993
+    ],
+    "component_count": 2
+  },
+  {
+    "file": "weapons-whiteout.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 16,
+    "bounds": [
+      260,
+      751,
+      501,
+      984
+    ],
+    "component_count": 12
+  },
+  {
+    "file": "weapons-supernova.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 17,
+    "bounds": [
+      509,
+      750,
+      755,
+      986
+    ],
+    "component_count": 9
+  },
+  {
+    "file": "weapons-lastword.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 18,
+    "bounds": [
+      761,
+      750,
+      1008,
+      981
+    ],
+    "component_count": 5
+  },
+  {
+    "file": "weapons-earthshaker.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 19,
+    "bounds": [
+      1010,
+      743,
+      1246,
+      995
+    ],
+    "component_count": 25
+  },
+  {
+    "file": "weapons-bastion.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 20,
+    "bounds": [
+      7,
+      991,
+      263,
+      1244
+    ],
+    "component_count": 3
+  },
+  {
+    "file": "weapons-ricochet.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 21,
+    "bounds": [
+      264,
+      997,
+      491,
+      1248
+    ],
+    "component_count": 9
+  },
+  {
+    "file": "weapons-return.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 22,
+    "bounds": [
+      505,
+      995,
+      748,
+      1226
+    ],
+    "component_count": 6
+  },
+  {
+    "file": "weapons-compass.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 23,
+    "bounds": [
+      771,
+      988,
+      994,
+      1238
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "weapons-tablet.png",
+    "source": "icons-weapons-06.png",
+    "grid_index": 24,
+    "bounds": [
+      1028,
+      993,
+      1243,
+      1239
+    ],
+    "component_count": 13
+  },
+  {
+    "file": "upgrades-luck.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 0,
+    "bounds": [
+      34,
+      47,
+      230,
+      255
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "upgrades-damage.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 1,
+    "bounds": [
+      270,
+      30,
+      488,
+      262
+    ],
+    "component_count": 12
+  },
+  {
+    "file": "upgrades-haste.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 2,
+    "bounds": [
+      504,
+      33,
+      740,
+      250
+    ],
+    "component_count": 4
+  },
+  {
+    "file": "upgrades-area.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 3,
+    "bounds": [
+      755,
+      8,
+      1013,
+      273
+    ],
+    "component_count": 13
+  },
+  {
+    "file": "upgrades-count.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 4,
+    "bounds": [
+      1014,
+      37,
+      1240,
+      246
+    ],
+    "component_count": 4
+  },
+  {
+    "file": "upgrades-crit.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 5,
+    "bounds": [
+      6,
+      263,
+      249,
+      512
+    ],
+    "component_count": 6
+  },
+  {
+    "file": "upgrades-armor.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 6,
+    "bounds": [
+      255,
+      279,
+      490,
+      508
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "upgrades-speed.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 7,
+    "bounds": [
+      509,
+      275,
+      745,
+      502
+    ],
+    "component_count": 3
+  },
+  {
+    "file": "upgrades-pickup.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 8,
+    "bounds": [
+      793,
+      289,
+      996,
+      503
+    ],
+    "component_count": 8
+  },
+  {
+    "file": "upgrades-regen.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 9,
+    "bounds": [
+      1024,
+      274,
+      1238,
+      511
+    ],
+    "component_count": 4
+  },
+  {
+    "file": "upgrades-velocity.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 10,
+    "bounds": [
+      17,
+      530,
+      254,
+      737
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "upgrades-pierce.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 11,
+    "bounds": [
+      253,
+      512,
+      495,
+      737
+    ],
+    "component_count": 18
+  },
+  {
+    "file": "upgrades-homing.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 12,
+    "bounds": [
+      505,
+      518,
+      746,
+      740
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "upgrades-bounce.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 13,
+    "bounds": [
+      757,
+      520,
+      1006,
+      741
+    ],
+    "component_count": 6
+  },
+  {
+    "file": "upgrades-reach.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 14,
+    "bounds": [
+      1000,
+      515,
+      1254,
+      745
+    ],
+    "component_count": 7
+  },
+  {
+    "file": "upgrades-echo.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 15,
+    "bounds": [
+      14,
+      756,
+      256,
+      967
+    ],
+    "component_count": 23
+  },
+  {
+    "file": "upgrades-conductor.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 16,
+    "bounds": [
+      272,
+      735,
+      499,
+      981
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "upgrades-fork.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 17,
+    "bounds": [
+      499,
+      734,
+      757,
+      984
+    ],
+    "component_count": 17
+  },
+  {
+    "file": "upgrades-pulse.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 18,
+    "bounds": [
+      757,
+      744,
+      1002,
+      977
+    ],
+    "component_count": 14
+  },
+  {
+    "file": "upgrades-linger.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 19,
+    "bounds": [
+      1013,
+      727,
+      1240,
+      1007
+    ],
+    "component_count": 16
+  },
+  {
+    "file": "upgrades-ward.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 20,
+    "bounds": [
+      17,
+      994,
+      252,
+      1222
+    ],
+    "component_count": 9
+  },
+  {
+    "file": "upgrades-eternity.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 21,
+    "bounds": [
+      274,
+      974,
+      488,
+      1226
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "upgrades-sorcery.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 22,
+    "bounds": [
+      499,
+      983,
+      754,
+      1232
+    ],
+    "component_count": 3
+  },
+  {
+    "file": "upgrades-winterbite.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 23,
+    "bounds": [
+      763,
+      983,
+      996,
+      1229
+    ],
+    "component_count": 9
+  },
+  {
+    "file": "upgrades-combustion.png",
+    "source": "icons-upgrades-06.png",
+    "grid_index": 24,
+    "bounds": [
+      1035,
+      955,
+      1238,
+      1232
+    ],
+    "component_count": 6
+  },
+  {
+    "file": "relics-ember.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 0,
+    "bounds": [
+      38,
+      6,
+      217,
+      213
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-storm.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 1,
+    "bounds": [
+      268,
+      0,
+      472,
+      211
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-blood.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 2,
+    "bounds": [
+      531,
+      0,
+      709,
+      222
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-glass.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 3,
+    "bounds": [
+      779,
+      0,
+      1006,
+      213
+    ],
+    "component_count": 6
+  },
+  {
+    "file": "relics-clock.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 4,
+    "bounds": [
+      1058,
+      0,
+      1246,
+      217
+    ],
+    "component_count": 8
+  },
+  {
+    "file": "relics-magnet.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 5,
+    "bounds": [
+      1305,
+      12,
+      1508,
+      209
+    ],
+    "component_count": 2
+  },
+  {
+    "file": "relics-frost.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 6,
+    "bounds": [
+      58,
+      212,
+      213,
+      427
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-boots.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 7,
+    "bounds": [
+      268,
+      208,
+      497,
+      418
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-crown.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 8,
+    "bounds": [
+      513,
+      231,
+      768,
+      404
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-shell.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 9,
+    "bounds": [
+      777,
+      211,
+      1007,
+      417
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-volley.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 10,
+    "bounds": [
+      1022,
+      223,
+      1278,
+      410
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-branch.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 11,
+    "bounds": [
+      1299,
+      214,
+      1518,
+      411
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-cyclone.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 12,
+    "bounds": [
+      11,
+      407,
+      246,
+      609
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-shatter.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 13,
+    "bounds": [
+      271,
+      408,
+      484,
+      617
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-wildfire.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 14,
+    "bounds": [
+      517,
+      409,
+      755,
+      614
+    ],
+    "component_count": 4
+  },
+  {
+    "file": "relics-garden.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 15,
+    "bounds": [
+      778,
+      408,
+      998,
+      612
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-reaper.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 16,
+    "bounds": [
+      1023,
+      400,
+      1289,
+      614
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-laststand.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 17,
+    "bounds": [
+      1320,
+      402,
+      1497,
+      612
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-momentum.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 18,
+    "bounds": [
+      0,
+      605,
+      250,
+      809
+    ],
+    "component_count": 3
+  },
+  {
+    "file": "relics-apex.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 19,
+    "bounds": [
+      264,
+      612,
+      510,
+      798
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-flint.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 20,
+    "bounds": [
+      523,
+      607,
+      750,
+      806
+    ],
+    "component_count": 18
+  },
+  {
+    "file": "relics-wrap.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 21,
+    "bounds": [
+      779,
+      603,
+      1008,
+      813
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-coil.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 22,
+    "bounds": [
+      1036,
+      602,
+      1245,
+      817
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-lens.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 23,
+    "bounds": [
+      1278,
+      608,
+      1517,
+      798
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-prism.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 24,
+    "bounds": [
+      16,
+      805,
+      234,
+      1005
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-chronicle.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 25,
+    "bounds": [
+      241,
+      798,
+      503,
+      1014
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-portal.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 26,
+    "bounds": [
+      526,
+      793,
+      748,
+      1005
+    ],
+    "component_count": 6
+  },
+  {
+    "file": "relics-chest.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 27,
+    "bounds": [
+      770,
+      807,
+      1018,
+      999
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-camp.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 28,
+    "bounds": [
+      1016,
+      806,
+      1292,
+      999
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "relics-meteor.png",
+    "source": "icons-relics-06.png",
+    "grid_index": 29,
+    "bounds": [
+      1298,
+      788,
+      1521,
+      999
+    ],
+    "component_count": 10
+  },
+  {
+    "file": "field-thorns.png",
+    "source": "thorns-breakables-08.png",
+    "grid_index": 0,
+    "bounds": [
+      40,
+      8,
+      667,
+      619
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "field-urn.png",
+    "source": "thorns-breakables-08.png",
+    "grid_index": 1,
+    "bounds": [
+      726,
+      7,
+      1192,
+      626
+    ],
+    "component_count": 2
+  },
+  {
+    "file": "field-crate.png",
+    "source": "thorns-breakables-08.png",
+    "grid_index": 2,
+    "bounds": [
+      32,
+      625,
+      612,
+      1228
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "field-stump.png",
+    "source": "thorns-breakables-08.png",
+    "grid_index": 3,
+    "bounds": [
+      627,
+      628,
+      1238,
+      1243
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "frontier-0.png",
+    "source": "frontiers-07.png",
+    "grid_index": 0,
+    "bounds": [
+      5,
+      17,
+      359,
+      358
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "frontier-1.png",
+    "source": "frontiers-07.png",
+    "grid_index": 1,
+    "bounds": [
+      420,
+      0,
+      674,
+      360
+    ],
+    "component_count": 2
+  },
+  {
+    "file": "frontier-2.png",
+    "source": "frontiers-07.png",
+    "grid_index": 2,
+    "bounds": [
+      737,
+      11,
+      1058,
+      358
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "frontier-3.png",
+    "source": "frontiers-07.png",
+    "grid_index": 3,
+    "bounds": [
+      1091,
+      15,
+      1442,
+      351
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "frontier-4.png",
+    "source": "frontiers-07.png",
+    "grid_index": 4,
+    "bounds": [
+      16,
+      372,
+      361,
+      701
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "frontier-5.png",
+    "source": "frontiers-07.png",
+    "grid_index": 5,
+    "bounds": [
+      384,
+      366,
+      709,
+      707
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "frontier-6.png",
+    "source": "frontiers-07.png",
+    "grid_index": 6,
+    "bounds": [
+      725,
+      371,
+      1080,
+      706
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "frontier-7.png",
+    "source": "frontiers-07.png",
+    "grid_index": 7,
+    "bounds": [
+      1089,
+      364,
+      1441,
+      704
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "frontier-8.png",
+    "source": "frontiers-07.png",
+    "grid_index": 8,
+    "bounds": [
+      7,
+      714,
+      387,
+      1080
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "frontier-9.png",
+    "source": "frontiers-07.png",
+    "grid_index": 9,
+    "bounds": [
+      366,
+      727,
+      757,
+      1076
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "frontier-10.png",
+    "source": "frontiers-07.png",
+    "grid_index": 10,
+    "bounds": [
+      775,
+      713,
+      1070,
+      1078
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "frontier-11.png",
+    "source": "frontiers-07.png",
+    "grid_index": 11,
+    "bounds": [
+      1088,
+      724,
+      1439,
+      1080
+    ],
+    "component_count": 2
+  },
+  {
+    "file": "boss-thorn.png",
+    "source": "characters-v2.png",
+    "grid_index": 4,
+    "bounds": [
+      461,
+      515,
+      854,
+      789
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "boss-meteor.png",
+    "source": "characters-v2.png",
+    "grid_index": 8,
+    "bounds": [
+      918,
+      866,
+      1220,
+      1173
+    ],
+    "component_count": 8
+  },
+  {
+    "file": "boss-basalt.png",
+    "source": "monsters-04.png",
+    "grid_index": 6,
+    "bounds": [
+      89,
+      918,
+      350,
+      1145
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "boss-hunt.png",
+    "source": "frontiers-07.png",
+    "grid_index": 4,
+    "bounds": [
+      16,
+      372,
+      361,
+      701
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "boss-aurora.png",
+    "source": "frontiers-07.png",
+    "grid_index": 5,
+    "bounds": [
+      384,
+      366,
+      709,
+      707
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "boss-warden.png",
+    "source": "frontiers-07.png",
+    "grid_index": 6,
+    "bounds": [
+      725,
+      371,
+      1080,
+      706
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "boss-bloom.png",
+    "source": "frontiers-07.png",
+    "grid_index": 7,
+    "bounds": [
+      1089,
+      364,
+      1441,
+      704
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "boss-halloween-thorn.png",
+    "source": "hollow-harvest-creatures.png",
+    "grid_index": 4,
+    "bounds": [
+      457,
+      508,
+      856,
+      791
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "boss-halloween-meteor.png",
+    "source": "hollow-harvest-creatures.png",
+    "grid_index": 8,
+    "bounds": [
+      917,
+      866,
+      1221,
+      1175
+    ],
+    "component_count": 5
+  },
+  {
+    "file": "boss-halloween-basalt.png",
+    "source": "hollow-harvest-monsters.png",
+    "grid_index": 6,
+    "bounds": [
+      57,
+      890,
+      390,
+      1187
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "boss-halloween-hunt.png",
+    "source": "hollow-harvest-frontiers.png",
+    "grid_index": 4,
+    "bounds": [
+      14,
+      360,
+      364,
+      701
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "boss-halloween-aurora.png",
+    "source": "hollow-harvest-frontiers.png",
+    "grid_index": 5,
+    "bounds": [
+      387,
+      363,
+      721,
+      716
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "boss-halloween-warden.png",
+    "source": "hollow-harvest-frontiers.png",
+    "grid_index": 6,
+    "bounds": [
+      725,
+      362,
+      1091,
+      707
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "boss-halloween-bloom.png",
+    "source": "hollow-harvest-frontiers.png",
+    "grid_index": 7,
+    "bounds": [
+      1086,
+      363,
+      1445,
+      708
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "portrait-halloween-kael.png",
+    "source": "harvest-portraits-011.png",
+    "grid_index": 0,
+    "bounds": [
+      24,
+      118,
+      472,
+      668
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "portrait-halloween-voss.png",
+    "source": "harvest-portraits-011.png",
+    "grid_index": 1,
+    "bounds": [
+      488,
+      138,
+      894,
+      673
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "portrait-halloween-vesper.png",
+    "source": "harvest-portraits-011.png",
+    "grid_index": 2,
+    "bounds": [
+      872,
+      51,
+      1324,
+      687
+    ],
+    "component_count": 2
+  },
+  {
+    "file": "portrait-halloween-iona.png",
+    "source": "harvest-portraits-011.png",
+    "grid_index": 3,
+    "bounds": [
+      1330,
+      118,
+      1758,
+      674
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "portrait-halloween-orin.png",
+    "source": "harvest-portraits-011.png",
+    "grid_index": 4,
+    "bounds": [
+      1768,
+      115,
+      2146,
+      675
+    ],
+    "component_count": 1
+  },
+  {
+    "file": "portrait-iona-normal.png",
+    "source": "iona-walk.png",
+    "grid_index": 1,
+    "bounds": [
+      461,
+      2,
+      688,
+      341
+    ],
+    "component_count": 1
+  }
+]

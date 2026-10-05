@@ -11,6 +11,9 @@ func objective():
 			if not item.found and item.p.distance_to(g.waypoint)<1:caption=item.name if g.explored[g.depth].has(Vector2i(floor(item.p.x/160),floor(item.p.y/160))) else "SIGNAL"
 		return {"p":g.waypoint,"name":caption}
 	if g.portal!=null: return {"p":g.portal,"name":"NEXT BIOME"}
+	var tracked=g.content_profile.get("campaign",{}).get("tracked_goal","")
+	for marker in g.landmarks:
+		if not marker.found and marker.id==tracked:return marker
 	var best = null
 	for marker in g.landmarks:
 		if marker.found: continue

@@ -3,46 +3,146 @@ const Rules = preload("res://scripts/combat_rules.gd")
 const TIERS = ["COMMON","UNCOMMON","RARE","EPIC","LEGENDARY","ARTIFACT"]
 const COLORS = ["ddd9d2","58d77b","58a8ff","bb79ff","ffad47","f6d879"]
 const WEIGHTS = [40.0,30.0,18.0,9.0,2.7,0.3]
+const STACK_LIMIT = 10
+const FACTORS = [0.35,0.5,0.75,1.0,1.35,2.0]
+const RANK_GAINS = [1,1,2,2,3,4]
+const GROWTH = [0.05,0.075,0.10,0.15,0.20,0.30]
+static var definitions_cache={}
+
+static func tiers(g,id):
+	# Legacy inventories remain valid: their first copy keeps its old strength.
+	return g.relic_stacks.get(id,["LEGACY"] if id in g.relics else [])
+
+static func candidates(g):
+	return g.C.RELICS.keys().filter(func(id):return (id in g.relics or g.relics.size()<g.RELIC_SLOTS) and tiers(g,id).size()<STACK_LIMIT and g.content_allowed("relics",id) and Rules.eligible(g.weapons,g.C.WEAPONS,g.C.RELICS[id].get("filter",{})))
+
+static func roll_tier(g):
+	var distribution=odds(g)
+	g.relic_state.chest_odds=distribution.duplicate()
+	var ticket=g.rng.randf()*100
+	var selected=5
+	for tier in range(6):
+		ticket-=distribution[tier]
+		if ticket<=0:selected=tier;break
+	g.relic_state.dry_chests=0 if selected>=2 else g.relic_state.get("dry_chests",0)+1
+	return TIERS[selected]
+
+static func reward(id,tier,source="chest"):
+	return {"type":"relic","id":id,"rarity":tier,"quantity":1,"source":source,"effects":effects(id,tier)}
+
+static func roll_reward(g):
+	var pool=candidates(g)
+	if pool.is_empty():return {}
+	var tier=roll_tier(g)
+	return reward(pool[g.rng.randi_range(0,pool.size()-1)],tier)
+
+static func effects(id,tier):
+	if tier=="LEGACY":
+		var legacy=definitions_cache[id]
+		return {"mods":legacy.get("mods",{}).duplicate(true),"acquire":legacy.get("acquire",{}).duplicate(true),"power":1.0}
+	var n=maxi(0,TIERS.find(tier));var f=FACTORS[n]
+	# Explicit tables make integer rewards and timers meaningful at every tier.
+	if id=="crown":return {"mods":{"score":GROWTH[n],"xp":GROWTH[n],"enemy_health":GROWTH[n]}}
+	if id=="lens":return {"mods":{"xp":GROWTH[n]}}
+	if id=="wrap":return {"acquire":{"health":[10,15,20,30,40,60][n]}}
+	if id=="shell":return {"acquire":{"health":[15,20,30,40,55,75][n],"armor":[1,1,2,2,3,4][n]}}
+	if id=="prism":return {"mods":{"count":[1,1,1,2,2,3][n]}}
+	var special={
+		"clock":{"guard_cooldown":[40,35,30,25,20,15][n]},
+		"magnet":{"vacuum_interval":[30,26,22,18,15,12][n]},
+		"boots":{"movement_burst":[6,5.5,5,4,3.5,3][n]},
+		"blood":{"heal_every":30,"heal":[2,3,4,6,8,12][n]},
+		"storm":{"critical_chain":[0.15,0.20,0.25,0.35,0.45,0.60][n],"critical_chain_cooldown":0.6},
+		"ember":{"burst_every":18,"burst_damage":[25,35,45,60,80,120][n]}}
+	if special.has(id):return {"mods":special[id]}
+	var d=definitions_cache[id]
+	var result={"mods":{},"acquire":{},"power":f}
+	for key in d.get("mods",{}):result.mods[key]=d.mods[key]*f
+	for key in d.get("acquire",{}):result.acquire[key]=roundi(d.acquire[key]*f)
+	return result
+
+static func apply(g,o):
+	var id=o.id
+	if id not in g.C.RELICS or tiers(g,id).size()>=STACK_LIMIT or (id not in g.relics and g.relics.size()>=g.RELIC_SLOTS):return false
+	var copies=tiers(g,id).duplicate()
+	if id not in g.relics:g.relics.append(id)
+	var tier=o.get("rarity","LEGACY")
+	copies.append(tier);g.relic_stacks[id]=copies
+	var gain=o.get("effects",effects(id,tier)).get("acquire",{})
+	g.max_hp+=gain.get("health",0);g.hp=minf(g.max_hp,g.hp+gain.get("health",0));g.armor+=gain.get("armor",0)
+	g.relic_state.revision=g.relic_state.get("revision",0)+1
+	g.modifier_cache.clear()
+	return true
+
+static func remove(g,id):
+	if id=="garden":g.relic_state.erase("aura_growth")
+	for tier in tiers(g,id):
+		var gain=effects(id,tier).get("acquire",{})
+		g.max_hp-=gain.get("health",0);g.armor-=gain.get("armor",0)
+	g.hp=minf(g.hp,g.max_hp);g.relics.erase(id);g.relic_stacks.erase(id)
+	g.relic_state.revision=g.relic_state.get("revision",0)+1;g.modifier_cache.clear()
+
+static func strength(g,id):
+	var power=0.0
+	for tier in tiers(g,id):power+=1.0 if tier=="LEGACY" else FACTORS[maxi(0,TIERS.find(tier))]
+	return minf(3.0,power)
+
+static func description(o):
+	var d=definitions_cache[o.id]
+	var e=o.get("effects",effects(o.id,o.get("rarity",d.rarity)))
+	var parts=[]
+	var names={"damage":"damage","incoming":"damage taken","xp":"XP gained","score":"score","enemy_health":"future horde health (not bosses)","haste":"attack speed","chilled_damage":"damage to chilled prey","fork":"chain fork chance","low_health_haste":"attack speed below 35% HP","momentum_damage":"damage per second moving (8s max)","boss_damage":"damage per boss killed","critical_chain":"critical arc damage"}
+	for key in e.get("mods",{}):
+		var value=e.mods[key]
+		if names.has(key):parts.append("+%.1f%% %s"%[value*100,names[key]])
+		elif key=="count":parts.append("+%s projectile / chain / strike"%int(value))
+		elif key in ["guard_cooldown","vacuum_interval","movement_burst"]:parts.append({"guard_cooldown":"Blocks one hit every %.1fs","vacuum_interval":"Vacuum nearby XP every %.1fs","movement_burst":"Explosive wake after %.1fs moving"}[key]%value)
+		elif key=="heal":parts.append("Heal %.1f every 30 kills (2s cooldown)"%value)
+		elif key=="burst_damage":parts.append("%.1f fire burst every 18 kills"%value)
+		elif key=="boss_health":parts.append("+%.1f HP per boss killed"%value)
+	for key in e.get("acquire",{}):parts.append("+%.1f %s"%[e.acquire[key],"maximum HP and healing" if key=="health" else key])
+	if parts.is_empty():
+		var power=e.get("power",1.0)
+		if o.id=="volley":parts.append("Every fifth projectile cast: +%s shots"%maxi(1,roundi(5*power)))
+		elif o.id=="cyclone":parts.append("Full-circle melee every %s casts"%maxi(2,roundi(3/power)))
+		elif o.id in ["shatter","wildfire"]:parts.append("Status kills burst for %.1f%% prey HP (350 damage cap). No recursive bursts."%(minf(1.0,0.65*power)*100))
+		elif o.id=="reaper":parts.append("Critical kills reduce cooldowns by %.2fs (0.3s trigger cooldown)"%minf(.3,.15*power))
+		elif o.id=="garden":parts.append("Aura kills grow radius up to +%.1f%%"%(minf(.65,.65*power)*100))
+		else:parts.append(d.desc)
+	return ". ".join(parts)+"."
+
+static func inventory_data(g,id):
+	var copies=tiers(g,id);var d=g.C.RELICS[id].duplicate(true)
+	var best=0;var lines=[];var counts={}
+	for tier in copies:
+		best=maxi(best,TIERS.find(g.C.RELICS[id].rarity if tier=="LEGACY" else tier))
+		counts[tier]=counts.get(tier,0)+1
+	for tier in counts:lines.append(("Original" if tier=="LEGACY" else tier)+" ×%s: "%counts[tier]+description(reward(id,tier)))
+	d.rarity=TIERS[best];d.name+=" ×%s"%copies.size()
+	d.desc="\n".join(lines)+"\nCopies %s / %s. Additive bonuses; proc strength caps at 3×. Max +4 count, +85%% fork, +150%% critical arc / low-HP haste. Timers stop at 10s guard, 6s vacuum, 1.5s wake."%[copies.size(),STACK_LIMIT]
+	return d
 
 static func tier_color(rarity): return COLORS[maxi(0,TIERS.find(rarity))]
 
 static func roll(g):
-	var distribution = odds(g)
-	g.relic_state.chest_odds = distribution.duplicate()
-	var ticket = g.rng.randf()*100
-	var selected = 0
-	for tier in range(6):
-		if distribution[tier]<=0: continue
-		selected = tier
-		ticket -= distribution[tier]
-		if ticket<=0: break
-	var candidates = []
-	for id in g.C.RELICS:
-		var d = g.C.RELICS[id]
-		if TIERS.find(d.rarity)==selected and id not in g.relics and g.content_allowed("relics",id) and Rules.eligible(g.weapons,g.C.WEAPONS,d.get("filter",{})): candidates.append(id)
-	if candidates.is_empty(): return ""
-	g.relic_state.dry_chests = 0 if selected>=2 else g.relic_state.get("dry_chests",0)+1
-	return candidates[g.rng.randi_range(0,candidates.size()-1)]
+	return roll_reward(g).get("id","")
 
-static func odds(g):
-	var buckets = [[],[],[],[],[],[]]
-	for id in g.C.RELICS:
-		var d = g.C.RELICS[id]
-		if id not in g.relics and g.content_allowed("relics",id) and Rules.eligible(g.weapons,g.C.WEAPONS,d.get("filter",{})):
-			buckets[TIERS.find(d.rarity)].append(id)
+static func odds(g,include_pity=true):
 	var total = 0.0
-	var pity = g.relic_state.get("dry_chests",0)>=4
+	var pity = include_pity and g.relic_state.get("dry_chests",0)>=4
 	var weights = [0.0,0.0,0.0,0.0,0.0,0.0]
-	var luck = g.rank_of("luck")*0.1+g.permanent_luck
+	var luck = maxf(0,g.buff_power("luck")*0.1+g.permanent_luck)
+	# Direct additive roll bonus: +10% Luck adds ten points to a 0..100
+	# rarity roll. Clamp the roll at 100, so overflowing rolls are Artifact.
+	# Derive exact interval lengths for the displayed odds and shared RNG.
+	var bonus=luck*100.0
+	var lower=0.0
 	for tier in range(6):
-		if not buckets[tier].is_empty() and (not pity or tier>=2):
-			weights[tier] = WEIGHTS[tier]*pow(1+luck,tier)
+		var upper=lower+WEIGHTS[tier]
+		if not pity or tier>=2:
+			weights[tier] = maxf(0.0,clampf(upper-bonus,0,100)-clampf(lower-bonus,0,100)) if tier<5 else 100-clampf(lower-bonus,0,100)
 			total += weights[tier]
-	if total<=0:
-		for tier in range(6):
-			if not buckets[tier].is_empty():
-				weights[tier] = WEIGHTS[tier]*pow(1+luck,tier)
-				total += weights[tier]
+		lower=upper
 	for tier in range(6):
 		weights[tier] = weights[tier]*100/total if total>0 else 0.0
 	return weights
@@ -112,16 +212,26 @@ static func definitions(base):
 			out[id].rarity = tier
 			out[id].color = tier_color(tier)
 	out.frost.desc = "Chilled or frozen enemies take 25% more damage."
+	definitions_cache=out
 	return out
 
 static func modifiers(g):
-	# Relics are unique and append-only for a run. Avoid hashing the entire
-	# inventory for each of the many thousands of hits in a horde.
-	var key = g.relics.size()
+	# Stable IDs plus a revision invalidate cached totals on stacks and removal.
+	var key = [g.relics.hash(),g.relic_state.get("revision",0)].hash()
 	if g.relic_state.get("mods_key",-1)==key: return g.relic_state.mods
 	var out = {}
 	for id in g.relics:
-		for stat in g.C.RELICS[id].get("mods",{}): out[stat] = out.get(stat,0.0)+g.C.RELICS[id].mods[stat]
+		for tier in tiers(g,id):
+			var mods=effects(id,tier).get("mods",{})
+			for stat in mods:
+				if stat in ["heal_every","burst_every","critical_chain_cooldown"]:out[stat]=mods[stat]
+				elif stat in ["guard_cooldown","vacuum_interval","movement_burst"]:out[stat]=minf(out.get(stat,INF),mods[stat])
+				else:out[stat]=out.get(stat,0.0)+mods[stat]
+		var duplicates=maxi(0,tiers(g,id).size()-1)
+		for stat in ["guard_cooldown","vacuum_interval","movement_burst"]:
+			if g.C.RELICS[id].get("mods",{}).has(stat):out[stat]=maxf({"guard_cooldown":10.0,"vacuum_interval":6.0,"movement_burst":1.5}[stat],out[stat]/(1+duplicates*.12))
+	for stat in {"count":4.0,"fork":0.85,"critical_chain":1.5,"low_health_haste":1.5,"boss_damage":0.45,"boss_health":60.0,"heal":30.0,"burst_damage":350.0}:
+		if out.has(stat):out[stat]=minf(out[stat],{"count":4.0,"fork":0.85,"critical_chain":1.5,"low_health_haste":1.5,"boss_damage":0.45,"boss_health":60.0,"heal":30.0,"burst_damage":350.0}[stat])
 	g.relic_state.mods_key = key
 	g.relic_state.mods = out
 	return out
@@ -129,8 +239,10 @@ static func modifiers(g):
 static func on_cast(g,definition,cast_number,stats):
 	for id in g.relics:
 		var rule = g.C.RELICS[id].get("cast",{})
-		if rule.is_empty() or cast_number%int(rule.every)!=0 or not Rules.matches(definition.tags,rule.filter): continue
-		stats.count += rule.get("count",0)
+		var power=strength(g,id)
+		var every=maxi(2,roundi(3/maxf(.35,power))) if id=="cyclone" else int(rule.get("every",1))
+		if rule.is_empty() or cast_number%every!=0 or not Rules.matches(definition.tags,rule.filter): continue
+		stats.count = mini(12,stats.count+maxi(1,roundi(rule.get("count",0)*power))) if rule.has("count") else stats.count
 		if rule.get("circle",false): stats.arc = TAU
 
 static func on_kill(g,e):
@@ -145,13 +257,13 @@ static func on_kill(g,e):
 			g.relic_state["next_"+id] = g.time+hook.cooldown
 		match hook.op:
 			"burst":
-				if g.proc_depth==0 and g.proc_queue.size()<32: g.proc_queue.append({"p":e.p,"id":hook.effect,"damage":minf(350,e.max_hp*0.65)})
+				if g.proc_depth==0 and g.proc_queue.size()<32: g.proc_queue.append({"p":e.p,"id":hook.effect,"damage":minf(350,e.max_hp*minf(1.0,0.65*strength(g,id)))})
 			"cooldown":
-				for w in g.weapons.values(): w.timer = maxf(0,w.timer-0.15)
+				for w in g.weapons.values(): w.timer = maxf(0,w.timer-minf(.3,.15*strength(g,id)))
 			"growth":
 				for weapon in g.weapons:
 					if "AURA" in g.C.WEAPONS[weapon].tags and g.pos.distance_to(e.p)<Rules.stats(g,weapon).radius:
-						g.relic_state.aura_growth = minf(0.65,g.relic_state.get("aura_growth",0.0)+0.002)
+						g.relic_state.aura_growth = minf(minf(.65,.65*strength(g,id)),g.relic_state.get("aura_growth",0.0)+0.002*strength(g,id))
 						break
 	var mods = modifiers(g)
 	if e.boss:

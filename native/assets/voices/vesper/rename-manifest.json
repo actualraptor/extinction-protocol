@@ -1,0 +1,140 @@
+[
+  {
+    "original": "Voicelines\\Vesper\\Dead\\vesper_death_1.mp3",
+    "source": "Voicelines\\Vesper\\Dead\\vesper_death_1.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_death_1.mp3",
+    "sha256": "1a292d0d80876439811b474a4260a78947804059ea97b704ada4c1606c6c5ddf"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Dead\\vesper_death_2.mp3",
+    "source": "Voicelines\\Vesper\\Dead\\vesper_death_2.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_death_2.mp3",
+    "sha256": "c9508fa81c8c891451e0b063415100acf90b7ecc3d6c5d33f7d39916b24e58e1"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper boss killed\\vesper_boss_killed_1.mp3",
+    "source": "Voicelines\\Vesper\\Vesper boss killed\\vesper_boss_killed_1.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_boss_killed_1.mp3",
+    "sha256": "8dec3113ad812013b3d5c2cea31da158a63c4984403fb64f9737188f2f3b007d"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper boss killed\\vesper_boss_killed_2.mp3",
+    "source": "Voicelines\\Vesper\\Vesper boss killed\\vesper_boss_killed_2.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_boss_killed_2.mp3",
+    "sha256": "ae00ee7b9d5d6ce861dee81dc396d67a52540b6092dd9001fefae1a99f909786"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper boss killed\\vesper_boss_killed_3.mp3",
+    "source": "Voicelines\\Vesper\\Vesper boss killed\\vesper_boss_killed_3.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_boss_killed_3.mp3",
+    "sha256": "eb48bf93b6c41e051a1dbc2c1829a3435b72f71789e33971bcfccaf6dfbbaeac"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper boss killed\\vesper_boss_killed_4.mp3",
+    "source": "Voicelines\\Vesper\\Vesper boss killed\\vesper_boss_killed_4.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_boss_killed_4.mp3",
+    "sha256": "8b95adc73d37bc77574289a50fca44b2e203d00ed8fae7caa040f94c37f55b50"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper boss spawn\\vesper_boss_spawn_1.mp3",
+    "source": "Voicelines\\Vesper\\Vesper boss spawn\\vesper_boss_spawn_1.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_boss_spawn_1.mp3",
+    "sha256": "2c1688a470d8baa2e5e99b147c7cec6996860835eac5fc6e07addbe4dee3a124"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper boss spawn\\vesper_boss_spawn_2.mp3",
+    "source": "Voicelines\\Vesper\\Vesper boss spawn\\vesper_boss_spawn_2.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_boss_spawn_2.mp3",
+    "sha256": "f977b3bff7465484a3d93b421f7ea7474594f736397a73ae301cd68c8fb15744"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper boss spawn\\vesper_boss_spawn_3.mp3",
+    "source": "Voicelines\\Vesper\\Vesper boss spawn\\vesper_boss_spawn_3.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_boss_spawn_3.mp3",
+    "sha256": "ff9ee5fb00be4dbb1b9a6d2c1b1fd14fe1ec28c7af359c70cb5b4ccc6155a588"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper boss spawn\\vesper_boss_spawn_4.mp3",
+    "source": "Voicelines\\Vesper\\Vesper boss spawn\\vesper_boss_spawn_4.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_boss_spawn_4.mp3",
+    "sha256": "e3a302387bda35d100ad47a869757b8ad438f356844bc569441c5def2d7626da"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper chosen in menu\\vesper_chosen_1.mp3",
+    "source": "Voicelines\\Vesper\\Vesper chosen in menu\\vesper_chosen_1.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_chosen_1.mp3",
+    "sha256": "37c0f2cc814f531c0b969cc33502d511848c3964cc8793e6925c7ea0faa0d32f"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper chosen in menu\\vesper_chosen_2.mp3",
+    "source": "Voicelines\\Vesper\\Vesper chosen in menu\\vesper_chosen_2.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_chosen_2.mp3",
+    "sha256": "33bcfad5c32ab6e1ea9e23867c8d66e79f05b1797f6ea7ee4c2b179121e1c29c"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper chosen in menu\\vesper_chosen_3.mp3",
+    "source": "Voicelines\\Vesper\\Vesper chosen in menu\\vesper_chosen_3.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_chosen_3.mp3",
+    "sha256": "599b2d0ed134e3682a93736f781f9568fadce5f5d2d2d5b36e71866f8f37580a"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper chosen in menu\\vesper_chosen_4.mp3",
+    "source": "Voicelines\\Vesper\\Vesper chosen in menu\\vesper_chosen_4.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_chosen_4.mp3",
+    "sha256": "07088c04b50dde6974f13493602af9ca0bcfef1bd84ed05be6e89286103d9d58"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper hurt\\vesper_hurt_1.mp3",
+    "source": "Voicelines\\Vesper\\Vesper hurt\\vesper_hurt_1.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_hurt_1.mp3",
+    "sha256": "99b2d64a17ae7945cd8ca567bff6c03e0f06a6ebc7891745a0f3c144508a6693"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper hurt\\vesper_hurt_2.mp3",
+    "source": "Voicelines\\Vesper\\Vesper hurt\\vesper_hurt_2.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_hurt_2.mp3",
+    "sha256": "2b58380b62340eac6a55932c294aa175332d63ee1a185dcd3d221600b642b835"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper level up\\vesper_level_up_1.mp3",
+    "source": "Voicelines\\Vesper\\Vesper level up\\vesper_level_up_1.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_level_up_1.mp3",
+    "sha256": "d4c1232930bbf52a0fdb65b5af109cc1e9afc11e976053d47191503587d60254"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper level up\\vesper_level_up_2.mp3",
+    "source": "Voicelines\\Vesper\\Vesper level up\\vesper_level_up_2.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_level_up_2.mp3",
+    "sha256": "3539c91a75bd96ea60caea56bcf0f996136c752b85d832ea420a53ee61783a4f"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper level up\\vesper_level_up_3.mp3",
+    "source": "Voicelines\\Vesper\\Vesper level up\\vesper_level_up_3.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_level_up_3.mp3",
+    "sha256": "460dd68a17786a8a74f44e4134c15db9f1e3fc66981dda0798dc539f723e2043"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper level up\\vesper_level_up_4.mp3",
+    "source": "Voicelines\\Vesper\\Vesper level up\\vesper_level_up_4.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_level_up_4.mp3",
+    "sha256": "a80e7a2a061ee17c089d806fa78f4f28fdaff64d40f95111d4cf307c5c622772"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper low hp\\vesper_low_hp_1.mp3",
+    "source": "Voicelines\\Vesper\\Vesper low hp\\vesper_low_hp_1.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_low_hp_1.mp3",
+    "sha256": "876349aa88bf642d4d85477cc445bbff2692bcbcbee16f8b74ab9462cb20215a"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper low hp\\vesper_low_hp_2.mp3",
+    "source": "Voicelines\\Vesper\\Vesper low hp\\vesper_low_hp_2.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_low_hp_2.mp3",
+    "sha256": "e2e8c02062994b04c5e8f0855ed030c38dceee6566ea296412408402dfd0f4f0"
+  },
+  {
+    "original": "Voicelines\\Vesper\\Vesper low hp\\vesper_low_hp_3.mp3",
+    "source": "Voicelines\\Vesper\\Vesper low hp\\vesper_low_hp_3.mp3",
+    "runtime": "native\\assets\\voices\\vesper\\vesper_low_hp_3.mp3",
+    "sha256": "e43176522825525279df6d05f77209eeaf990a0d0b3c79190a8deef31b29b405"
+  }
+]

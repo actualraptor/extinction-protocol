@@ -36,21 +36,24 @@ func _ready():
 			strip.append("offer:"+str(decoration_rng.randi_range(0,offered_data.size()-1)))
 			continue
 		var candidates = ids
+		var rolled_tier="COMMON"
 		if odds.size()==6:
 			var ticket = decoration_rng.randf()*100
 			for tier in range(6):
 				ticket -= odds[tier]
 				if ticket<=0:
-					candidates = ids.filter(func(id):return C.RELICS[id].rarity==R.TIERS[tier])
+					rolled_tier=R.TIERS[tier]
 					break
-		strip.append(candidates[decoration_rng.randi_range(0,candidates.size()-1)])
+		strip.append(candidates[decoration_rng.randi_range(0,candidates.size()-1)]+":"+rolled_tier)
 	strip[28] = "__reward"
 
 func data_for(id):
 	if id=="__reward": return reward_data
 	if id.begins_with("offer:"):return offered_data[int(id.split(":")[1])]
-	var d = C.RELICS[id].duplicate()
-	d.art_id = id
+	var parts=id.split(":")
+	var d = C.RELICS[parts[0]].duplicate()
+	d.rarity=parts[1] if parts.size()>1 else d.rarity
+	d.art_id = parts[0]
 	d.art_type = "relic"
 	return d
 
@@ -80,6 +83,16 @@ func text_center(text,y,size_value,color):
 	var width = font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,size_value).x
 	draw_string_outline(font,Vector2((size.x-width)/2,y),text,HORIZONTAL_ALIGNMENT_LEFT,-1,size_value,5,Color(0.015,0.025,0.035,0.8))
 	draw_string(font,Vector2((size.x-width)/2,y),text,HORIZONTAL_ALIGNMENT_LEFT,-1,size_value,color)
+
+func text_block(value,y):
+	var lines=[];var line=""
+	for paragraph in value.split("\n"):
+		for word in paragraph.split(" "):
+			var next=(line+" "+word).strip_edges()
+			if font.get_string_size(next,HORIZONTAL_ALIGNMENT_LEFT,-1,16).x>1180 and line!="":lines.append(line);line=word
+			else:line=next
+		if line!="":lines.append(line);line=""
+	for i in range(mini(4,lines.size())):text_center(lines[i],y+i*20,16,Color("dfedf1"))
 
 func _draw():
 	draw_rect(Rect2(-global_position,get_viewport_rect().size),Color(0.015,0.025,0.04,0.38))
@@ -117,8 +130,7 @@ func _draw():
 			var origin = Vector2(size.x/2,390)
 			draw_line(origin+Vector2.from_angle(a)*(105+reveal*20),origin+Vector2.from_angle(a)*(145+rank*7+reveal*10),Color(color,0.25*(1-reveal*0.4)),1+rank*0.25,true)
 		text_center(data.rarity+" / "+data.name,550,26,color)
-		var desc_size = mini(18,int(1250/maxf(1,font.get_string_size(data.desc,HORIZONTAL_ALIGNMENT_LEFT,-1,18).x)*18))
-		text_center(data.desc,593,maxi(12,desc_size),Color("dfedf1"))
+		text_block(data.desc,584)
 		if not ingredients.is_empty(): text_center("ONE BACKPACK SLOT FREED / RECIPE RECORDED IN THE ARCHIVE",651,16,Color("ffd795"))
 		if not replacement_data.is_empty():
 			text_center("CURRENT: "+replacement_data.name+" / "+replacement_data.desc,650,14,Color("b6c4c9"))

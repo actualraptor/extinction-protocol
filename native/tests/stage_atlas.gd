@@ -21,7 +21,7 @@ func run():
  var g=Game.new();root.add_child(g);g.add_child(g.menu_root)
  var map=preload("res://scripts/expedition_map.gd").new();map.game=g;g.menu_root.add_child(map)
  for resolution in [Vector2i(1280,720),Vector2i(1920,1080),Vector2i(3440,1440)]:
-  root.size=resolution;map.size=root.get_visible_rect().size;map.layout_map()
+  root.size=resolution;map.size=root.get_visible_rect().size;map.zoom=1;map.layout_map()
   for p in [Vector2(-39000,-33000),Vector2(39000,33000),Vector2.ZERO,g.sim.stage_objects[0].p]:
    check(map.rect.has_point(map.map_point(p)),"Distant map coordinate visible")
    check(map.world_point(map.map_point(p)).distance_to(p)<.1,"Projection reversible")
