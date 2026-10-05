@@ -37,6 +37,8 @@ const Daily = preload("res://scripts/daily_challenge.gd")
 const Breakables = preload("res://scripts/breakables.gd")
 var ledger = preload("res://scripts/combat_ledger.gd").new()
 var content_profile = {}
+var companions = null
+const Extension = preload("res://scripts/content_extension.gd")
 var discovered = []
 var landmarks = []
 var explored = [{},{},{}]
@@ -73,6 +75,7 @@ var mode = "expedition"
 var active = true
 var choosing = false
 var won = false
+var finale_defeated = false
 var time = 0.0
 var pos = Vector2.ZERO
 var facing = 1.0
@@ -155,6 +158,7 @@ var extinction_timeout = false
 var death_reason = "The ecosystem won."
 
 func setup(character, run_mode, research = {}, seed_value = 0, selected_map = "cradle"):
+	Extension.install(C)
 	starter_attack.clear()
 	map_id = selected_map if Maps.DATA.has(selected_map) else "cradle"
 	terrain.layout = Maps.DATA[map_id].layout
@@ -181,6 +185,7 @@ func setup(character, run_mode, research = {}, seed_value = 0, selected_map = "c
 	permanent_luck += stage.modifiers.get("luck",0.0)
 	cache_pos = terrain.open_position(cache_pos)
 	shrine_pos = terrain.open_position(shrine_pos)
+	if Extension.is_profile(self): companions = preload("res://scripts/companion_system.gd").new()
 	var data = C.HEROES[hero]
 	max_hp = data.hp + (research.get("vitality",0)*10 if mode == "expedition" else 0)
 	hp = max_hp
@@ -193,7 +198,7 @@ func setup(character, run_mode, research = {}, seed_value = 0, selected_map = "c
 		time = 900
 		depth = 2
 		level = 40
-		for id in [data.weapon,"fire","lightning","orbital","mortar","frost"]:
+		for id in (["u00","u01","u02","u03","u09"] if companions!=null else [data.weapon,"fire","lightning","orbital","mortar","frost"]):
 			if weapons.size()>=BACKPACK_SLOTS: break
 			weapons[id] = {"level":10,"evolved":true,"timer":0.1}
 		passives = {"damage":5,"haste":4,"count":2,"area":3,"speed":2,"crit":4,"armor":3}
@@ -212,7 +217,10 @@ func log_event(type, data = {}):
 
 func rank_of(id): return passives.get(id,0)
 func buff_power(id): return BuffRewards.power(self,id)
-func content_allowed(category,id): return mode=="daily" or content_profile.is_empty() or Discoveries.allowed(content_profile,category,id)
+func content_allowed(category,id):
+	if not Extension.allowed(self,category,id):return false
+	if companions!=null:return true
+	return mode=="daily" or content_profile.is_empty() or Discoveries.allowed(content_profile,category,id)
 func configure_content(profile):
 	content_profile = profile.duplicate(true)
 	content_profile.hero = hero
@@ -240,6 +248,7 @@ func update_exploration():
 func area_scale(): return 1.0 + buff_power("area")*0.12
 func speed(): return stage.modifiers.get("player_speed",1.0)*C.HEROES[hero].speed*(1+buff_power("speed")*0.08)*(1+minf(0.15,(level-1)*0.005) if hero==3 else 1.0)
 func trait_text():
+	if companions!=null:return "SOULS / %s · UNDEAD / %s · NEXT / %s"%[int(companions.souls),companions.units.size(),int(companions.next_threshold)]
 	match hero:
 		0: return "GUNSLINGER / +%s projectiles (one per 10 levels; max 3)"%mini(3,level/10)
 		1: return "FIRST HUNTER / +%s%% physical damage (1%% per level; max 50%%)"%mini(50,level-1)
@@ -318,6 +327,8 @@ func tick(dt, direction):
 	build_grid()
 	Relics.update(self,dt)
 	if not active or choosing: return
+	if companions!=null:companions.update(self,dt)
+	if not active:return
 	update_weapons(dt)
 	if not active or choosing: return
 	update_shots(dt)
@@ -582,6 +593,8 @@ func shoot(id,p,dir,damage,speed_value,life,pierce):
 	var penetration = 8+int(m.get("pierce",0)) if id=="return" else pierce
 	shots.append({"id":id,"p":p,"old":p,"v":dir*speed_value,"damage":damage,"life":life,"pierce":penetration,"return_pierce":penetration,"return_power":1.25 if evolved else 1.0,"hit":[],"homing":homing,"bounce":int(m.get("bounce",0))+d.get("bounce",0)+(2 if id in ["ricochet","glacier"] and evolved else 0),"seek":0.0,"target":null,"age":0.0,"returning":false})
 
+	return shots.back()
+
 func update_shots(dt):
 	var impact_budget = 16
 	for shot in shots:
@@ -624,7 +637,8 @@ func update_shots(dt):
 				blast(shot.p,C.WEAPONS[shot.id].impact_radius*area_scale()*(1.35 if weapons.get(shot.id,{}).get("evolved",false) else 1.0),shot.damage,shot.id)
 				shot.life = 0
 			else:
-				hit(e,shot.damage,shot.id)
+				var dealt=hit(e,shot.damage,shot.id)
+				if companions!=null and shot.has("companion"):companions.credit(shot.companion,dealt,e.dead)
 				if shot.id=="harpoon" and not e.boss and not e.anchor and not rooted(e): e.p=terrain.move(e.p,shot.v.normalized()*35)
 			shot.pierce -= 1
 			if shot.pierce<=0:
@@ -678,6 +692,9 @@ func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "imp
 		if e.get("role","")=="armor" and "PHYSICAL" in damage_tags: amount *= 0.8
 		for tag in Bestiary.DATA[e.kind].get("resists",{}):
 			if tag in damage_tags: amount *= Bestiary.DATA[e.kind].resists[tag]
+	if companions!=null:
+		amount*=1+e.get("dread",0.0)
+		e.unit_hit=id.begins_with("u")
 	var hit_damage=maxf(0,amount*BossResistance.multiplier(self,e))
 	var dealt = effective_damage(hit_damage,e.hp)
 	if e.boss and boss_stage==2 and phase==1:
@@ -766,6 +783,7 @@ func kill(e):
 		return
 	Relics.on_kill(self,e)
 	kills += 1
+	if companions!=null:companions.on_kill(self,e)
 	streak += 1
 	best_streak = maxi(streak,best_streak)
 	combo_time = 4
@@ -811,6 +829,7 @@ func kill(e):
 		amber += 75
 		score += 10000
 		if boss_stage == 3 and mode!="daily":
+			finale_defeated = true
 			update_gems(1000000.0)
 			finish(true)
 			return
@@ -947,7 +966,9 @@ func hurt(amount, reason, piercing = false):
 		invul = 0.6
 		effect.emit("ring",pos,Color("c7c1ff"),100)
 		return
-	amount = maxf(4,amount-(0 if piercing else armor))*(1+Relics.modifiers(self).get("incoming",0))
+	amount = maxf(4,amount-(0 if piercing else armor+(companions.armor_bonus(self) if companions!=null else 0)))*(1+Relics.modifiers(self).get("incoming",0))
+	if companions!=null:amount=companions.absorb(self,amount)
+	if amount<=0:return
 	hp -= amount
 	hits += 1
 	streak = 0
@@ -1017,7 +1038,7 @@ func spawn_boss(stage):
 	terrain.arena = p
 	terrain.refresh = 0
 	next_uid += 1
-	var health = [90000.0,900000.0,30000000.0][stage-1]*pow(2.0,minf(daily_loop,25))
+	var health = [90000.0,900000.0,20000000.0][stage-1]*pow(2.0,minf(daily_loop,25))
 	boss = {"uid":next_uid,"p":p,"hp":health,"max_hp":health,"kind":8 if stage==3 else 11 if stage==2 else 1,"elite":false,"mutated":false,"boss":true,"anchor":false,"size":110.0 if stage==3 else 65.0,"speed":30.0,"flash":0.0,"slow":0.0,"burn":0.0,"burn_tick":0.0,"attack":0.0,"dead":false,"reform":0.0}
 	if stage<3 and map_id!="cradle": boss.kind=([14,15] if map_id=="frostbreak" else [16,17])[stage-1]
 	enemies.append(boss)
@@ -1130,7 +1151,7 @@ func upgrade_pool(owned_only = false):
 			if weapons[id].level<Rules.MAX_RANK: pool.append({"type":"weapon","id":id})
 		elif not owned_only and content_allowed("weapons",id) and weapons.size()<BACKPACK_SLOTS and Rules.can_add_weapon(weapons,C.WEAPONS,id): pool.append({"type":"weapon","id":id})
 	for id in C.PASSIVES:
-		if can_take_buff(id) and rank_of(id)<C.PASSIVES[id].max and Rules.eligible(weapons,C.WEAPONS,C.PASSIVES[id].filter): pool.append({"type":"passive","id":id})
+		if content_allowed("passives",id) and can_take_buff(id) and rank_of(id)<C.PASSIVES[id].max and Rules.eligible(weapons,C.WEAPONS,C.PASSIVES[id].filter): pool.append({"type":"passive","id":id})
 	for id in C.AUGMENTS:
 		if can_take_buff(id) and content_allowed("augments",id) and augments.get(id,0)<C.AUGMENTS[id].max and Rules.eligible(weapons,C.WEAPONS,C.AUGMENTS[id].filter): pool.append({"type":"augment","id":id})
 	return pool.filter(func(o):return not banished.has(o.type+":"+o.id))
@@ -1245,6 +1266,7 @@ func choose(index):
 			else: return
 		"evolution":
 			weapons[o.id].evolved = true
+			if companions!=null:voice_event.emit("final_evolution")
 			effect.emit("evolve",pos,Color("ffe2af"),450)
 			sound.emit("evolve")
 			banner.emit(C.WEAPONS[o.id].evolution,"LEGENDARY EVOLUTION / LET THEM COME")
@@ -1291,6 +1313,8 @@ func finish(victory):
 	ended.emit(victory)
 
 func report():
-	return {"version":"native-0.11.8","halloween":halloween,"daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"relic_stacks":relic_stacks.duplicate(true),"buff_stacks":buff_stacks.duplicate(true),"reward_schema":3,"events":event_log,"samples":samples}
+	var result={"version":"native-0.12.0","halloween":halloween,"daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"relic_stacks":relic_stacks.duplicate(true),"buff_stacks":buff_stacks.duplicate(true),"reward_schema":3,"events":event_log,"samples":samples}
+	if companions!=null:result.army=companions.army_report()
+	return result
 
 

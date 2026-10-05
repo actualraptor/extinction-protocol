@@ -58,16 +58,24 @@ const UIArt=preload("res://scripts/ui_art.gd")
 const UpgradeCopy=preload("res://scripts/upgrade_copy.gd")
 var score_plate
 var timer_plate
+var victory_credits_pending=false
+var turbo_test=false
+var normal_profile_path="user://progress.json"
 var progress_path = "user://progress.json"
 
 func _ready():
+	preload("res://scripts/content_extension.gd").install(C)
 	# Package smoke checks never touch a player's real progression.
-	if "--slam-test" in OS.get_cmdline_user_args():
+	if "--meteor-test" in OS.get_cmdline_user_args():
+		progress_path=OS.get_executable_path().get_base_dir().path_join("meteor-test-profile.json")
+	elif "--slam-test" in OS.get_cmdline_user_args():
 		progress_path=OS.get_executable_path().get_base_dir().path_join("slam-test-profile.json")
 	elif "--verify-package" in OS.get_cmdline_user_args():
 		progress_path=OS.get_executable_path().get_base_dir().path_join("verification-profile.json")
 	elif "--capture" in OS.get_cmdline_user_args():
 		progress_path="res://build/capture-profile.json"
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--profile-path="):progress_path=arg.trim_prefix("--profile-path=")
 	load_progress()
 	Discoveries.migrate(save_data)
 	Campaign.ensure(save_data)
@@ -117,6 +125,17 @@ func _ready():
 		if item is Control and not item is ColorRect and item != xp_bar and item.get_script()!=preload("res://scripts/player_health.gd") and item.get_script()!=preload("res://scripts/navigation.gd"):
 			hud_layout.append({"node":item,"position":item.position})
 	main_menu()
+	if preload("res://scripts/opening_story.gd").available() and preload("res://scripts/opening_story.gd").first_play(save_data,OS.get_cmdline_user_args()):
+		play_opening()
+	if "--meteor-test" in OS.get_cmdline_user_args():
+		selected=1;chosen_mode="expedition";selected_map="cradle"
+		start_run()
+		sim.base_damage=10000000.0
+		sim.max_hp=1000000.0;sim.hp=sim.max_hp
+		sim.weapons={"earthshaker":{"level":10,"evolved":true,"timer":0.0,"casts":0}}
+		sim.passives.area=15;sim.passives.haste=8
+		sim.enemies.clear();sim.spawn_boss(3);sim.build_grid()
+		show_toast("METEOR CINEMATIC TEST","SUPER KAEL / BREAK ANCHORS, THEN THE CORE / ISOLATED SAVE")
 	if "--slam-test" in OS.get_cmdline_user_args():
 		var lab=preload("res://scripts/kael_slam_lab.gd").new();lab.game=self;add_child(lab)
 		if "--verify-slam-test" in OS.get_cmdline_user_args():
@@ -125,12 +144,15 @@ func _ready():
 			get_viewport().get_texture().get_image().save_png(OS.get_executable_path().get_base_dir().path_join("slam-test-preview.png"))
 			audio.shutdown();survivor_voice.stop();release_run();get_tree().quit()
 	if "--verify-package" in OS.get_cmdline_user_args():
-		selected = 1 if "--verify-kael" in OS.get_cmdline_user_args() else 0 if "--verify-voss" in OS.get_cmdline_user_args() else 2
+		selected = 5 if "--verify-profile" in OS.get_cmdline_user_args() else 1 if "--verify-kael" in OS.get_cmdline_user_args() else 0 if "--verify-voss" in OS.get_cmdline_user_args() else 2
 		if "--verify-original" in OS.get_cmdline_user_args():
 			save_data.settings.halloween=false
 			apply_settings()
 		chosen_mode = "safari"
 		start_run()
+		if "--verify-profile" in OS.get_cmdline_user_args():
+			for id in ["u00","u01","u02","u03"]:
+				for j in range(3):sim.companions.summon(sim,id)
 		await get_tree().create_timer(3).timeout
 		paused = true
 		if "--verify-cards" in OS.get_cmdline_user_args():
@@ -224,6 +246,9 @@ func shade(alpha = 0.82):
 	menu_root.add_child(bg)
 
 func main_menu():
+	if turbo_test:
+		turbo_test=false;progress_path=normal_profile_path
+		load_progress();Discoveries.migrate(save_data);Campaign.ensure(save_data)
 	page = "menu"
 	release_run()
 	paused = false
@@ -267,11 +292,34 @@ func main_menu():
 	var teaser=label(info,"News from the rift. See what changed in the latest update.",18,"c6baa3")
 	teaser.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	button(info,"Open patch notes",patch_notes,true)
+	button(info,"Watch opening cinematic",play_opening)
 	audio.tension = 0.1
 	audio.biome = -1
 	audio.halloween=seasonal
 
+func play_opening():
+	if page=="intro" or not preload("res://scripts/opening_story.gd").available(): return
+	page="intro"
+	survivor_voice.stop()
+	audio.enabled=false
+	audio.music_enabled=false
+	for voice in audio.voices:voice.stop()
+	for music in audio.music_players:
+		music.volume_db=-80
+		music.stream_paused=true
+	var opening=preload("res://scripts/opening_story.gd").new()
+	opening.sound_enabled=save_data.settings.sound
+	opening.music_enabled=save_data.settings.music
+	layer.add_child(opening)
+	opening.completed.connect(func():
+		save_data.settings.intro_seen=true
+		persist()
+		apply_settings()
+		for music in audio.music_players:music.stream_paused=false
+		main_menu())
+
 func texture(index):
+	if index==5:return preload("res://scripts/content_extension.gd").sprite(0)
 	var hero_id=["voss","kael","vesper","iona","orin"][index]
 	var seasonal_portrait="res://assets/clean-icons/portrait-halloween-"+hero_id+".png"
 	if save_data.get("settings",{}).get("halloween",true) and ResourceLoader.exists(seasonal_portrait):return load(seasonal_portrait)
@@ -301,7 +349,7 @@ func characters():
 	shade(0.91)
 	var head = column(menu_root,Vector2(80,45),Vector2(1280,100))
 	label(head,"CHOOSE WHO HISTORY FORGOT",16,"d1ae77")
-	label(head,"Five survivors. New frontiers.",40)
+	label(head,"History remembers." if preload("res://scripts/content_extension.gd").visible(save_data) else "Five survivors. New frontiers.",40)
 	var row = HBoxContainer.new()
 	row.position = Vector2(80,168)
 	row.size = Vector2(1280,540)
@@ -309,11 +357,13 @@ func characters():
 	menu_root.add_child(row)
 	# Kael is the entry point for new players, so keep him first without
 	# changing the stable hero IDs used by saves, daily seeds and records.
-	for i in [1,0,2,3,4]:
+	var roster=[1,0,2,3,4]
+	if preload("res://scripts/content_extension.gd").visible(save_data):roster.append(5)
+	for i in roster:
 		var data = C.HEROES[i]
 		var panel = PanelContainer.new()
 		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		panel.custom_minimum_size.x = 238
+		panel.custom_minimum_size.x = 192 if roster.size()>5 else 238
 		panel.add_theme_stylebox_override("panel",box(Color("172830"),Color(data.color) if selected==i else Color("394950")))
 		row.add_child(panel)
 		var v = VBoxContainer.new()
@@ -415,6 +465,7 @@ func start_run():
 	page = "playing"
 	paused = false
 	finish_delay = -1
+	victory_credits_pending=false
 	sim = Expedition.new()
 	survivor_voice.set_hero(selected)
 	survivor_voice.reset_run()
@@ -521,6 +572,11 @@ func build_hud():
 	navigation.game = self
 	navigation.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud_root.add_child(navigation)
+	var army_meter=preload("res://scripts/companion_meter.gd").new()
+	army_meter.game=self
+	army_meter.position=Vector2(30,192)
+	army_meter.size=Vector2(300,156)
+	hud_root.add_child(army_meter)
 	objective_label = label(hud_root,"",17,"c7b2ed")
 	objective_label.position = Vector2(30,130)
 	toast_panel = PanelContainer.new()
@@ -556,7 +612,10 @@ func show_toast(title,subtitle):
 func _physics_process(dt):
 	if sim == null or paused or not sim.active: return
 	var d = Vector2(float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT))-float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)),float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN))-float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP)))
-	sim.tick(dt,d)
+	for step in range(10 if turbo_test else 1):
+		if sim==null or paused or not sim.active or sim.choosing:break
+		var direction=(sim.portal-sim.pos).normalized() if turbo_test and sim.portal!=null else d
+		sim.tick(dt,direction)
 
 func update_hud_scale():
 	var viewport = get_viewport_rect().size
@@ -634,7 +693,11 @@ func _process(dt):
 		toast_panel.visible = sim!=null and not sim.choosing and toast_time>0 and page!="map"
 	if finish_delay>=0:
 		finish_delay -= dt
-		if finish_delay<0: summary()
+		if finish_delay<0:
+			if victory_credits_pending:
+				victory_credits_pending=false
+				show_credits(summary)
+			else:summary()
 	if sim == null: return
 	if sim.active and not paused:survivor_voice.observe_health(sim.hp/sim.max_hp)
 	if sim.active and not paused:
@@ -698,6 +761,8 @@ func _process(dt):
 
 func _input(event):
 	if not event is InputEventKey or not event.pressed or event.echo: return
+	if page=="menu" and (event.unicode==167 or event.keycode==KEY_SECTION):
+		cheat_gate();get_viewport().set_input_as_handled();return
 	if sim!=null and sim.active and not sim.choosing:
 		if event.keycode in [KEY_TAB,KEY_M]:
 			if page=="map": resume()
@@ -751,6 +816,10 @@ func daily_reel_data(o):
 	return data
 
 func present_upgrade(opts,relic):
+	if turbo_test:
+		var run=sim
+		call_deferred("auto_test_upgrade",run)
+		return
 	var run = sim
 	reveal_index = -1
 	if relic or sim.mode=="daily":
@@ -1058,9 +1127,39 @@ func run_ended(victory):
 		save_data.records = save_data.records.slice(0,20)
 		persist()
 	export_report(false)
+	if victory and preload("res://scripts/content_extension.gd").eligible_finish(sim) and not preload("res://scripts/content_extension.gd").visible(save_data):
+		finish_delay=-1
+		hud_root.hide()
+		page="sequence"
+		audio.enabled=false;audio.music_enabled=false;survivor_voice.stop()
+		for voice in audio.voices:voice.stop()
+		for music in audio.music_players:music.stream_paused=true
+		# Let the victory settle before dissolving into the story.
+		for i in range(8):world.fx("victory",sim.pos+Vector2.from_angle(i*TAU/8)*150,Color("ffbf82"),240)
+		await get_tree().create_timer(2.4).timeout
+		var curtain=ColorRect.new()
+		curtain.color=Color(0,0,0,0)
+		curtain.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		curtain.mouse_filter=Control.MOUSE_FILTER_STOP
+		layer.add_child(curtain)
+		var transition=create_tween()
+		transition.tween_property(curtain,"color:a",1.0,1.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		await transition.finished
+		await get_tree().create_timer(.4).timeout
+		curtain.queue_free()
+		var sequence=preload("res://scripts/sequence_player.gd").new()
+		layer.add_child(sequence)
+		sequence.completed.connect(func():
+			save_data.campaign[preload("res://scripts/content_extension.gd").FLAG]=true
+			persist()
+			apply_settings()
+			for music in audio.music_players:music.stream_paused=false
+			audio.biome=-1;show_credits(summary))
+		return
 	if victory:
 		show_toast("EXTINCTION DENIED","HISTORY WILL REMEMBER THIS")
 		for i in range(12): world.fx("victory",sim.pos+Vector2.from_angle(i*TAU/12)*180,Color("ffbf82"),320)
+		victory_credits_pending=sim.finale_defeated and sim.boss_stage==3
 		finish_delay = 3.5
 	elif sim.extinction_timeout:
 		page="extinction-ending"
@@ -1106,6 +1205,20 @@ func summary():
 		name_label.position=Vector2(34,y);name_label.size=Vector2(420,25);name_label.clip_text=true;UIArt.fit_label(name_label,17)
 		var damage_label=label(content,str(int(damage)),17);damage_label.position=Vector2(470,y);damage_label.size=Vector2(295,25);damage_label.clip_text=true;UIArt.fit_label(damage_label,17)
 		label(content,"%.1f%%"%(damage/total*100),17,"8fdac8").position=Vector2(785,y)
+	if sim.companions!=null:
+		var army=sim.companions.army_report()
+		label(content,"ARMY · %s SUMMONED · %s LOST"%[army.total_summoned,army.losses],16,"8fdac8").position=Vector2(0,384)
+		var sources=army.summoned_by_ability.keys()
+		sources.sort()
+		for i in range(sources.size()):
+			var id=sources[i]
+			var x=(i%3)*330;var y=411+(i/3)*28
+			var entry=label(content,"%s: %s"%[C.WEAPONS.get(id,{"name":id}).name,army.summoned_by_ability[id]],15,"e4d9c3")
+			entry.position=Vector2(x,y);entry.size=Vector2(315,26);entry.clip_text=true;UIArt.fit_label(entry,15)
+		if not army.strongest_summon.is_empty():
+			var best=army.strongest_summon
+			var entry=label(content,"STRONGEST · %s #%s · %s DAMAGE · %s KILLS"%[C.WEAPONS.get(best.source,{"name":best.role}).name,best.uid,int(best.damage),best.kills],16,"f0d098")
+			entry.position=Vector2(0,475);entry.size=Vector2(970,28);entry.clip_text=true;UIArt.fit_label(entry,16)
 	var row=HBoxContainer.new();row.position=Vector2(100,800);row.size=Vector2(1240,60);row.add_theme_constant_override("separation",16);menu_root.add_child(row)
 	button(row,"RUN IT BACK",start_run,true).size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	button(row,"Today's build" if sim.mode=="daily" else "Change survivor",daily_menu if sim.mode=="daily" else characters).size_flags_horizontal=Control.SIZE_EXPAND_FILL
@@ -1346,3 +1459,44 @@ func patch_notes(index=0):
 
 
 
+
+func show_credits(after:Callable):
+	page="credits";clear_menu();hud_root.hide()
+	var credits=preload("res://scripts/credits_roll.gd").new()
+	layer.add_child(credits)
+	credits.completed.connect(after)
+
+func cheat_gate():
+	page="test-gate";clear_menu();shade(.95)
+	var v=column(menu_root,Vector2(440,240),Vector2(560,400),20)
+	label(v,"TEST ACCESS",30,"e7c88c")
+	var password=LineEdit.new();password.secret=true;password.placeholder_text="Password";v.add_child(password);password.grab_focus()
+	var feedback=label(v,"",18,"ff877e")
+	var enter=func():
+		if password.text=="starwars":cheat_options()
+		else:feedback.text="Incorrect password"
+	password.text_submitted.connect(func(_text):enter.call())
+	button(v,"Unlock",enter,true)
+	button(v,"Back",main_menu)
+
+func cheat_options():
+	page="test-options";clear_menu();shade(.95)
+	var v=column(menu_root,Vector2(350,240),Vector2(740,450),20)
+	label(v,"TURBO TEST",30,"e7c88c")
+	label(v,"Strong Kael · ten times simulation speed.
+Separate test save; normal progression stays intact.
+Choose upgrades and enter boss portals as usual.",21)
+	button(v,"Start strong Kael / 10x",func():
+		normal_profile_path=progress_path
+		progress_path=OS.get_executable_path().get_base_dir().path_join("turbo-test-profile.json")
+		load_progress();Discoveries.migrate(save_data);Campaign.ensure(save_data)
+		turbo_test=true;selected=1;chosen_mode="expedition";selected_map="cradle"
+		start_run()
+		sim.base_damage=100000.0;sim.max_hp=1000000.0;sim.hp=sim.max_hp
+		sim.weapons={"earthshaker":{"level":10,"evolved":true,"timer":0.0,"casts":0}}
+		sim.passives.area=8;sim.passives.haste=5
+		show_toast("TURBO TEST / 10x","SUPER KAEL · ISOLATED PROGRESSION"),true)
+	button(v,"Back",main_menu)
+
+func auto_test_upgrade(run):
+	if sim==run and turbo_test and sim.choosing and not sim.options.is_empty():finish_upgrade(0)

@@ -46,6 +46,7 @@ static func migrate(save):
 	if "kael" not in save.discoveries: save.discoveries.append("kael")
 
 static func hero_open(save,index):
+	if index==5:return preload("res://scripts/content_extension.gd").visible(save)
 	return index==1 or (index>=0 and index<5 and ["mara","kael","vesper","iona","orin"][index] in save.get("unlocks",[]))
 
 static func allowed(save,category,id):

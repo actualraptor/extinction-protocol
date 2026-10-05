@@ -1,6 +1,6 @@
 extends RefCounted
 
-const HEROES = [
+static var HEROES = [
 	{"name":"MARA VOSS", "title":"THE GUNSLINGER", "weapon":"revolver", "hp":110.0, "speed":250.0, "armor":1.0, "crit":0.16, "color":"edb968", "desc":"Six shots between you and extinction.\n+16% critical chance. +1 projectile every 10 levels (max 3)."},
 	{"name":"KAEL", "title":"THE FIRST HUNTER", "weapon":"club", "hp":170.0, "speed":220.0, "armor":4.0, "crit":0.05, "color":"ec8962", "desc":"A Neanderthal who refuses to disappear.\n+1% physical damage per level (max 50%). Armor strengthens Ironbriar."},
 	{"name":"VESPER", "title":"THE RIFTWALKER", "weapon":"lightning", "hp":85.0, "speed":245.0, "armor":0.0, "crit":0.08, "color":"97a9ff", "desc":"The collision of eras woke something ancient.\nStormbinder. +20% spell damage, +1% per level (max +40%)."},

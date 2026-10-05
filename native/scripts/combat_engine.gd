@@ -27,6 +27,13 @@ static func update(g,dt):
 		w.timer -= dt
 		if w.timer>0: continue
 		var d = g.C.WEAPONS[id]
+		if d.delivery=="companion":
+			if g.companions==null:continue
+			var s=Rules.stats(g,id)
+			w.timer=s.cooldown/(1+g.companions.rank(g,9)*.15+g.companions.relic(g,5)*g.companions.stationary*.025)
+			g.ledger.cast(id,g.time)
+			g.companions.cast(g,id,s)
+			continue
 		var target = g.weapon_target(id)
 		if target==null and d.delivery not in ["aura","shield","utility","orbital","thorns"]: continue
 		var s = Rules.stats(g,id)

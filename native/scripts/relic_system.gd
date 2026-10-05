@@ -34,6 +34,8 @@ static func roll_reward(g):
 	var pool=candidates(g)
 	if pool.is_empty():return {}
 	var tier=roll_tier(g)
+	pool=pool.filter(func(id):return not g.C.RELICS[id].get("artifact_only",false) or (tier=="ARTIFACT" and id not in g.relics))
+	if pool.is_empty():return {}
 	return reward(pool[g.rng.randi_range(0,pool.size()-1)],tier)
 
 static func effects(id,tier):

@@ -51,6 +51,9 @@ func frame_row():
 func frame_index(): return frame_row()*4+(int(phase)%4 if moving else 1)
 
 func draw(target,s,p,tint):
+	if s.companions!=null:
+		s.companions.draw_owner(target,p,s,tint)
+		return
 	if not s.starter_attack.is_empty() and s.weapons.has(s.starter_attack.id):
 		preload("res://scripts/hero_attack_animation.gd").draw_pose(target,p,s.hero,preload("res://scripts/starter_attack.gd").progress(s),s.halloween,s.starter_attack.aim.x<0,tint)
 		return

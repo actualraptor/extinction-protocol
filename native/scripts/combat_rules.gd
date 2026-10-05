@@ -96,7 +96,7 @@ static func passive_data(base):
 		out[id].icon = {"damage":4,"haste":4,"area":3,"count":5,"crit":6,"armor":5,"speed":4,"pickup":1,"regen":2,"luck":6}[id]
 	out.area.filter = {"any":["AREA"]}
 	out.area.desc = "+12% attack area."
-	out.count.filter = {"any":["PROJECTILE","CHAIN","ORBITAL","GROUND_EFFECT"]}
+	out.count.filter = {"any":["PROJECTILE","CHAIN","ORBITAL","GROUND_EFFECT","SUMMON"]}
 	out.count.desc = "+1 projectile, chain target, blade or bombardment"
 	return out
 
@@ -173,6 +173,7 @@ static func stats(g,id):
 	return result
 
 static func rank_text(d,rank):
+	if d.delivery=="companion":return d.desc+"\nStronger army and faster summons."
 	var behavior = d.delivery
 	if behavior=="thorns": return "Stronger thorn bursts. Armor adds +4 base damage per point (up to 25)."
 	if behavior=="shield": return "More barrier strength and faster recharge." if rank<7 else "Stronger barrier; breaking it retaliates."

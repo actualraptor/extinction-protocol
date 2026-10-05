@@ -42,6 +42,12 @@ func _ready():
 				starter_variants[id].append(load("res://assets/audio/"+id+"_0113"+suffix+".wav"))
 			bank[id]=starter_variants[id][0]
 		bank.gun=bank.revolver
+	for role in ["blade","guard","bow","wraith","heavy"]:
+		var id="unit_"+role
+		starter_variants[id]=[]
+		for suffix in ["","_v1","_v2"]:
+			starter_variants[id].append(load("res://assets/audio/"+id+suffix+".wav"))
+		bank[id]=starter_variants[id][0]
 	var tracks=["music_cradle","music_extinction_layer"]
 	for map in range(3):
 		for depth in range(3): tracks.append("frontier_%s_%s"%[map,depth])
@@ -65,6 +71,7 @@ func play(id,volume = -12.0,pitch = 1.0,_music = false):
 	if not enabled or not bank.has(id): return
 	var now = Time.get_ticks_msec()
 	var interval = 110 if id.begins_with("impact_") else 300 if id in ["pyre","winter","miasma","dread","orbital"] else 45
+	if id.begins_with("unit_"):interval=150 if id!="unit_heavy" else 300
 	if now-last_played.get(id,-10000)<interval: return
 	last_played[id] = now
 	if id in ["lightning","thunder_hit","shotgun","mortar","frost"]: music_duck = 0.14
@@ -72,6 +79,7 @@ func play(id,volume = -12.0,pitch = 1.0,_music = false):
 	next_voice = (next_voice+1)%voices.size()
 	voice.stream = sound_stream(id)
 	voice.volume_db = volume-5 if id.begins_with("impact_") else volume-4 if id in ["pyre","winter","miasma","dread","orbital"] else volume
+	if id.begins_with("unit_"):voice.volume_db=volume-3 if id!="unit_heavy" else volume
 	if id not in ["boss","hit","level","evolve","loot","reel_tick","venom_spit"] and not id.begins_with("rarity_"): voice.volume_db -= 2
 	var active_voices=0
 	for other in voices:
@@ -82,7 +90,7 @@ func play(id,volume = -12.0,pitch = 1.0,_music = false):
 
 func sound_stream(id):
 	var variant_id="revolver" if id=="gun" else id
-	if NEW_STARTER_AUDIO and starter_variants.has(variant_id):
+	if starter_variants.has(variant_id):
 		var index=starter_variant_index.get(variant_id,0)
 		starter_variant_index[variant_id]=(index+1)%starter_variants[variant_id].size()
 		return starter_variants[variant_id][index]

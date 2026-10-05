@@ -37,6 +37,7 @@ static func grant(g,o,actual_ranks):
 	if not g.buff_stacks.has(o.id):g.buff_stacks[o.id]=[]
 	g.buff_stacks[o.id].append(data)
 static func description(g,o):
+	if o.type=="passive" and g.C.PASSIVES[o.id].get("profile","")!="":return g.C.PASSIVES[o.id].desc
 	var gain=o.get("stat_gain",float(o.get("rank_gain",1)))
 	if o.type=="weapon":
 		var current=g.weapons.get(o.id,{}).get("level",0)

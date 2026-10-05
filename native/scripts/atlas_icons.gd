@@ -49,11 +49,14 @@ static func _icon_name(id,category="weapon",halloween=false):
 	return ""
 
 static func has_icon(id,category="weapon",halloween=false):
+	if preload("res://scripts/content_extension.gd").data.get("icons",{}).has(id):return true
 	var name=_icon_name(id,category,halloween)
 	return not name.is_empty() and ResourceLoader.exists("res://assets/clean-icons/"+name+".png")
 
 
 static func get_icon(id,category = "weapon",halloween = false):
+	var extension=preload("res://scripts/content_extension.gd").icon(id)
+	if extension!=null:return extension
 	var name=_icon_name(id,category,halloween)
 	if name.is_empty():
 		var key=category+":"+id

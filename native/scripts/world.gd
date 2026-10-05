@@ -336,6 +336,7 @@ func _draw():
 		if e.elite or e.anchor:
 			draw_rect(Rect2(p+Vector2(-26,-e.size*2),Vector2(52,4)),Color("352f43"))
 			draw_rect(Rect2(p+Vector2(-26,-e.size*2),Vector2(52*e.hp/e.max_hp,4)),Color("ef917a"))
+	if sim.companions!=null:sim.companions.draw(self,sim,screen)
 	var player = screen(sim.pos)
 	glow(player,65,Color(C.HEROES[sim.hero].color))
 	draw_set_transform(player,0,Vector2(1,0.35))
