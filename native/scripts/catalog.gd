@@ -18,7 +18,7 @@ const BASE_WEAPONS = {
 	"mortar":{"name":"Extinction Mortar", "desc":"Calls delayed bombardments on clustered enemies.","color":"ff727a","damage":90.0,"cooldown":3.8,"evolution":"HEAVEN FALLS","requires":"pickup"}
 }
 const BASE_PASSIVES = {
-	"luck":{"name":"Fortune's Favor","desc":"+10% Luck (+2 points to rarity rolls). Luck stacks additively; rolls above 100 are Artifact.","max":5},
+	"luck":{"name":"Fortune's Favor","desc":"+10% Luck. Improves rarity weights; higher tiers benefit more.","max":5},
 	"damage":{"name":"Brutality","desc":"+14% damage", "max":5},
 	"haste":{"name":"Overclock","desc":"+10% attack speed", "max":5},
 	"area":{"name":"Cataclysm","desc":"+12% area radius", "max":5},

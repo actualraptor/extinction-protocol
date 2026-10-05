@@ -11,9 +11,9 @@ func _initialize():
 		g.permanent_luck=luck
 		var odds=g.Relics.odds(g,false)
 		check(is_equal_approx(odds.reduce(func(a,b):return a+b,0.0),100),"Odds normalize")
-		check(is_equal_approx(odds[5],minf(100,.3+luck*20)),"Artifact uses exact additive roll bonus")
+		check(is_equal_approx(odds[5],.3*pow(1+luck,5)/rarity_total(luck)*100),"Artifact uses exact additive roll bonus")
 		for value in odds:check(value>=0 and value<=100,"Valid probability")
-		if luck==.1:check(is_equal_approx(odds[0],38),"Ten percent Luck removes two Common points")
+		if luck==.1:check(is_equal_approx(odds[0],40.0/rarity_total(.1)*100),"Ten percent Luck uses original weights")
 		g.relic_state.dry_chests=4
 		var pity=g.Relics.odds(g,true)
 		check(pity[0]==0 and pity[1]==0 and is_equal_approx(pity.reduce(func(a,b):return a+b,0.0),100),"Pity still normalizes Rare+")
@@ -42,3 +42,8 @@ func _initialize():
 			check(b.boss.hp==[90000.0,900000.0,30000000.0][stage-1],"Meteor fivefold; other bosses tenfold")
 	print("FORTUNE + VACUUM 0114 / ",checks," checks / ",failures," failures")
 	quit(1 if failures else 0)
+
+func rarity_total(luck):
+	var sum=0.0
+	for tier in range(6):sum+=[40.0,30.0,18.0,9.0,2.7,0.3][tier]*pow(1+luck,tier)
+	return sum

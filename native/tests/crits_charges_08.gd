@@ -7,7 +7,10 @@ func check(ok,msg):
 func _initialize():
 	var g=E.new();g.setup(2,"expedition",{},88,"frostbreak")
 	check(is_equal_approx(g.crit_curve(1),1),"First 100 percent crit has no penalty")
-	check(is_equal_approx(g.crit_curve(3)-g.crit_curve(2),1.0),"Higher crit bands retain linear gains")
+	check(is_equal_approx(g.crit_curve(3)-g.crit_curve(2),.4),"Higher crit bands have diminishing returns")
+	check(is_equal_approx(g.crit_curve(2),1.65),"Second band counts at 65 percent")
+	check(is_equal_approx(g.crit_curve(4),2.45),"Next two bands count at 40 percent")
+	check(is_equal_approx(g.crit_curve(8),3.45),"Further gains count at 25 percent")
 	var doubles=0;var triples=0
 	for i in range(10000):
 		var tier=g.roll_crit_tier(2.5)
@@ -28,3 +31,4 @@ func _initialize():
 	g.terrain.arena=Vector2.ZERO;g.build_grid();g.update_enemies(0.1)
 	check(charges.filter(func(e):return e.get("charge_wait",0)>0).size()==1,"Only one charger begins its windup together")
 	quit(1 if fail else 0)
+

@@ -42,7 +42,12 @@ func _initialize():
   g.permanent_luck=luck
   var odds=g.Relics.odds(g,false)
   check(is_equal_approx(odds.reduce(func(a,b):return a+b,0.0),100),"Odds sum to 100")
-  check(is_equal_approx(odds[0],maxf(0,40-luck*20)),"Luck uses one fifth roll bonus")
-  check(is_equal_approx(odds[5],minf(100,.3+luck*20)),"Artifact receives scaled bonus")
+  check(is_equal_approx(odds[0],40.0/rarity_total(luck)*100),"Luck uses original rarity curve")
+  check(is_equal_approx(odds[5],.3*pow(1+luck,5)/rarity_total(luck)*100),"Artifact uses original rarity curve")
  print("KAEL STAMPS AND LUCK / ",checks," checks / ",failures," failures")
  quit(1 if failures else 0)
+
+func rarity_total(luck):
+ var sum=0.0
+ for tier in range(6):sum+=[40.0,30.0,18.0,9.0,2.7,0.3][tier]*pow(1+luck,tier)
+ return sum

@@ -132,17 +132,11 @@ static func odds(g,include_pity=true):
 	var pity = include_pity and g.relic_state.get("dry_chests",0)>=4
 	var weights = [0.0,0.0,0.0,0.0,0.0,0.0]
 	var luck = maxf(0,g.buff_power("luck")*0.1+g.permanent_luck)
-	# Tuned additive roll bonus: +10% Luck adds two points to a 0..100
-	# rarity roll. Clamp the roll at 100, so overflowing rolls are Artifact.
-	# Derive exact interval lengths for the displayed odds and shared RNG.
-	var bonus=luck*20.0
-	var lower=0.0
+	# Original rarity-weighted Luck curve, before additive roll bonuses.
 	for tier in range(6):
-		var upper=lower+WEIGHTS[tier]
 		if not pity or tier>=2:
-			weights[tier] = maxf(0.0,clampf(upper-bonus,0,100)-clampf(lower-bonus,0,100)) if tier<5 else 100-clampf(lower-bonus,0,100)
-			total += weights[tier]
-		lower=upper
+			weights[tier]=WEIGHTS[tier]*pow(1+luck,tier)
+			total+=weights[tier]
 	for tier in range(6):
 		weights[tier] = weights[tier]*100/total if total>0 else 0.0
 	return weights

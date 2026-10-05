@@ -247,7 +247,9 @@ func trait_text():
 		3: return "POLAR HUNTER / +%.1f%% movement (0.5%% per level; max 15%%)"%minf(15,(level-1)*0.5)
 	return "ASTRONOMER / +%.1f%% arcane attack speed (0.5%% per level; max 20%%)"%minf(20,(level-1)*0.5)
 static func crit_curve(raw):
-	return maxf(0.0,raw)
+	# Original chance curve: full value through 100%, then 65%, 40%, 25%.
+	raw = maxf(0.0,raw)
+	return minf(raw,1.0) + clampf(raw-1.0,0.0,1.0)*.65 + clampf(raw-2.0,0.0,2.0)*.40 + maxf(raw-4.0,0.0)*.25
 func crit_chance(): return crit_curve(C.HEROES[hero].crit+buff_power("crit")*0.07+research_ranks.get("critical",0)*0.02)
 func roll_crit_tier(chance): return floori(chance)+int(rng.randf()<fposmod(chance,1.0))
 static func crit_color(tier):
@@ -1289,6 +1291,6 @@ func finish(victory):
 	ended.emit(victory)
 
 func report():
-	return {"version":"native-0.11.7","halloween":halloween,"daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"relic_stacks":relic_stacks.duplicate(true),"buff_stacks":buff_stacks.duplicate(true),"reward_schema":3,"events":event_log,"samples":samples}
+	return {"version":"native-0.11.8","halloween":halloween,"daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"relic_stacks":relic_stacks.duplicate(true),"buff_stacks":buff_stacks.duplicate(true),"reward_schema":3,"events":event_log,"samples":samples}
 
 

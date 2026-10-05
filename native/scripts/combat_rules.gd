@@ -162,10 +162,11 @@ static func stats(g,id):
 		if id=="mortar": result.duration += 2.0
 		if id=="thunderstorm": result.duration += 1.0
 	if id=="supernova": result.duration += 2.4
-	# Independent multiplicative bonuses have ceilings; milestones still
-	# change behavior without making every endgame build cover the screen.
+	# Kael's slam radius follows Area bonuses without a ceiling, including
+	# World Breaker and Earth Shaker. Other weapons retain their budgets.
 	result.count = mini(12,result.count)
-	result.radius = minf(300,result.radius)
+	if not (g.hero==1 and id in ["club","earthshaker"]):
+		result.radius = minf(300,result.radius)
 	result.range = minf(470,result.range)
 	result.cooldown = maxf(d.cooldown*(.08 if g.hero==1 and id=="club" else .3),result.cooldown)
 	result.duration = minf(5,result.duration)

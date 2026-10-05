@@ -1,31 +1,25 @@
 extends RefCounted
 ## Player-facing changes only.
-const VERSION="0.11.7"
-const TITLE="Hollow Harvest: Scars of the Earth"
+const VERSION="0.11.8"
+const TITLE="Hollow Harvest: Fortune and Fury"
 const ENTRIES=[
  {
-  "icon": "map",
+  "icon": "prism",
   "category": "relic",
-  "title": "LEAVE YOUR MARK",
-  "body": "Kael leaves a small crater and branching ground fractures at the main impact point. World Breaker glows yellow; Earth Shaker glows red. Scars stay on the ground and fade. The visible footprint grows with the actual damage radius."
- },
- {
-  "icon": "map",
-  "category": "relic",
-  "title": "MORE HITS. LESS OVERHEAD.",
-  "body": "Echoes and aftershocks retain their damage without creating extra crater or crack stamps. Cached, bounded fracture geometry replaces the costly rising debris and moving glow fronts."
+  "title": "CRITICAL COMMITMENT",
+  "body": "Critical chance returns to its original diminishing curve: the first 100 points count fully, the next 100 at 65%, the next 200 at 40%, and further gains at 25%. Crit damage remains multiplicative at 1.9x per tier. Card previews show effective chance."
  },
  {
   "icon": "lens",
   "category": "relic",
-  "title": "FORTUNE FINDS ITS BALANCE",
-  "body": "Luck now adds one fifth of its previous rarity-roll bonus. +10% Luck adds two roll points instead of ten. The displayed Luck stat is unchanged; chest odds and upgrade rolls use the tuned bonus."
+  "title": "FORTUNE REBALANCED",
+  "body": "Luck returns to its original rarity-weight curve. Artifact base odds remain 0.3%; higher Luck improves rare tiers gradually. Chest and upgrade odds use the same curve, with chest bad-luck protection retained."
  },
  {
-  "icon": "prism",
+  "icon": "map",
   "category": "relic",
-  "title": "A CRIT ON YOUR CRIT",
-  "body": "Critical damage multiplies again at each tier: 1.9x, 3.61x, 6.859x and beyond. Ordinary enemies show the full hit value, including overkill, while damage statistics still count only health removed. Boss resistance and phase gates remain intact."
+  "title": "LET THE EARTH BREAK",
+  "body": "Kael, World Breaker and Earth Shaker no longer have a 300-unit Area radius cap. Ground fractures follow the actual damage radius while their geometry remains bounded. Main hits leave stationary cracks and a small crater; echoes keep their damage without extra stamps."
  }
 ]
 static func releases():
