@@ -19,10 +19,12 @@ func run():
 	check(not Opening.first_play(profile,["--verify-package"]),"Verification never starts opening")
 	check(not Opening.first_play(profile,["--capture"]),"Capture keeps existing behavior")
 	profile.settings.intro_seen=true
+	check(Opening.first_play(profile,[]),"Old test viewing flag cannot suppress released intro")
+	profile.settings[Opening.SEEN_FLAG]=true
 	check(not Opening.first_play(profile,[]),"Seen intro does not repeat")
 	check(Store.migrate(profile).settings.intro_seen,"Migration preserves seen state")
 	check(Store.validate(profile),"Seen state is a valid profile")
-	profile.settings.intro_seen="true"
+	profile.settings[Opening.SEEN_FLAG]="true"
 	check(not Store.validate(profile),"Malformed seen state cannot corrupt progression")
 	for pair in [[0,0],[12.01,1],[26.25,2],[38.52,3],[47.16,4],[63.9,4]]:
 		check(Opening.shot_at(pair[0])==pair[1],"Scene follows narration cues")

@@ -18,6 +18,7 @@ var score: AudioStreamPlayer
 var stage: Control
 var pages = []
 var title: Label
+const SEEN_FLAG="opening_0120_seen"
 var skip: Button
 var meter: ProgressBar
 
@@ -27,7 +28,7 @@ static func available():
 static func first_play(save, args):
 	for arg in args:
 		if arg.begins_with("--verify") or arg in ["--capture", "--slam-test","--meteor-test"]: return false
-	return not save.get("settings",{}).get("intro_seen",false)
+	return not save.get("settings",{}).get(SEEN_FLAG,false)
 
 static func shot_at(at):
 	var index = 0

@@ -27,7 +27,7 @@ static func validate(data):
 	for value in data.get("research",{}).values():
 		if not numeric(value): return false
 	var settings=data.get("settings",{})
-	for key in ["sound","music","shake","halloween","intro_seen"]:
+	for key in ["sound","music","shake","halloween","intro_seen","opening_0120_seen"]:
 		if settings.has(key) and not settings[key] is bool: return false
 	if settings.has("hud_scale") and not numeric(settings.hud_scale): return false
 	var campaign=data.get("campaign",{})

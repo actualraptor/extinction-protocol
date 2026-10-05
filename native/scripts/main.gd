@@ -312,7 +312,7 @@ func play_opening():
 	opening.music_enabled=save_data.settings.music
 	layer.add_child(opening)
 	opening.completed.connect(func():
-		save_data.settings.intro_seen=true
+		save_data.settings[preload("res://scripts/opening_story.gd").SEEN_FLAG]=true
 		persist()
 		apply_settings()
 		for music in audio.music_players:music.stream_paused=false
@@ -1473,7 +1473,7 @@ func cheat_gate():
 	var password=LineEdit.new();password.secret=true;password.placeholder_text="Password";v.add_child(password);password.grab_focus()
 	var feedback=label(v,"",18,"ff877e")
 	var enter=func():
-		if password.text=="starwars":cheat_options()
+		if password.text.sha256_text()=="74fca0325b5fdb3a34badb40a2581cfbd5344187e8d3432952a5abc0929c1246":cheat_options()
 		else:feedback.text="Incorrect password"
 	password.text_submitted.connect(func(_text):enter.call())
 	button(v,"Unlock",enter,true)
