@@ -41,22 +41,3 @@ On Windows, extract the ZIP and run **Extinction Protocol.exe**. No engine insta
 
 Screenshots show actual development gameplay. The new HUD is a first iteration and will have layout, scaling and visual issues while it is refined. Some biome captures show earlier interface versions.
 
-## Store presentation preview
-
-[**Download the illustrated store preview**](https://github.com/actualraptor/extinction-protocol/releases/download/v0.13.0/Extinction-Protocol-Store-Preview-0.13.0.zip), extract it, and open **index.html**. It includes a screenshot gallery and a Steam-style presentation of the game, and works offline apart from GitHub links.
-
-The [live game website](https://actualraptor.github.io/extinction-protocol/) presents screenshots, downloads, and project information. The downloadable preview also works offline.
-
-## Latest dispatch — 0.13.0
-
-New character-themed HUDs, illustrated upgrade cards, wider minimap coverage, shared chest and pickup markers, and separate audio volume sliders. This is the first UI iteration: expect issues, and please report them. The experience bar still needs more polish.
-
-[Full patch notes](native/RELEASE-0.13.0.md) · [Download patch notes PNG](https://github.com/actualraptor/extinction-protocol/releases/download/v0.13.0/Extinction-Protocol-0.13.0-Patch-Notes.png)
-
-## Help shape the next expedition
-
-Use [Issues](https://github.com/actualraptor/extinction-protocol/issues) for bugs and feedback. Include your version, operating system, survivor, map, and what happened. A screenshot or run report helps reproduce the problem.
-
-This is a hobby playtest, not a commercial Early Access release. Steam achievements, Cloud saves, and online leaderboards are not connected yet. Linux needs a real-device test.
-
-For building and changing the game, see [DEVELOPING.md](DEVELOPING.md). Source is publicly viewable. No open-source license has been granted for the game; bundled third-party fonts retain their included OFL licenses.
