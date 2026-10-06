@@ -11,12 +11,13 @@ const links = {
 };
 document.querySelectorAll('[data-link]').forEach(link=>{link.href=links[link.dataset.link];});
 const shots = [
- ['voss-0130','0.13.0 · Mara Voss in the Lost Cradle, with the first iteration of the new HUD.','Mara Voss fighting early enemies with an illustrated bottom HUD and minimap'],
- ['kael-0130','0.13.0 · Kael’s ancestral HUD in an early expedition.','Kael exploring the Lost Cradle with an amber and bone-themed HUD'],
- ['vesper-0130','0.13.0 · Vesper’s celestial HUD, framed in violet and gold.','Vesper in early gameplay with a celestial-themed HUD'],
- ['upgrades-0130','0.13.0 · New upgrade cards and matching Take and re-roll controls.','Three illustrated upgrade cards with improved reward previews'],
- ['boss','Basalt · A boss with a point to prove. Earlier development capture.','A molten dinosaur boss on a prehistoric battlefield'],
- ['frostbreak','The Ivory Shelf · Cold ground. Hot pursuit. Earlier development capture.','Snow-covered ruins and prehistoric creatures']
+ ['voss-hordes-ui','Development preview · Mara Voss: gunfire and orbiting blades against the horde.','Mara Voss fighting a horde with revolver shots and orbiting blades'],
+ ['vesper-elements-ui','Development preview · Vesper: lightning, frost and fire in one build.','Vesper combining elemental attacks with the integrated celestial HUD'],
+ ['kael-cleave-ui','Development preview · Kael: close-range cleaves and a moving blade barrier.','Kael fighting ordinary prehistoric hordes with his ancestral HUD'],
+ ['voss-thermal-ui','Development preview · Mara Voss: fire, ice and bombardment.','Mara Voss using several elemental and ranged abilities against enemies'],
+ ['vesper-orbits-ui','Development preview · Vesper: lightning and orbiting blades.','Vesper fighting a horde with violet lightning and green orbiting blades'],
+ ['kael-blades-ui','Development preview · Kael: firepower meets close combat.','Kael combining his club with ranged attacks and orbiting blades'],
+ ['upgrades-ui','Development preview · Illustrated upgrade cards and matching action buttons.','Three illustrated upgrade cards with Take and re-roll controls']
 ];
 let current=0;
 const active=document.querySelector('#active-shot'),large=document.querySelector('#large-shot'),dialog=document.querySelector('#lightbox'),thumbs=document.querySelector('#thumbnails');
