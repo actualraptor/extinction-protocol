@@ -1,0 +1,364 @@
+{
+  "nameplates": {
+    "mara-voss": "plates/covenant/mara-voss.png",
+    "kael": "plates/covenant/kael.png",
+    "vesper": "plates/covenant/vesper.png",
+    "iona": "plates/covenant/iona.png",
+    "orin": "plates/covenant/orin.png",
+    "nagash": "plates/covenant/nagash.png"
+  },
+  "plates": {
+    "currency": {
+      "texture": "plates/covenant/currency.png",
+      "icon_region": [
+        0.03,
+        0.14,
+        0.19,
+        0.72
+      ],
+      "baked_label_region": [
+        0.67,
+        0.2,
+        0.26,
+        0.6
+      ],
+      "value_region": [
+        0.265,
+        0.13,
+        0.35,
+        0.74
+      ],
+      "font_size": 18
+    },
+    "backpack": {
+      "texture": "plates/covenant/backpack.png",
+      "icon_region": [
+        0.03,
+        0.14,
+        0.19,
+        0.72
+      ],
+      "baked_label_region": [
+        0.24,
+        0.2,
+        0.45,
+        0.6
+      ],
+      "value_region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "font_size": 18
+    },
+    "relics": {
+      "texture": "plates/covenant/relics.png",
+      "icon_region": [
+        0.03,
+        0.14,
+        0.19,
+        0.72
+      ],
+      "baked_label_region": [
+        0.24,
+        0.2,
+        0.45,
+        0.6
+      ],
+      "value_region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "font_size": 18
+    },
+    "reroll": {
+      "texture": "plates/covenant/reroll.png",
+      "icon_region": [
+        0.03,
+        0.14,
+        0.19,
+        0.72
+      ],
+      "baked_label_region": [
+        0.24,
+        0.2,
+        0.45,
+        0.6
+      ],
+      "value_region": [
+        0.665,
+        0.13,
+        0.15,
+        0.74
+      ],
+      "font_size": 18
+    }
+  },
+  "portraits": {
+    "mara-voss": "voss-bust.png",
+    "kael": "kael-bust.png",
+    "vesper": "vesper-bust.png",
+    "iona": "iona-bust.png",
+    "orin": "orin-bust.png",
+    "nagash": "covenant-bust.png"
+  },
+  "rail_geometry": [
+    -67,
+    346
+  ],
+  "layout": {
+    "edge_padding": 70,
+    "inventory_clearance": 42,
+    "minimum_width": 1600,
+    "left_console_width": 570,
+    "right_console_width": 570
+  },
+  "extraction": {
+    "mara-voss": {
+      "source_rect": [
+        22,
+        0,
+        972,
+        156
+      ],
+      "size": [
+        950,
+        156
+      ]
+    },
+    "kael": {
+      "source_rect": [
+        1012,
+        2,
+        1962,
+        165
+      ],
+      "size": [
+        950,
+        163
+      ]
+    },
+    "vesper": {
+      "source_rect": [
+        22,
+        151,
+        972,
+        342
+      ],
+      "size": [
+        950,
+        191
+      ]
+    },
+    "iona": {
+      "source_rect": [
+        1012,
+        150,
+        1961,
+        335
+      ],
+      "size": [
+        949,
+        185
+      ]
+    },
+    "orin": {
+      "source_rect": [
+        25,
+        315,
+        969,
+        510
+      ],
+      "size": [
+        944,
+        195
+      ]
+    },
+    "nagash": {
+      "source_rect": [
+        1014,
+        314,
+        1961,
+        508
+      ],
+      "size": [
+        947,
+        194
+      ]
+    },
+    "currency": {
+      "source_rect": [
+        22,
+        508,
+        961,
+        639
+      ],
+      "size": [
+        939,
+        131
+      ]
+    },
+    "backpack": {
+      "source_rect": [
+        1021,
+        505,
+        1957,
+        646
+      ],
+      "size": [
+        936,
+        141
+      ]
+    },
+    "relics": {
+      "source_rect": [
+        21,
+        641,
+        961,
+        790
+      ],
+      "size": [
+        940,
+        149
+      ]
+    },
+    "reroll": {
+      "source_rect": [
+        1023,
+        644,
+        1949,
+        779
+      ],
+      "size": [
+        926,
+        135
+      ]
+    }
+  },
+  "shells": {
+    "left": {
+      "texture": "plates/covenant/left-shell.png",
+      "source_rect": [
+        9,
+        1,
+        1864,
+        406
+      ],
+      "cuts": [
+        0,
+        0.2,
+        0.8,
+        1
+      ],
+      "caps": [
+        78,
+        42
+      ]
+    },
+    "right": {
+      "texture": "plates/covenant/right-shell.png",
+      "source_rect": [
+        33,
+        388,
+        1969,
+        789
+      ],
+      "cuts": [
+        0,
+        0.2,
+        0.8,
+        1
+      ],
+      "caps": [
+        42,
+        90
+      ]
+    }
+  },
+  "menu": {
+    "heading": {
+      "texture": "plates/covenant/menu-heading.png",
+      "source_rect": [
+        5,
+        113,
+        1530,
+        379
+      ]
+    },
+    "location": {
+      "texture": "plates/covenant/menu-location.png",
+      "source_rect": [
+        14,
+        413,
+        765,
+        588
+      ],
+      "primary": [
+        0.75,
+        0.25,
+        0.15,
+        0.5
+      ],
+      "secondary": [
+        0.21,
+        0.27,
+        0.48,
+        0.46
+      ]
+    },
+    "score": {
+      "texture": "plates/covenant/menu-score.png",
+      "source_rect": [
+        771,
+        411,
+        1521,
+        588
+      ],
+      "primary": [
+        0.17,
+        0.25,
+        0.39,
+        0.5
+      ]
+    },
+    "resume": {
+      "texture": "plates/covenant/menu-resume.png",
+      "source_rect": [
+        12,
+        615,
+        765,
+        787
+      ]
+    },
+    "backpack_stats": {
+      "texture": "plates/covenant/menu-backpack_stats.png",
+      "source_rect": [
+        770,
+        615,
+        1521,
+        785
+      ]
+    },
+    "settings": {
+      "texture": "plates/covenant/menu-settings.png",
+      "source_rect": [
+        13,
+        805,
+        765,
+        972
+      ]
+    },
+    "end_expedition": {
+      "texture": "plates/covenant/menu-end_expedition.png",
+      "source_rect": [
+        771,
+        802,
+        1521,
+        971
+      ]
+    }
+  }
+}

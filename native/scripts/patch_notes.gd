@@ -1,37 +1,31 @@
 extends RefCounted
 ## Player-facing changes only; unrevealed content stays out of public notes.
-const VERSION="0.13.0"
-const TITLE="Hollow Harvest: Fieldwork"
+const VERSION="0.13.1"
+const TITLE="Hollow Harvest: Framed"
 const ENTRIES=[
  {
   "icon": "map",
   "category": "relic",
-  "title": "A NEW HUD — FIRST ITERATION",
-  "body": "The bottom HUD has a new illustrated layout, character-themed frames, portraits, health and experience displays, and integrated backpack, amber and re-roll panels. This is the first iteration: expect layout, scaling and visual issues while we refine it. The experience bar still needs further polish."
+  "title": "ONE INTEGRATED HUD",
+  "body": "The illustrated bottom HUD now uses a continuous frame with bounded layout sections. The minimap, portrait, character name, health, abilities, carried items and utility buttons fit together, including at wider resolutions."
  },
  {
   "icon": "compass",
   "category": "weapon",
-  "title": "READ THE FIELD",
-  "body": "The minimap shows a wider view of explored ground. Both maps show terrain, locations, chests and pickups, including magnets, so useful supplies are easier to find. Carried items use pages when the HUD runs out of room; your backpack still holds them."
+  "title": "HEALTH AND EXPERIENCE, REFRAMED",
+  "body": "Health and experience displays have received a fresh art pass. The level badge is integrated into the portrait section, and the experience bar sits above the abilities within the HUD frame. Item pages keep overflow accessible through the backpack."
  },
  {
   "icon": "tablet",
   "category": "weapon",
-  "title": "CLEARER UPGRADE CHOICES",
-  "body": "Upgrade cards, Take buttons and re-roll controls have a new art pass. Reward previews and evolution reveals show more useful information about the upgrade you are choosing."
- },
- {
-  "icon": "club",
-  "category": "weapon",
-  "title": "ENCOUNTER AND PRESENTATION POLISH",
-  "body": "Boss names and health-bar frames better match each encounter. Large enemies can move through crowds more reliably, and charging allies can no longer shove the meteor. Animation, transitions and effects have received another polish pass."
+  "title": "MATCHING MENUS AND FIELD PANELS",
+  "body": "The pause menu, score panel and location timer now match your selected HUD theme. Location and countdown text are centered more clearly. The pause menu has simpler labels and fewer unnecessary actions."
  },
  {
   "icon": "clock",
   "category": "relic",
-  "title": "CONTROL YOUR SOUND",
-  "body": "Settings now includes separate volume controls for effects, music, voices and cinematics. Existing progression is retained when you update."
+  "title": "FIRST ITERATION — KEEP THE FEEDBACK COMING",
+  "body": "The new UI remains a first iteration and will have issues. Please report clipped text, scaling problems, awkward spacing or hard-to-read markers. Existing saves and progression are retained. The website now has fresh gameplay screenshots and a short spoiler-free trailer."
  }
 ]
 static func releases():

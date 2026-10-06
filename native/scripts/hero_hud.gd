@@ -20,6 +20,8 @@ var map_origin=Vector2.ZERO
 var map_clock=0.0
 var item_page=0
 var item_pages=1
+var zones={}
+var plates={}
 static func available(save):
  var result=[]
  for id in [1,0,2,5]:
@@ -31,31 +33,50 @@ static func selected(save,hero):
  return id if id in available(save) else hero
 func _ready():
  mouse_filter=Control.MOUSE_FILTER_STOP
+ for key in ["left_zone","center","right_zone"]:
+  var zone=Control.new();zone.name=key;zone.mouse_filter=Control.MOUSE_FILTER_IGNORE;zone.clip_contents=true
+  add_child(zone);zones[key]=zone
+ for key in ["name","currency","backpack","relics","reroll"]:
+  var plate=preload("res://scripts/hud_plate.gd").new();plate.name=key
+  zones["left_zone" if key=="name" else "right_zone"].add_child(plate);plates[key]=plate
+ plates.currency.tooltip_text="Amber collected this run. Click to inspect your backpack."
+ plates.backpack.tooltip_text="Open backpack: items, weapons and detailed stats."
+ plates.relics.tooltip_text="Inspect your relics and their effects."
+ plates.reroll.tooltip_text="Re-rolls remaining. Use R when choosing a level-up upgrade."
+ plates.currency.activated.connect(func():game.ledger_menu())
+ plates.backpack.activated.connect(func():game.ledger_menu())
+ plates.relics.activated.connect(func():game.ledger_menu(true))
+ plates.reroll.activated.connect(func():game.show_toast("%s RE-ROLLS AVAILABLE"%game.sim.rerolls,"Use R when choosing a level-up upgrade."))
  portrait_node=TextureRect.new();portrait_node.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
  portrait_node.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
  portrait_node.mouse_filter=Control.MOUSE_FILTER_IGNORE
  var mask=ShaderMaterial.new();mask.shader=preload("res://shaders/hud_portrait.gdshader");portrait_node.material=mask
- add_child(portrait_node)
- health_node=preload("res://scripts/hud_resource_bar.gd").new();add_child(health_node)
- xp_node=preload("res://scripts/hud_xp_bar.gd").new();add_child(xp_node)
+ zones.left_zone.add_child(portrait_node)
+ health_node=preload("res://scripts/hud_resource_bar.gd").new();zones.left_zone.add_child(health_node)
+ xp_node=preload("res://scripts/hud_xp_bar.gd").new();zones.center.add_child(xp_node)
 func layout():
- regions=preload("res://scripts/hud_layout.gd").arrange(size)
+ regions=preload("res://scripts/hud_layout.gd").arrange(size,HudSkin.configuration(active_theme).layout)
 func _process(dt):
  if game.sim==null or size.x<100 or size.y<100:return
- layout()
  var g=game.sim
  var skin=selected(game.save_data,g.hero);active_theme=HudSkin.THEMES[skin]
+ layout()
+ for key in zones:
+  zones[key].position=regions[key].position;zones[key].size=regions[key].size
+ for key in plates:
+  var zone=regions.left_zone if key=="name" else regions.right_zone
+  plates[key].position=regions[key].position-zone.position;plates[key].size=regions[key].size
+  var value=HudSkin.format_amount(g.amber) if key=="currency" else str(g.rerolls) if key=="reroll" else ""
+  plates[key].configure(active_theme,key,value,g.hero if key=="name" else -1)
  var ratio=clampf(g.xp/maxf(1,g.xp_goal),0,1)
  xp_display=ratio if last_level!=g.level else lerpf(xp_display,ratio,1-exp(-dt*10));last_level=g.level
- if not portraits.has(g.hero):
-  var path=HudSkin.ROOT+HudSkin.THEMES[g.hero]+"-bust.png"
-  portraits[g.hero]=load(path) if g.hero in [0,1,2,5] else game.texture(g.hero)
+ if not portraits.has(g.hero):portraits[g.hero]=HudSkin.portrait(g.hero)
  portrait_node.texture=portraits[g.hero]
  var aperture=HudSkin.region(active_theme,"portrait",regions.portrait).grow(-2)
- portrait_node.position=aperture.position;portrait_node.size=aperture.size
- health_node.position=regions.health.position;health_node.size=regions.health.size
+ portrait_node.position=aperture.position-regions.left_zone.position;portrait_node.size=aperture.size
+ health_node.position=regions.health.position-regions.left_zone.position;health_node.size=regions.health.size
  health_node.update_value(g.hp/maxf(1,g.max_hp),"%s / %s"%[ceili(maxf(0,g.hp)),int(g.max_hp)],active_theme)
- xp_node.position=regions.xp.position;xp_node.size=regions.xp.size
+ xp_node.position=regions.xp.position-regions.center.position;xp_node.size=regions.xp.size
  xp_node.update_value(xp_display,"LEVEL %s  •  %s / %s XP"%[g.level,int(g.xp),int(g.xp_goal)],active_theme)
  map_clock-=dt
  if map_clock<=0 and game.save_data.settings.get("hud_minimap",true):
@@ -69,13 +90,6 @@ func label_in(value,rect,fs=16,color=Color("e9dfca"),heading=false):
  while fs>11 and font.get_string_size(value,HORIZONTAL_ALIGNMENT_LEFT,-1,fs).x>rect.size.x:fs-=1
  var at=Vector2(rect.position.x,rect.get_center().y+font.get_ascent(fs)/2-font.get_descent(fs)/2)
  draw_string(font,at,value,HORIZONTAL_ALIGNMENT_CENTER,rect.size.x,fs,color)
-func draw_hero_name(value,rect):
- var font=preload("res://assets/fonts/Alegreya.ttf")
- var fs=24
- while fs>14 and font.get_string_size(value,HORIZONTAL_ALIGNMENT_LEFT,-1,fs).x>rect.size.x:fs-=1
- var at=Vector2(rect.position.x,rect.get_center().y+(font.get_ascent(fs)-font.get_descent(fs))/2)
- draw_string(font,at+Vector2(0,1.5),value,HORIZONTAL_ALIGNMENT_CENTER,rect.size.x,fs,Color("17100b"))
- draw_string(font,at,value,HORIZONTAL_ALIGNMENT_CENTER,rect.size.x,fs,Color("efd7a3"))
 func part(name,rect,tone=Color.WHITE):draw_texture_rect(HudSkin.texture(active_theme,name),rect,false,tone)
 func icon_in(texture,rect):
  if texture==null:return
@@ -83,20 +97,15 @@ func icon_in(texture,rect):
  var factor=minf(rect.size.x/centered.get_width(),rect.size.y/centered.get_height())
  var dimensions=centered.get_size()*factor
  draw_texture_rect(centered,Rect2(rect.get_center()-dimensions/2,dimensions),false)
-func fill_bar(rect,fraction,top,bottom):
- draw_rect(rect,Color("0a1013"))
- var width=rect.size.x*clampf(fraction,0,1)
- for y in range(ceili(rect.size.y)):
-  draw_line(rect.position+Vector2(0,y),rect.position+Vector2(width,y),top.lerp(bottom,float(y)/rect.size.y),1)
- if width>1:draw_line(rect.position+Vector2(width,0),rect.position+Vector2(width,rect.size.y),top.lightened(.25),1.5)
 func _draw():
  if game.sim==null or size.x<100 or size.y<100:return
  layout()
  var g=game.sim;var accent=COLORS[selected(game.save_data,g.hero)]
  draw_rect(Rect2(0,24,size.x,size.y-24),Color("101311"))
- var rail_geometry={"voss":Vector2(-24,300),"kael":Vector2(-48,353),"vesper":Vector2(-48,340),"covenant":Vector2(-67,346)}
- var rail=rail_geometry[active_theme]
- part("master",Rect2(0,rail.x,size.x,rail.y))
+ var rail=HudSkin.configuration(active_theme).rail_geometry
+ draw_master_frame(Rect2(0,rail[0],size.x,rail[1]),regions.xp.get_center().x)
+ draw_console("left",Rect2(0,0,regions.left_zone.end.x+20,230))
+ draw_console("right",Rect2(regions.right_zone.position.x-20,0,size.x-regions.right_zone.position.x+20,230))
 
  if game.save_data.settings.get("hud_minimap",true):
   part("map",regions.map)
@@ -105,9 +114,7 @@ func _draw():
  var level_badge=regions.level
  part("level",level_badge)
  label_in(str(g.level),level_badge.grow(-9),17,Color("ecd8ad"),true)
- part("name",regions.name)
- draw_hero_name(g.C.HEROES[g.hero].name,HudSkin.region(active_theme,"name",regions.name))
- var slot_size=minf(110,(regions.weapons.size.x-24)/5)
+ var slot_size=minf(minf(110,regions.weapons.size.y/1.12),(regions.weapons.size.x-24)/5)
  var slot_height=slot_size*1.12
  var slot_start=regions.weapons.get_center().x-(5*slot_size+24)/2
  slots.clear()
@@ -141,7 +148,7 @@ func _draw():
  item_page=clampi(item_page,0,item_pages-1)
  var count=8
  var columns=4
- var cell=minf(58,regions.inventory.size.x/columns)
+ var cell=minf(58,minf(regions.inventory.size.x/columns,regions.inventory.size.y/2))
  var start=regions.inventory.get_center().x-columns*cell/2
  var grid_top=regions.inventory.get_center().y-cell
  for i in range(count):
@@ -154,16 +161,30 @@ func _draw():
   label_in(str(item.rank),Rect2(r.end-Vector2(18,16),Vector2(15,14)),11,Color("f2dfb2"))
   slots.append({"rect":r,"text":item.name+" / Rank %s"%item.rank})
 
- if item_pages>1:label_in("<   %s / %s   >"%[item_page+1,item_pages],Rect2(regions.inventory.position.x,190,regions.inventory.size.x,18),12,Color("e7d3a7"))
- part("currency",regions.currency)
- label_in("%s AMBER"%g.amber,HudSkin.region(active_theme,"currency",regions.currency),15,Color("f1d69b"))
- var hovering=regions.backpack.has_point(get_local_mouse_position())
- part("backpack",regions.backpack,Color(1.2,1.15,1.04) if hovering else Color.WHITE)
- label_in("BACKPACK",HudSkin.region(active_theme,"backpack",regions.backpack),16,Color("e7d3a7"),true)
- var reroll=regions.reroll
- part("name",reroll)
- label_in("RE-ROLLS %s"%g.rerolls,HudSkin.region(active_theme,"name",reroll),14,Color("e7d3a7"),true)
+ if item_pages>1:label_in("<   %s / %s   >"%[item_page+1,item_pages],regions.inventory_pages,12,Color("e7d3a7"))
  draw_notification()
+func draw_master_frame(rect,centerline):
+ # One connected parent shell. Preserve both end ornaments and align the central
+ # crest with XP/abilities, allocating surplus width to the two continuous rails.
+ var texture=HudSkin.texture(active_theme,"master")
+ var source=texture.get_size()
+ var left_edge=200.0
+ var right_edge=190.0
+ var crest=180.0
+ var target=[0.0,left_edge,centerline-crest/2,centerline+crest/2,size.x-right_edge,size.x]
+ var cuts=[0.0,.18,.42,.58,.82,1.0]
+ for i in range(5):
+  draw_texture_rect_region(texture,Rect2(target[i],rect.position.y,target[i+1]-target[i],rect.size.y),Rect2(source.x*cuts[i],0,source.x*(cuts[i+1]-cuts[i]),source.y))
+func draw_console(side,rect):
+ # Only decorative rails stretch; the end ornaments retain fixed footprints.
+ var spec=HudSkin.configuration(active_theme).shells[side]
+ var texture=HudSkin.asset(spec.texture);var source=texture.get_size()
+ var xs=[0.0,float(spec.caps[0]),rect.size.x-float(spec.caps[1]),rect.size.x]
+ var ys=[0.0,38.0,202.0,rect.size.y]
+ var uv_y=[0.0,.28,.76,1.0]
+ for x in range(3):
+  for y in range(3):
+   draw_texture_rect_region(texture,Rect2(rect.position+Vector2(xs[x],ys[y]),Vector2(xs[x+1]-xs[x],ys[y+1]-ys[y])),Rect2(Vector2(spec.cuts[x],uv_y[y])*source,Vector2(spec.cuts[x+1]-spec.cuts[x],uv_y[y+1]-uv_y[y])*source))
 func draw_notification():
  if game.toast_time<=0 or game.sim.choosing:return
  var opacity=minf(1,game.toast_time)
@@ -208,6 +229,7 @@ func draw_map(g,r,accent):
  draw_colored_polygon(points,Color("fff3cc"))
  text("N",r.position+Vector2(r.size.x/2-4,12),11,Color("dfd7b4"))
 func _get_tooltip(at):
+ if regions.relics.has_point(at):return "Inspect your relics and their effects."
  if regions.reroll.has_point(at):return "Re-rolls remaining. Use R while choosing a level-up upgrade."
  if regions.currency.has_point(at):return "Amber collected this run. Click to inspect your backpack."
  for slot in slots:
@@ -221,33 +243,18 @@ func _get_tooltip(at):
   if slot.rect.has_point(at):return slot.text
  return "Open backpack for all relics, passives and detailed stats." if regions.inventory.has_point(at) or regions.backpack.has_point(at) else ""
 func _gui_input(event):
- var pages=Rect2(regions.inventory.position.x,190,regions.inventory.size.x,18)
+ var pages=regions.inventory_pages
  if event is InputEventMouseButton and event.pressed and (regions.inventory.has_point(event.position) or pages.has_point(event.position)):
   if event.button_index in [MOUSE_BUTTON_WHEEL_UP,MOUSE_BUTTON_WHEEL_DOWN]:
    item_page=posmod(item_page+(1 if event.button_index==MOUSE_BUTTON_WHEEL_DOWN else -1),item_pages);accept_event();queue_redraw();return
-  if event.button_index==MOUSE_BUTTON_LEFT and event.position.y>=190 and item_pages>1:
+  if event.button_index==MOUSE_BUTTON_LEFT and pages.has_point(event.position) and item_pages>1:
    item_page=posmod(item_page+(1 if event.position.x>=regions.inventory.get_center().x else -1),item_pages);accept_event();queue_redraw();return
  if event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:
   if regions.reroll.has_point(event.position):
    game.show_toast("%s RE-ROLLS AVAILABLE"%game.sim.rerolls,"Use R when choosing a level-up upgrade.")
+  elif regions.relics.has_point(event.position):game.ledger_menu(true)
   elif regions.backpack.has_point(event.position) or regions.inventory.has_point(event.position) or regions.currency.has_point(event.position):game.ledger_menu()
   elif regions.map.has_point(event.position) and game.save_data.settings.get("hud_minimap",true):game.map_menu()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 func rebuild_minimap(g,r):
  map_origin=g.pos

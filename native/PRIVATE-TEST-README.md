@@ -1,4 +1,4 @@
-# Extinction Protocol — Hobby playtest 0.13.0 / Fieldwork
+# Extinction Protocol — Hobby playtest 0.13.1 / Framed
 
 Halloween is enabled by default for this release. Settings → Hollow Harvest theme restores the original art and music when disabled. Your choice is saved. Kael, Voss and Vesper have event-based voice lines with chances and cooldowns; use the voice volume slider to silence them. Separate sliders cover effects, music, voices and cinematics. The new HUD is a first iteration and will have issues, especially layout, scaling and experience-bar polish.
 

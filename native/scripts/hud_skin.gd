@@ -5,6 +5,25 @@ const PARTS=["map","portrait","name","health","weapon","relic","currency","backp
 static var images={}
 static var regions={}
 static var styles={}
+static var configurations={}
+const HERO_KEYS=["mara-voss","kael","vesper","iona","orin","nagash"]
+static func configuration(theme):
+ if not configurations.has(theme):configurations[theme]=JSON.parse_string(FileAccess.get_file_as_string(ROOT+"plates/"+theme+"/theme.json"))
+ return configurations[theme]
+static func asset(path):
+ if not images.has(path):images[path]=load(ROOT+path)
+ return images[path]
+static func nameplate(theme,hero):return asset(configuration(theme).nameplates[HERO_KEYS[hero]])
+static func plate_texture(theme,part):return asset(configuration(theme).plates[part].texture)
+static func plate_spec(theme,part):return configuration(theme).plates[part]
+static func portrait(hero):return asset(configuration(THEMES[hero]).portraits[HERO_KEYS[hero]])
+static func format_amount(value):
+ var digits=str(maxi(0,int(value)))
+ var result=""
+ for i in range(digits.length()):
+  if i>0 and (digits.length()-i)%3==0:result+=","
+  result+=digits[i]
+ return result
 static func xp_frame(theme):
  var key=theme+"xp"
  if not styles.has(key):

@@ -561,8 +561,10 @@ func build_hud():
 		back.color = Color(0.015,0.025,0.036,0.72)
 		back.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		hud_root.add_child(back)
-	score_plate=UIArt.plate(hud_root,0,Rect2(1080,10,350,96))
-	timer_plate=UIArt.plate(hud_root,1,Rect2(8,8,420,116))
+	score_plate=preload("res://scripts/hud_status_plate.gd").new();score_plate.part="score"
+	hud_root.add_child(score_plate)
+	timer_plate=preload("res://scripts/hud_status_plate.gd").new();timer_plate.part="location"
+	hud_root.add_child(timer_plate)
 	var left = column(hud_root,Vector2(30,24),Vector2(300,100),7)
 	left.visible = false
 	health_label = label(left,"",19,"eed5af")
@@ -577,17 +579,9 @@ func build_hud():
 	xp_bar.size = Vector2(1380,22)
 	xp_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	hud_root.add_child(xp_bar)
-	timer_label = label(hud_root,"",36)
-	timer_label.position = Vector2(610,18)
-	biome_label = label(hud_root,"",14,"95b5b7")
-	biome_label.position = Vector2(530,65)
-	biome_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	biome_label.custom_minimum_size.x = 0
-	biome_label.size=Vector2(265,53)
-	biome_label.clip_text=true
-	biome_label.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
-	score_label = label(hud_root,"",20,"ead9a7")
-	score_label.position = Vector2(1110,28)
+	timer_label=timer_plate.primary
+	biome_label=timer_plate.secondary
+	score_label=score_plate.primary
 	loadout_label = label(hud_root,"",13,"e8cf9a")
 	loadout_label.add_theme_stylebox_override("normal",StyleBoxEmpty.new())
 	loadout_label.add_theme_font_override("font",UIArt.heading_font())
@@ -674,24 +668,12 @@ func update_hud_scale():
 		entry.node.scale = Vector2.ONE*factor
 		entry.node.position = destination+(p-anchor)*factor
 	# Each region has an explicit owner. No independently scaled overlapping text.
-	timer_plate.position=Vector2(20,18)*factor
-	timer_plate.size=Vector2(540,140)
-	score_plate.position=Vector2(viewport.x-378*factor,18*factor)
-	timer_label.position=Vector2(354,67)*factor
-	timer_label.add_theme_font_override("font",UIArt.heading_font())
-	timer_label.add_theme_font_size_override("font_size",23)
-	timer_label.size=Vector2(92,36)
-	timer_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
-	biome_label.position=Vector2(112,64)*factor
-	biome_label.add_theme_font_override("font",UIArt.heading_font())
-	biome_label.add_theme_font_size_override("font_size",15)
-	biome_label.size=Vector2(232,60)
-	biome_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
-	score_label.position=Vector2(viewport.x-318*factor,49*factor)
-	score_label.size=Vector2(242,38)
-	score_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	score_label.add_theme_font_override("font",UIArt.heading_font())
-	score_label.add_theme_font_size_override("font_size",23)
+	var status_factor=minf(factor,maxf(.1,(viewport.x-48)/950.0))
+	timer_plate.scale=Vector2.ONE*status_factor;score_plate.scale=Vector2.ONE*status_factor
+	timer_plate.position=Vector2(24,18)*status_factor
+	timer_plate.size=Vector2(540,134)
+	score_plate.position=Vector2(viewport.x-354*status_factor,18*status_factor)
+	score_plate.size=Vector2(330,86)
 	var boss_y=150.0 if viewport.x<1900*factor else 12.0
 	boss_bar.position = Vector2(viewport.x/2-330*factor,(boss_y+5)*factor)
 	boss_label.position = Vector2(viewport.x/2-420*factor,boss_y*factor)
@@ -715,7 +697,7 @@ func update_hud_scale():
 	hero_dock.visible=dock_visible
 	toast_panel.position.y=viewport.y-300*factor
 	toast_label.position.y=viewport.y-289*factor
-	var dock_factor=minf(factor,(viewport.x-24)/1250.0)
+	var dock_factor=minf(factor,viewport.x/1600.0)
 	hero_dock.scale=Vector2.ONE*dock_factor
 	hero_dock.size=Vector2(viewport.x/dock_factor,210)
 	hero_dock.set_anchor(SIDE_TOP,1.0)
@@ -725,6 +707,7 @@ func update_hud_scale():
 	hero_dock.offset_top=-210*dock_factor
 	hero_dock.offset_bottom=210*(1.0-dock_factor)
 	weapons_hud.visible=false
+	buffs_hud.visible=false
 	loadout_label.visible=false
 	for child in hud_root.get_children():
 		if child is ColorRect:
@@ -770,7 +753,7 @@ func _process(dt):
 	if sim.active and sim.boss==null and sim.portal==null:
 		var remaining = maxi(0,ceili(sim.next_boss-sim.time))
 		biome_label.text += "\nNEXT BOSS IN %02d:%02d"%[remaining/60,remaining%60]
-	score_label.text = "%s  SCORE"%sim.score
+	score_label.text = preload("res://scripts/hud_skin.gd").format_amount(sim.score)
 	var weapon_text = []
 	for id in sim.weapons:
 		weapon_text.append(C.WEAPONS[id].evolution if sim.weapons[id].evolved else "%s %s"%[C.WEAPONS[id].name,sim.weapons[id].level])
@@ -780,9 +763,8 @@ func _process(dt):
 	loadout_label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	loadout_label.size = Vector2(285,58)
 	UIArt.fit_label(loadout_label,15)
-	UIArt.fit_label(timer_label,23)
-	UIArt.fit_label(biome_label,15)
-	UIArt.fit_label(score_label,23)
+	var active_skin=preload("res://scripts/hud_skin.gd").THEMES[preload("res://scripts/hero_hud.gd").selected(save_data,sim.hero)]
+	timer_plate.configure(active_skin);score_plate.configure(active_skin)
 	boss_bar.visible = sim.boss!=null
 	boss_label.visible = sim.boss!=null
 	boss_panel.visible = sim.boss!=null
@@ -1007,14 +989,22 @@ func pause_menu():
 	page = "pause"
 	clear_menu()
 	shade()
-	var v = column(menu_root,Vector2(470,210),Vector2(500,500),18)
-	label(v,"THE APOCALYPSE CAN WAIT.",16,"c4b69e")
-	label(v,"Take a breath.",45)
-	button(v,"Resume",resume,true)
-	button(v,"TAB / Overlay map",map_menu)
-	button(v,"B / Backpack & stats",ledger_menu)
-	button(v,"Settings",settings)
-	button(v,"End expedition / bank amber",func():sim.death_reason="You withdrew from the rift.";sim.finish(false))
+	var Skin=preload("res://scripts/hud_skin.gd")
+	var active_skin=Skin.THEMES[preload("res://scripts/hero_hud.gd").selected(save_data,sim.hero)]
+	var menu_factor=minf(1.0,minf(get_viewport_rect().size.x/760.0,get_viewport_rect().size.y/820.0))
+	var v=column(menu_root,Vector2(720,450)-Vector2(620,734)*menu_factor/2,Vector2(620,734),14)
+	v.scale=Vector2.ONE*menu_factor
+	var heading=TextureRect.new();heading.texture=Skin.asset(Skin.configuration(active_skin).menu.heading.texture)
+	heading.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;heading.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	heading.custom_minimum_size=Vector2(620,150);heading.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	v.add_child(heading)
+	var entries=[["resume","Resume",resume],["backpack_stats","Backpack & Stats",ledger_menu],["settings","Settings",settings],["end_expedition","End Expedition",func():sim.death_reason="You withdrew from the rift.";sim.finish(false)]]
+	for entry in entries:
+		var control=preload("res://scripts/hud_menu_button.gd").new()
+		control.text=entry[1];control.tooltip_text=entry[1];control.custom_minimum_size=Vector2(620,132)
+		v.add_child(control);control.configure(active_skin,entry[0])
+		control.pressed.connect(func():audio.play("loot",-21,1.4);entry[2].call())
+	v.get_child(1).grab_focus()
 
 func resume():
 	paused = false
@@ -1106,13 +1096,14 @@ func map_menu():
 	menu_root.add_child(map)
 
 
-func ledger_menu():
+func ledger_menu(focus_relics=false):
 	paused = true
 	page = "ledger"
 	clear_menu()
 	shade(0.97)
 	var panel = preload("res://scripts/backpack_panel.gd").new()
 	panel.game = self
+	panel.focus_relics = focus_relics
 	panel.size = Vector2(1440,900)
 	menu_root.add_child(panel)
 

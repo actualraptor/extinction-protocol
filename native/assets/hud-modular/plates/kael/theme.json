@@ -1,0 +1,364 @@
+{
+  "nameplates": {
+    "mara-voss": "plates/kael/mara-voss.png",
+    "kael": "plates/kael/kael.png",
+    "vesper": "plates/kael/vesper.png",
+    "iona": "plates/kael/iona.png",
+    "orin": "plates/kael/orin.png",
+    "nagash": "plates/kael/nagash.png"
+  },
+  "plates": {
+    "currency": {
+      "texture": "plates/kael/currency.png",
+      "icon_region": [
+        0.03,
+        0.14,
+        0.19,
+        0.72
+      ],
+      "baked_label_region": [
+        0.67,
+        0.2,
+        0.26,
+        0.6
+      ],
+      "value_region": [
+        0.26,
+        0.13,
+        0.4,
+        0.74
+      ],
+      "font_size": 18
+    },
+    "backpack": {
+      "texture": "plates/kael/backpack.png",
+      "icon_region": [
+        0.03,
+        0.14,
+        0.19,
+        0.72
+      ],
+      "baked_label_region": [
+        0.24,
+        0.2,
+        0.45,
+        0.6
+      ],
+      "value_region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "font_size": 18
+    },
+    "relics": {
+      "texture": "plates/kael/relics.png",
+      "icon_region": [
+        0.03,
+        0.14,
+        0.19,
+        0.72
+      ],
+      "baked_label_region": [
+        0.24,
+        0.2,
+        0.45,
+        0.6
+      ],
+      "value_region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "font_size": 18
+    },
+    "reroll": {
+      "texture": "plates/kael/reroll.png",
+      "icon_region": [
+        0.03,
+        0.14,
+        0.19,
+        0.72
+      ],
+      "baked_label_region": [
+        0.24,
+        0.2,
+        0.45,
+        0.6
+      ],
+      "value_region": [
+        0.755,
+        0.13,
+        0.15,
+        0.74
+      ],
+      "font_size": 18
+    }
+  },
+  "portraits": {
+    "mara-voss": "voss-bust.png",
+    "kael": "kael-bust.png",
+    "vesper": "vesper-bust.png",
+    "iona": "iona-bust.png",
+    "orin": "orin-bust.png",
+    "nagash": "covenant-bust.png"
+  },
+  "rail_geometry": [
+    -48,
+    353
+  ],
+  "layout": {
+    "edge_padding": 70,
+    "inventory_clearance": 42,
+    "minimum_width": 1600,
+    "left_console_width": 570,
+    "right_console_width": 570
+  },
+  "extraction": {
+    "mara-voss": {
+      "source_rect": [
+        19,
+        8,
+        873,
+        195
+      ],
+      "size": [
+        854,
+        187
+      ]
+    },
+    "kael": {
+      "source_rect": [
+        900,
+        8,
+        1761,
+        199
+      ],
+      "size": [
+        861,
+        191
+      ]
+    },
+    "vesper": {
+      "source_rect": [
+        18,
+        205,
+        872,
+        363
+      ],
+      "size": [
+        854,
+        158
+      ]
+    },
+    "iona": {
+      "source_rect": [
+        921,
+        204,
+        1742,
+        369
+      ],
+      "size": [
+        821,
+        165
+      ]
+    },
+    "orin": {
+      "source_rect": [
+        16,
+        363,
+        873,
+        551
+      ],
+      "size": [
+        857,
+        188
+      ]
+    },
+    "nagash": {
+      "source_rect": [
+        895,
+        371,
+        1767,
+        552
+      ],
+      "size": [
+        872,
+        181
+      ]
+    },
+    "currency": {
+      "source_rect": [
+        22,
+        557,
+        864,
+        710
+      ],
+      "size": [
+        842,
+        153
+      ]
+    },
+    "backpack": {
+      "source_rect": [
+        910,
+        553,
+        1752,
+        711
+      ],
+      "size": [
+        842,
+        158
+      ]
+    },
+    "relics": {
+      "source_rect": [
+        19,
+        716,
+        868,
+        870
+      ],
+      "size": [
+        849,
+        154
+      ]
+    },
+    "reroll": {
+      "source_rect": [
+        909,
+        712,
+        1757,
+        874
+      ],
+      "size": [
+        848,
+        162
+      ]
+    }
+  },
+  "shells": {
+    "left": {
+      "texture": "plates/kael/left-shell.png",
+      "source_rect": [
+        10,
+        8,
+        1816,
+        357
+      ],
+      "cuts": [
+        0,
+        0.2,
+        0.8,
+        1
+      ],
+      "caps": [
+        78,
+        42
+      ]
+    },
+    "right": {
+      "texture": "plates/kael/right-shell.png",
+      "source_rect": [
+        14,
+        365,
+        1977,
+        784
+      ],
+      "cuts": [
+        0,
+        0.2,
+        0.8,
+        1
+      ],
+      "caps": [
+        42,
+        90
+      ]
+    }
+  },
+  "menu": {
+    "heading": {
+      "texture": "plates/kael/menu-heading.png",
+      "source_rect": [
+        32,
+        76,
+        1487,
+        360
+      ]
+    },
+    "location": {
+      "texture": "plates/kael/menu-location.png",
+      "source_rect": [
+        21,
+        391,
+        768,
+        567
+      ],
+      "primary": [
+        0.75,
+        0.25,
+        0.15,
+        0.5
+      ],
+      "secondary": [
+        0.21,
+        0.27,
+        0.48,
+        0.46
+      ]
+    },
+    "score": {
+      "texture": "plates/kael/menu-score.png",
+      "source_rect": [
+        776,
+        392,
+        1521,
+        568
+      ],
+      "primary": [
+        0.17,
+        0.25,
+        0.39,
+        0.5
+      ]
+    },
+    "resume": {
+      "texture": "plates/kael/menu-resume.png",
+      "source_rect": [
+        21,
+        594,
+        766,
+        771
+      ]
+    },
+    "backpack_stats": {
+      "texture": "plates/kael/menu-backpack_stats.png",
+      "source_rect": [
+        775,
+        593,
+        1520,
+        771
+      ]
+    },
+    "settings": {
+      "texture": "plates/kael/menu-settings.png",
+      "source_rect": [
+        21,
+        796,
+        766,
+        972
+      ]
+    },
+    "end_expedition": {
+      "texture": "plates/kael/menu-end_expedition.png",
+      "source_rect": [
+        775,
+        796,
+        1520,
+        972
+      ]
+    }
+  }
+}

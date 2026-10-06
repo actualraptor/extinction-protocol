@@ -1,6 +1,7 @@
 extends Control
 const Icons = preload("res://scripts/atlas_icons.gd")
 var game
+var focus_relics=false
 func text_at(value,p,width,font_size=18,color="d2dfe3"):
 	var label = game.label(self,value,font_size,color)
 	label.position=p
@@ -34,6 +35,9 @@ func icon(id,kind,p,caption,dimension=38):
 	add_child(t)
 func _ready():
 	var g = game.sim
+	if focus_relics:
+		build_relics(g)
+		return
 	var mods=g.Relics.modifiers(g)
 	text_at("BACKPACK",Vector2(100,43),650,32,"f0d9ad")
 	text_at(g.trait_text(),Vector2(100,85),1200,17,"9eb5c2")
@@ -101,6 +105,23 @@ func total_dps(g):
 	var value=0.0
 	for id in g.damage_by_weapon: value+=g.ledger.recent(id,g.time)
 	return value
+func build_relics(g):
+	text_at("RELICS",Vector2(100,43),1000,32,"f0d9ad")
+	text_at("%s / 8 relic slots occupied · Hover an icon for details"%g.relics.size(),Vector2(100,85),1200,18,"9eb5c2")
+	for i in range(8):
+		var p=Vector2(100+(i%4)*315,145+floori(i/4.0)*310)
+		panel(Rect2(p,Vector2(295,285)))
+		if i>=g.relics.size():
+			text_at("EMPTY RELIC SLOT",p+Vector2(20,120),255,17,"71848d")
+			continue
+		var id=g.relics[i];var d=g.Relics.inventory_data(g,id)
+		icon(id,"relic",p+Vector2(20,20),d.name+"\n"+d.desc,64)
+		text_at(d.name,p+Vector2(20,102),255,20,"e1bf86")
+		text_at(d.rarity+" · Rank %s"%g.Relics.tiers(g,id).size(),p+Vector2(20,135),255,16,g.Relics.tier_color(d.rarity))
+		var description=text_at(d.desc,p+Vector2(20,171),255,17)
+		description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.size.y=90
+	var back=game.button(self,"B / ESC — Return to expedition",game.resume,true)
+	back.position=Vector2(100,828);back.size=Vector2(1240,48)
 
 
 

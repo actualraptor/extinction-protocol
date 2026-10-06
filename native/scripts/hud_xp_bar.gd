@@ -19,14 +19,15 @@ func _ready():
 func update_value(value,text_value,skin):
  theme_id=skin;caption=text_value
  if insert!=null:
-  insert.position=Vector2(45,13);insert.size=Vector2(maxf(1,size.x-90),10)
+  insert.position=Vector2(45,(size.y-10)/2);insert.size=Vector2(maxf(1,size.x-90),10)
   material_fill.set_shader_parameter("fraction",clampf(value,0,1))
   plaque.size=Vector2(232,42);plaque.position=(size-plaque.size)/2
  for child in get_children():child.queue_redraw()
  queue_redraw()
 func _draw():
  var rail=ResourceSkin.texture(theme_id,"xp");var source=rail.get_size();var cap=source.x*.15
- for pair in [[Rect2(0,0,44,36),Rect2(0,0,cap,source.y)],[Rect2(44,0,size.x-88,36),Rect2(cap,0,source.x-cap*2,source.y)],[Rect2(size.x-44,0,44,36),Rect2(source.x-cap,0,cap,source.y)]]:
+ var top=(size.y-36)/2
+ for pair in [[Rect2(0,top,44,36),Rect2(0,0,cap,source.y)],[Rect2(44,top,size.x-88,36),Rect2(cap,0,source.x-cap*2,source.y)],[Rect2(size.x-44,top,44,36),Rect2(source.x-cap,0,cap,source.y)]]:
   draw_texture_rect_region(rail,pair[0],pair[1])
 func draw_caption(control):
  var font=preload("res://scripts/ui_art.gd").heading_font()

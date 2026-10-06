@@ -1,5 +1,5 @@
 extends RefCounted
-const RULESET="0.13.0"
+const RULESET="0.13.1"
 const C=preload("res://scripts/catalog.gd")
 const Maps=preload("res://scripts/expedition_maps.gd")
 static func plan(seed_value):

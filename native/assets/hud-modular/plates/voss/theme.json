@@ -1,0 +1,364 @@
+{
+  "nameplates": {
+    "mara-voss": "plates/voss/mara-voss.png",
+    "kael": "plates/voss/kael.png",
+    "vesper": "plates/voss/vesper.png",
+    "iona": "plates/voss/iona.png",
+    "orin": "plates/voss/orin.png",
+    "nagash": "plates/voss/nagash.png"
+  },
+  "plates": {
+    "currency": {
+      "texture": "plates/voss/currency.png",
+      "icon_region": [
+        0.03,
+        0.14,
+        0.19,
+        0.72
+      ],
+      "baked_label_region": [
+        0.67,
+        0.2,
+        0.26,
+        0.6
+      ],
+      "value_region": [
+        0.255,
+        0.13,
+        0.4,
+        0.74
+      ],
+      "font_size": 18
+    },
+    "backpack": {
+      "texture": "plates/voss/backpack.png",
+      "icon_region": [
+        0.03,
+        0.14,
+        0.19,
+        0.72
+      ],
+      "baked_label_region": [
+        0.24,
+        0.2,
+        0.45,
+        0.6
+      ],
+      "value_region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "font_size": 18
+    },
+    "relics": {
+      "texture": "plates/voss/relics.png",
+      "icon_region": [
+        0.03,
+        0.14,
+        0.19,
+        0.72
+      ],
+      "baked_label_region": [
+        0.24,
+        0.2,
+        0.45,
+        0.6
+      ],
+      "value_region": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "font_size": 18
+    },
+    "reroll": {
+      "texture": "plates/voss/reroll.png",
+      "icon_region": [
+        0.03,
+        0.14,
+        0.19,
+        0.72
+      ],
+      "baked_label_region": [
+        0.24,
+        0.2,
+        0.45,
+        0.6
+      ],
+      "value_region": [
+        0.755,
+        0.13,
+        0.115,
+        0.74
+      ],
+      "font_size": 18
+    }
+  },
+  "portraits": {
+    "mara-voss": "voss-bust.png",
+    "kael": "kael-bust.png",
+    "vesper": "vesper-bust.png",
+    "iona": "iona-bust.png",
+    "orin": "orin-bust.png",
+    "nagash": "covenant-bust.png"
+  },
+  "rail_geometry": [
+    -24,
+    300
+  ],
+  "layout": {
+    "edge_padding": 70,
+    "inventory_clearance": 42,
+    "minimum_width": 1600,
+    "left_console_width": 570,
+    "right_console_width": 570
+  },
+  "extraction": {
+    "mara-voss": {
+      "source_rect": [
+        27,
+        3,
+        870,
+        185
+      ],
+      "size": [
+        843,
+        182
+      ]
+    },
+    "kael": {
+      "source_rect": [
+        902,
+        2,
+        1745,
+        186
+      ],
+      "size": [
+        843,
+        184
+      ]
+    },
+    "vesper": {
+      "source_rect": [
+        27,
+        180,
+        870,
+        362
+      ],
+      "size": [
+        843,
+        182
+      ]
+    },
+    "iona": {
+      "source_rect": [
+        902,
+        187,
+        1742,
+        365
+      ],
+      "size": [
+        840,
+        178
+      ]
+    },
+    "orin": {
+      "source_rect": [
+        27,
+        363,
+        869,
+        545
+      ],
+      "size": [
+        842,
+        182
+      ]
+    },
+    "nagash": {
+      "source_rect": [
+        901,
+        361,
+        1746,
+        551
+      ],
+      "size": [
+        845,
+        190
+      ]
+    },
+    "currency": {
+      "source_rect": [
+        27,
+        545,
+        864,
+        709
+      ],
+      "size": [
+        837,
+        164
+      ]
+    },
+    "backpack": {
+      "source_rect": [
+        902,
+        549,
+        1746,
+        710
+      ],
+      "size": [
+        844,
+        161
+      ]
+    },
+    "relics": {
+      "source_rect": [
+        27,
+        703,
+        869,
+        873
+      ],
+      "size": [
+        842,
+        170
+      ]
+    },
+    "reroll": {
+      "source_rect": [
+        902,
+        716,
+        1746,
+        868
+      ],
+      "size": [
+        844,
+        152
+      ]
+    }
+  },
+  "shells": {
+    "left": {
+      "texture": "plates/voss/left-shell.png",
+      "source_rect": [
+        9,
+        10,
+        1750,
+        410
+      ],
+      "cuts": [
+        0,
+        0.2,
+        0.8,
+        1
+      ],
+      "caps": [
+        78,
+        42
+      ]
+    },
+    "right": {
+      "texture": "plates/voss/right-shell.png",
+      "source_rect": [
+        128,
+        362,
+        2040,
+        758
+      ],
+      "cuts": [
+        0,
+        0.2,
+        0.8,
+        1
+      ],
+      "caps": [
+        42,
+        90
+      ]
+    }
+  },
+  "menu": {
+    "heading": {
+      "texture": "plates/voss/menu-heading.png",
+      "source_rect": [
+        8,
+        54,
+        1527,
+        354
+      ]
+    },
+    "location": {
+      "texture": "plates/voss/menu-location.png",
+      "source_rect": [
+        13,
+        372,
+        764,
+        551
+      ],
+      "primary": [
+        0.79,
+        0.3,
+        0.12,
+        0.5
+      ],
+      "secondary": [
+        0.21,
+        0.27,
+        0.48,
+        0.46
+      ]
+    },
+    "score": {
+      "texture": "plates/voss/menu-score.png",
+      "source_rect": [
+        772,
+        373,
+        1522,
+        551
+      ],
+      "primary": [
+        0.17,
+        0.25,
+        0.39,
+        0.5
+      ]
+    },
+    "resume": {
+      "texture": "plates/voss/menu-resume.png",
+      "source_rect": [
+        15,
+        575,
+        756,
+        765
+      ]
+    },
+    "backpack_stats": {
+      "texture": "plates/voss/menu-backpack_stats.png",
+      "source_rect": [
+        772,
+        575,
+        1522,
+        765
+      ]
+    },
+    "settings": {
+      "texture": "plates/voss/menu-settings.png",
+      "source_rect": [
+        16,
+        771,
+        757,
+        964
+      ]
+    },
+    "end_expedition": {
+      "texture": "plates/voss/menu-end_expedition.png",
+      "source_rect": [
+        771,
+        770,
+        1522,
+        964
+      ]
+    }
+  }
+}
