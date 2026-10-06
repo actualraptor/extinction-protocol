@@ -55,10 +55,10 @@ func draw(target,s,p,tint):
 		s.companions.draw_owner(target,p,s,tint)
 		return
 	if not s.starter_attack.is_empty() and s.weapons.has(s.starter_attack.id):
-		preload("res://scripts/hero_attack_animation.gd").draw_pose(target,p,s.hero,preload("res://scripts/starter_attack.gd").progress(s),s.halloween,s.starter_attack.aim.x<0,tint)
+		preload("res://scripts/hero_attack_animation.gd").draw_pose(target,p,s.hero,preload("res://scripts/starter_attack.gd").progress(s),s.halloween,s.starter_attack.aim.x<0,tint,phase,moving)
 		return
 	if s.hero==1 and not s.kael_attack.is_empty():
-		preload("res://scripts/kael_attack_animation.gd").draw_pose(target,p,preload("res://scripts/kael_slam.gd").progress(s),s.halloween,s.kael_attack.aim.x<0,tint)
+		preload("res://scripts/kael_attack_animation.gd").draw_pose(target,p,preload("res://scripts/kael_slam.gd").progress(s),s.halloween,s.kael_attack.aim.x<0,tint,phase,moving)
 		return
 	var region = regions[s.hero][frame_index()]
 	var dimensions = region.size*scales[s.hero]

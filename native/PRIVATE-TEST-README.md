@@ -1,6 +1,6 @@
-# Extinction Protocol — Hobby playtest 0.11.4 / Aftershock
+# Extinction Protocol — Hobby playtest 0.13.0 / Fieldwork
 
-Halloween is enabled by default for this release. Settings → Hollow Harvest theme restores the original art and music when disabled. Your choice is saved. Kael, Voss and Vesper have event-based voice lines with chances and cooldowns; mute Sound effects to silence them.
+Halloween is enabled by default for this release. Settings → Hollow Harvest theme restores the original art and music when disabled. Your choice is saved. Kael, Voss and Vesper have event-based voice lines with chances and cooldowns; use the voice volume slider to silence them. Separate sliders cover effects, music, voices and cinematics. The new HUD is a first iteration and will have issues, especially layout, scaling and experience-bar polish.
 
 Windows: extract the ZIP, then run Extinction Protocol.exe. No installer needed. Close the old build before starting this one.
 
@@ -23,4 +23,3 @@ Private test focus:
 On a problem, include the version, mode, character, map, approximate run time, screenshot/video and the run report from the end screen. Logs live in the user-data logs directory; reports in reports. A test report may not exist if the process crashes before the run ends. Keep the save when reporting a progression issue.
 
 Steam features are not connected yet. Daily rankings remain local. No Steam account is required to run this private build.
-

@@ -72,6 +72,7 @@ func _draw():
 		for id in s.weapons:
 			var d = s.C.WEAPONS[id]
 			if d.delivery!="aura": continue
+			if s.companions!=null:continue
 			var stats = s.Rules.stats(s,id)
 			var radius = stats.radius
 			var row = 1 if "ICE" in d.tags else 0 if "FIRE" in d.tags else 3

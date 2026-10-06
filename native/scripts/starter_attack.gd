@@ -2,7 +2,7 @@ extends RefCounted
 const Chain=preload("res://scripts/chain_system.gd")
 const Art=preload("res://scripts/hero_attack_animation.gd")
 const IMPACT_PROGRESS=.62
-static func applies(g,id):return (g.hero==0 and id=="revolver") or (g.hero==2 and id=="lightning")
+static func applies(g,id):return (g.hero==0 and id in ["revolver","lastword"]) or (g.hero==2 and id in ["lightning","whiteout"])
 static func aim(g,id,fallback):
 	var target=g.weapon_target(id)
 	return (target.p-g.pos).normalized() if target!=null else fallback
@@ -24,7 +24,7 @@ static func start(g,id,direction,stats):
 	# frame. One bounded state cannot silently discard a scheduled shot.
 	if not g.starter_attack.is_empty() and not g.starter_attack.hit:release(g,g.starter_attack)
 	var carry_until=g.starter_attack.get("visual_until",0.0)
-	var duration=minf(.32 if id=="revolver" else .56,stats.cooldown*.85)
+	var duration=minf(.32 if g.hero==0 else .56,stats.cooldown*.85)
 	g.starter_attack={"id":id,"aim":direction,"stats":stats.duplicate(true),"start":g.time,"duration":duration,"hit":false,"visual_until":0.0,"carry_until":carry_until}
 static func update(g):
 	if g.starter_attack.is_empty():return
@@ -50,7 +50,7 @@ static func release(g,a):
 	if d.has("secondary"):
 		var extra=d.secondary
 		for j in range(extra.count):g.shoot(a.id,origin,trajectory.rotated((j-(extra.count-1)*.5)*.14),s.power*extra.power,extra.velocity,extra.lifetime,extra.pierce)
-	if a.id=="lightning":
+	if d.delivery=="chain":
 		Chain.cast(g,origin,s.power,a.id,s.count,s.range,s.falloff,s.fork,s.rechain,g.pos)
 	else:
 		var pierce=1 if "EXPLOSION" in d.tags or "RICOCHET" in d.tags else s.pierce

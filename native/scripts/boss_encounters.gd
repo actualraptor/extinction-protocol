@@ -63,7 +63,7 @@ static func update(g,dt):
   "charge":
    b.p=b.origin.lerp(b.target,progress)
    b.pose=sin(progress*PI)*0.08
-   if b.p.distance_to(g.pos)<b.size+16:g.hurt(34,"Gored by the Thorn Crown")
+   if b.p.distance_to(g.pos)<b.size+16:g.hurt(34,"Gored by Gorath")
    if b.action_left<=0:
     g.effect.emit("blast_club",b.p,color,145);g.sound.emit("club")
     if g.phase==2:hazard(g,"cone",b.p,b.aim.angle(),170,0.65,0.22,30,"thorn",{"arc":2.7})
@@ -105,7 +105,7 @@ static func prepare(g):
    if b.attack_index%3!=0:
     b.target=g.terrain.open_position(g.pos+g.velocity*0.25)
     hazard(g,"circle",b.target,0,95,b.action_length+0.65,0.1,0,"hunt",{"marker_only":true})
-    g.banner.emit("THE PALE HUNT","POUNCE LOCKED / MOVE OUT")
+    g.banner.emit("SKARN'S POUNCE","POUNCE LOCKED / MOVE OUT")
    else:g.banner.emit("PACK CALL","A SMALL HUNTING PACK APPROACHES")
   "aurora":
    if b.attack_index%2==1:
@@ -114,7 +114,7 @@ static func prepare(g):
     g.banner.emit("VEIL STEP","WATCH THE REAPPEARANCE")
    else:
     hazard(g,"cone",b.p,aim,420,b.action_length,1.2,28,"aurora",{"arc":1.25})
-    g.banner.emit("AURORA BREATH","MOVE AROUND ITS FLANK")
+    g.banner.emit("VAELITH'S BREATH","MOVE AROUND ITS FLANK")
   "warden":
    for j in range(3):pod(g,b.p+Vector2.from_angle(aim+j*TAU/3)*170,"lens",12)
    for e in b.props:

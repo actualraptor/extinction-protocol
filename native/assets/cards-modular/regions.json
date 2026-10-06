@@ -1,0 +1,182 @@
+{
+  "common-frame": [
+    29,
+    39,
+    299,
+    408
+  ],
+  "uncommon-frame": [
+    364,
+    36,
+    297,
+    412
+  ],
+  "rare-frame": [
+    696,
+    35,
+    304,
+    413
+  ],
+  "epic-frame": [
+    40,
+    46,
+    274,
+    431
+  ],
+  "legendary-frame": [
+    367,
+    47,
+    291,
+    428
+  ],
+  "artifact-frame": [
+    699,
+    46,
+    301,
+    430
+  ],
+  "common-title": [
+    19,
+    499,
+    317,
+    107
+  ],
+  "uncommon-title": [
+    358,
+    493,
+    310,
+    117
+  ],
+  "rare-title": [
+    691,
+    492,
+    313,
+    119
+  ],
+  "epic-title": [
+    17,
+    522,
+    324,
+    93
+  ],
+  "legendary-title": [
+    341,
+    518,
+    332,
+    100
+  ],
+  "artifact-title": [
+    686,
+    516,
+    325,
+    105
+  ],
+  "common-panel": [
+    31,
+    47,
+    711,
+    264
+  ],
+  "uncommon-panel": [
+    795,
+    47,
+    711,
+    264
+  ],
+  "rare-panel": [
+    31,
+    368,
+    711,
+    265
+  ],
+  "epic-panel": [
+    795,
+    368,
+    711,
+    265
+  ],
+  "legendary-panel": [
+    31,
+    689,
+    711,
+    266
+  ],
+  "artifact-panel": [
+    795,
+    689,
+    711,
+    266
+  ],
+  "common-button": [
+    24,
+    1008,
+    310,
+    95
+  ],
+  "uncommon-button": [
+    355,
+    1002,
+    314,
+    107
+  ],
+  "rare-button": [
+    691,
+    1004,
+    312,
+    104
+  ],
+  "epic-button": [
+    12,
+    991,
+    329,
+    103
+  ],
+  "legendary-button": [
+    352,
+    992,
+    324,
+    102
+  ],
+  "artifact-button": [
+    687,
+    992,
+    325,
+    102
+  ],
+  "common-medallion": [
+    16,
+    1136,
+    325,
+    330
+  ],
+  "uncommon-medallion": [
+    357,
+    1130,
+    326,
+    342
+  ],
+  "rare-medallion": [
+    683,
+    1129,
+    320,
+    344
+  ],
+  "epic-medallion": [
+    12,
+    1117,
+    328,
+    339
+  ],
+  "legendary-medallion": [
+    353,
+    1115,
+    322,
+    347
+  ],
+  "artifact-medallion": [
+    685,
+    1113,
+    327,
+    349
+  ]
+}

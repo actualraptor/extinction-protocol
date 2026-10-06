@@ -14,7 +14,7 @@ static func tiers(g,id):
 	return g.relic_stacks.get(id,["LEGACY"] if id in g.relics else [])
 
 static func candidates(g):
-	return g.C.RELICS.keys().filter(func(id):return (id in g.relics or g.relics.size()<g.RELIC_SLOTS) and tiers(g,id).size()<STACK_LIMIT and g.content_allowed("relics",id) and Rules.eligible(g.weapons,g.C.WEAPONS,g.C.RELICS[id].get("filter",{})))
+	return g.C.RELICS.keys().filter(func(id):return (id in g.relics or g.relics.size()<g.RELIC_SLOTS) and tiers(g,id).size()<g.C.RELICS[id].get("max_copies",STACK_LIMIT) and g.content_allowed("relics",id) and Rules.eligible(g.weapons,g.C.WEAPONS,g.C.RELICS[id].get("filter",{})))
 
 static func roll_tier(g):
 	var distribution=odds(g)
@@ -34,11 +34,18 @@ static func roll_reward(g):
 	var pool=candidates(g)
 	if pool.is_empty():return {}
 	var tier=roll_tier(g)
-	pool=pool.filter(func(id):return not g.C.RELICS[id].get("artifact_only",false) or (tier=="ARTIFACT" and id not in g.relics))
+	pool=pool.filter(func(id):return (not g.C.RELICS[id].get("artifact_only",false) or (tier=="ARTIFACT" and id not in g.relics)) and TIERS.find(tier)>=TIERS.find(g.C.RELICS[id].get("min_tier","COMMON")))
 	if pool.is_empty():return {}
-	return reward(pool[g.rng.randi_range(0,pool.size()-1)],tier)
+	var total_weight=0.0
+	for id in pool:total_weight+=g.C.RELICS[id].get("roll_weight",1.0)
+	var ticket=g.rng.randf()*total_weight
+	for id in pool:
+		ticket-=g.C.RELICS[id].get("roll_weight",1.0)
+		if ticket<=0:return reward(id,tier)
+	return reward(pool.back(),tier)
 
 static func effects(id,tier):
+	if definitions_cache[id].get("fixed_power",false):return {"mods":{},"acquire":{},"power":1.0}
 	if tier=="LEGACY":
 		var legacy=definitions_cache[id]
 		return {"mods":legacy.get("mods",{}).duplicate(true),"acquire":legacy.get("acquire",{}).duplicate(true),"power":1.0}
@@ -65,7 +72,7 @@ static func effects(id,tier):
 
 static func apply(g,o):
 	var id=o.id
-	if id not in g.C.RELICS or tiers(g,id).size()>=STACK_LIMIT or (id not in g.relics and g.relics.size()>=g.RELIC_SLOTS):return false
+	if id not in g.C.RELICS or tiers(g,id).size()>=g.C.RELICS[id].get("max_copies",STACK_LIMIT) or (id not in g.relics and g.relics.size()>=g.RELIC_SLOTS):return false
 	var copies=tiers(g,id).duplicate()
 	if id not in g.relics:g.relics.append(id)
 	var tier=o.get("rarity","LEGACY")

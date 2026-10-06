@@ -31,16 +31,7 @@ func map_point(p):return center+(p-origin)*scale_value
 func world_point(p):return origin+(p-center)/scale_value
 func known(p):return game.sim.explored[game.sim.depth].has(Vector2i(floor(p.x/160),floor(p.y/160)))
 func objectives():
- var result=[]
- for item in game.sim.stage_objects:
-  if item.collected:continue
-  result.append({"p":item.p,"name":item.name,"id":"chest" if item.type=="cache" else item.id,"category":"relic" if item.type=="cache" else item.type})
- for marker in game.sim.landmarks:
-  if marker.found:continue
-  result.append({"p":marker.p,"name":marker.name if known(marker.p) else "UNKNOWN SIGNAL","id":"camp","category":"relic"})
- if game.sim.portal!=null:result.append({"p":game.sim.portal,"name":"NEXT BIOME","id":"portal","category":"relic"})
- if game.sim.boss!=null:result.append({"p":game.sim.boss.p,"name":"BOSS","id":game.sim.boss.get("identity","meteor"),"category":"boss"})
- return result
+ return preload("res://scripts/map_markers.gd").collect(game.sim)
 func nearest_marker(at):
  var best={};var distance=24.0*ui_scale
  for item in objectives():
@@ -115,7 +106,7 @@ func terrain_context(g):
 func short_name(value,max_width=180):
  var result=value
  while result.length()>3 and font.get_string_size(result,HORIZONTAL_ALIGNMENT_LEFT,-1,roundi(13*ui_scale)).x>max_width:result=result.left(result.length()-1)
- return result+"…" if result!=value else result
+ return result+"â€¦" if result!=value else result
 func _draw():
  if game.sim==null:return
  if rect.size==Vector2.ZERO:
@@ -158,5 +149,5 @@ func _draw():
  var detail="LOCAL NAVIGATION" if zoom>1 else "FULL STAGE / DISTANT SIGNALS"
  if not hovered.is_empty():detail=hovered.name+" / %s m"%int(g.pos.distance_to(hovered.p)/10)
  text_center(detail,Vector2(size.x/2,size.y-86*ui_scale),16,Color("ffe4a7"))
- text_center("CLICK PIN · RIGHT CLICK CLEAR · MIDDLE DRAG PAN · WHEEL ZOOM · TAB CLOSE",Vector2(size.x/2,size.y-57*ui_scale),13,Color("c4c3ab"))
- text_center("1 m = 10 world units · pale blocks: obstacles · teal: mud · orange: lava",Vector2(size.x/2,size.y-33*ui_scale),12,Color("899888"))
+ text_center("CLICK PIN Â· RIGHT CLICK CLEAR Â· MIDDLE DRAG PAN Â· WHEEL ZOOM Â· TAB CLOSE",Vector2(size.x/2,size.y-57*ui_scale),13,Color("c4c3ab"))
+ text_center("1 m = 10 world units Â· pale blocks: obstacles Â· teal: mud Â· orange: lava",Vector2(size.x/2,size.y-33*ui_scale),12,Color("899888"))

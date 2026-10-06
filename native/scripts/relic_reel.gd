@@ -1,6 +1,7 @@
 extends Control
 ## A deterministic result from the run RNG, decorated with a separate UI reel.
 signal awarded
+signal revealed
 const C = preload("res://scripts/catalog.gd")
 const R = preload("res://scripts/relic_system.gd")
 const Icons = preload("res://scripts/atlas_icons.gd")
@@ -21,6 +22,7 @@ var duration = 2.6
 var strip = []
 var landed = false
 var claimed = false
+var card_followup=false
 var tick_index = -1
 var sheet = preload("res://assets/pickups.png")
 var font = preload("res://scripts/ui_art.gd").body_font()
@@ -67,11 +69,13 @@ func _process(dt):
 	if t>=1 and not landed:
 		landed = true
 		audio.play("rarity_"+str(R.TIERS.find(reward_data.rarity)),-7)
+	if card_followup and landed and elapsed>=duration+.25 and not claimed:
+		claimed=true;set_process(false);revealed.emit()
 	queue_redraw()
 
 func _unhandled_key_input(event):
 	# A held movement key must not skip the reveal. Require a new press.
-	if claimed or not landed or elapsed<duration+0.3: return
+	if card_followup or claimed or not landed or elapsed<duration+0.3: return
 	if event.pressed and not event.echo and event.keycode in [KEY_W,KEY_A,KEY_S,KEY_D,KEY_UP,KEY_LEFT,KEY_DOWN,KEY_RIGHT,KEY_SPACE,KEY_ENTER,KEY_E]:
 		keep_existing = not replacement_data.is_empty() and event.keycode!=KEY_E
 		claimed = true

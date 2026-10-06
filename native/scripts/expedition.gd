@@ -9,6 +9,8 @@ var halloween = false
 var banishes=1
 var banished={}
 signal voice_event(event)
+signal rite_requested(defeated)
+var rite_pending=false
 const Combat = preload("res://scripts/combat_engine.gd")
 const Pickups = preload("res://scripts/world_pickups.gd")
 const Relics = preload("res://scripts/relic_system.gd")
@@ -147,6 +149,7 @@ var hostile_shots = []
 var relic_chests = []
 var rerolls = 3
 var reroll_exclude = []
+var boss_corpses=[]
 var portal = null
 var linger = 0.0
 var portal_charge = 0.0
@@ -328,6 +331,7 @@ func tick(dt, direction):
 	Relics.update(self,dt)
 	if not active or choosing: return
 	if companions!=null:companions.update(self,dt)
+	preload("res://scripts/remnant_system.gd").update(self,dt)
 	if not active:return
 	update_weapons(dt)
 	if not active or choosing: return
@@ -339,6 +343,12 @@ func tick(dt, direction):
 	if not active or choosing: return
 	update_boss(dt)
 	if not active or choosing: return
+	if companions!=null:
+		# Reconcile after knockbacks, summoned movement and boss actions too.
+		companions.collision.build(companions.units)
+		for enemy in enemies:
+			if not enemy.dead and not enemy.anchor and not enemy.get("breakable",false):
+				enemy.p=companions.collision.block_enemy(enemy,enemy.p,enemy.p)
 	update_gems(dt)
 	update_objectives(dt)
 	peak_enemies = maxi(peak_enemies,enemies.size())
@@ -390,6 +400,7 @@ func spawn_enemy(elite = false, at = null, kind_override = -1, announce = true):
 	return e
 
 func update_enemies(dt):
+	if companions!=null:companions.collision.build(companions.units)
 	enemy_frame += 1
 	crowd.build(enemies)
 	for e in enemies:
@@ -480,7 +491,9 @@ func update_enemies(dt):
 			var speeds={"thorn":76.0,"basalt":58.0,"hunt":112.0,"aurora":88.0,"warden":66.0,"bloom":52.0}
 			if delta.length()>e.size+45:
 				var chase=terrain.direction(e.p,pos,e.uid)
+				var start=e.p
 				e.p=terrain.move(e.p,chase*speeds.get(e.get("identity","thorn"),76.0)*(1.12 if phase==2 else 1.0)*step,32)
+				if companions!=null:e.p=companions.collision.block_enemy(e,start,e.p)
 				e.aim=chase
 			delta=pos-e.p
 		# Boss contact hurts the player, but never shoves the boss.
@@ -814,6 +827,7 @@ func kill(e):
 				relic_chests.append(terrain.open_position(e.p))
 				if e.get("event_spawn",false): elite_chest_ready = time+35
 	if e.boss:
+		preload("res://scripts/remnant_system.gd").leave(self,e)
 		# One sweep of existing XP. This does not start a timed magnet.
 		for gem in gems: gem.magnet=true
 		voice_event.emit("boss_killed")
@@ -836,17 +850,20 @@ func kill(e):
 		hazards.clear()
 		enemies=enemies.filter(func(other):return other.get("encounter_guard",false) and not other.dead)
 		grid.clear()
-		portal = terrain.open_position(e.p+Vector2(170,100))
+		portal = preload("res://scripts/remnant_system.gd").portal_position(self,boss_corpses.back())
 		linger = 0.0
 		portal_charge = 0.0
 		hp = minf(max_hp,hp+max_hp*0.3)
 		banner.emit("A WAY THROUGH","COLLECT YOUR SPOILS / ENTER THE RIFT WHEN READY")
+		rite_requested.emit(e)
+		if rite_pending:return
 		open_choices(true)
 	elif e.get("role","")=="brood" and brood_queue.size()<24:
 		for j in range(3): brood_queue.append(e.p+Vector2.from_angle(j*TAU/3)*24)
 
 func enter_portal():
 	if not active or choosing or portal==null or boss!=null: return
+	preload("res://scripts/remnant_system.gd").clear(self)
 	if mode=="daily" and boss_stage==3:
 		daily_loop+=1;boss_stage=0;depth=0
 		explored = [{},{},{}]
@@ -931,9 +948,22 @@ func add_gem(p,value):
 	gems[donor] = {"p":p,"value":value,"magnet":buffs.get("magnet",0)>0}
 func update_gems(dt):
 	var radius = 95+buff_power("pickup")*35+research_ranks.get("magnet",0)*12
+	var collectors={}
+	if companions!=null:
+		for ally in companions.units:
+			if ally.hp<=0:continue
+			var key=Vector2i(floori(ally.p.x/radius),floori(ally.p.y/radius))
+			if not collectors.has(key):collectors[key]=[]
+			collectors[key].append(ally.p)
 	for gem in gems:
 		var distance = gem.p.distance_to(pos)
 		if distance<radius or buffs.get("magnet",0)>0: gem.magnet = true
+		if not gem.magnet and not collectors.is_empty():
+			var cell=Vector2i(floori(gem.p.x/radius),floori(gem.p.y/radius))
+			for y in range(-1,2):
+				for x in range(-1,2):
+					for collector in collectors.get(cell+Vector2i(x,y),[]):
+						if collector.distance_squared_to(gem.p)<radius*radius:gem.magnet=true;break
 		if gem.magnet: gem.p = gem.p.move_toward(pos,(420+distance*3)*dt)
 		if gem.p.distance_to(pos)<20:
 			xp += gem.value*stage.modifiers.get("xp",1.0)*(1+research_ranks.get("growth",0)*0.03)*(1+buff_power("pickup")*0.08)*(1+Relics.modifiers(self).get("xp",0))*(2 if buffs.get("surge",0)>0 else 1)
@@ -1040,6 +1070,7 @@ func spawn_boss(stage):
 	next_uid += 1
 	var health = [90000.0,900000.0,20000000.0][stage-1]*pow(2.0,minf(daily_loop,25))
 	boss = {"uid":next_uid,"p":p,"hp":health,"max_hp":health,"kind":8 if stage==3 else 11 if stage==2 else 1,"elite":false,"mutated":false,"boss":true,"anchor":false,"size":110.0 if stage==3 else 65.0,"speed":30.0,"flash":0.0,"slow":0.0,"burn":0.0,"burn_tick":0.0,"attack":0.0,"dead":false,"reform":0.0}
+	if stage==3:boss.immovable=true;boss.anchor_p=p
 	if stage<3 and map_id!="cradle": boss.kind=([14,15] if map_id=="frostbreak" else [16,17])[stage-1]
 	enemies.append(boss)
 	if stage==3: make_anchors()
@@ -1063,12 +1094,16 @@ func make_anchors():
 
 func update_boss(dt):
 	if boss == null: return
+	if boss.get("immovable",false):boss.p=boss.anchor_p
 	boss_time += dt
 	if buffs.get("freeze",0)>0 or buffs.get("slow",0)>0: dt *= 0.7
 	boss.reform = maxf(0,boss.reform-dt)
 	if boss_stage<3:
 		phase = 2 if boss.hp <= boss.max_hp*0.5 else 1
+		var origin=boss.p
 		BossEncounters.update(self,dt)
+		if companions!=null and boss!=null and boss.get("lift",0)<10:
+			boss.p=companions.collision.block_enemy(boss,origin,boss.p)
 		return
 	else:
 		if anchors.is_empty():
@@ -1313,8 +1348,6 @@ func finish(victory):
 	ended.emit(victory)
 
 func report():
-	var result={"version":"native-0.12.0","halloween":halloween,"daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"relic_stacks":relic_stacks.duplicate(true),"buff_stacks":buff_stacks.duplicate(true),"reward_schema":3,"events":event_log,"samples":samples}
+	var result={"version":"native-0.13.0","halloween":halloween,"daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"relic_stacks":relic_stacks.duplicate(true),"buff_stacks":buff_stacks.duplicate(true),"reward_schema":3,"events":event_log,"samples":samples}
 	if companions!=null:result.army=companions.army_report()
 	return result
-
-

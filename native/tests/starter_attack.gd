@@ -6,16 +6,19 @@ var failures=0
 func check(ok,msg):
 	checks+=1
 	if not ok:failures+=1;printerr("FAIL / ",msg)
-func make(hero):
+func make(hero,id=""):
+
 	var g=E.new();g.setup(hero,"expedition",{},11012)
+	if id!="":g.weapons={id:{"level":10,"evolved":true,"timer":0.0,"casts":0}}
 	g.enemies.clear();g.pos=Vector2.ZERO
 	for w in g.weapons.values():w.timer=0
 	var e=g.spawn_enemy(false,Vector2(150,0),0);e.hp=1e9;e.max_hp=e.hp
 	g.build_grid();return g
 func _initialize():
-	for hero in [0,2]:
-		var id="revolver" if hero==0 else "lightning"
-		var g=make(hero)
+	for pair in [[0,"revolver"],[0,"lastword"],[2,"lightning"],[2,"whiteout"]]:
+		var hero=pair[0]
+		var id=pair[1]
+		var g=make(hero,id)
 		var sounds=[];g.sound.connect(func(s):sounds.append(s))
 		g.update_weapons(.001)
 		check(not g.starter_attack.is_empty() and g.shots.is_empty() and g.strikes.is_empty(),"Starter begins painted windup before attack")
@@ -33,7 +36,8 @@ func _initialize():
 		check(a.hit and sounds.count(id)==1,"Exactly one impact sound")
 		check(a.aim.y>.99,"Release retargets live foe from current moving position")
 		check(g.ledger.casts[id]==1 and g.weapons[id].casts==1,"Exactly one cast and relic hook schedule")
-		check(g.shots.size()==1 if hero==0 else replacement.hp<1e9,"Projectile/chain releases at impact")
+		check(g.shots.size()>=1 if hero==0 else replacement.hp<1e9,"Projectile/chain releases at impact")
+		if id=="whiteout":check(g.shots.size()==3,"Whiteout keeps all three seeking lances alongside chain damage")
 		A.update(g);check(sounds.count(id)==1,"Repeat updates never duplicate release")
 		g.starter_attack={};g.weapons[id].timer=0;g.update_weapons(.001)
 		g.weapons.erase(id);g.time+=1;A.update(g)
@@ -41,7 +45,7 @@ func _initialize():
 		# High haste and a coarse frame both resolve all due attacks before
 		# replacing a pose, rather than skipping alternate shots.
 		for dt in [.016,.20]:
-			g=make(hero);g.passives.haste=100
+			g=make(hero,id);g.passives.haste=100
 			sounds=[];g.sound.connect(func(s):sounds.append(s))
 			for i in range(150):
 				g.time+=dt;g.update_weapons(dt);g.shots.clear();g.strikes.clear()
@@ -49,9 +53,9 @@ func _initialize():
 			g.time+=1;A.update(g)
 			check(sounds.count(id)==g.ledger.casts[id],"Every scheduled cast releases at high haste / %s / %s"%[hero,dt])
 			check(g.ledger.casts[id]>2,"High haste produces sustained attacks")
-		g=make(hero);g.update_weapons(.001);g.finish(false)
+		g=make(hero,id);g.update_weapons(.001);g.finish(false)
 		check(g.starter_attack.is_empty(),"Run end cancels windup")
-		g=make(hero);g.update_weapons(.001);g.portal={"p":g.pos};g.enter_portal()
+		g=make(hero,id);g.update_weapons(.001);g.portal=g.pos;g.enter_portal()
 		check(g.starter_attack.is_empty(),"Portal transition cancels windup")
 	var gun=make(0);gun.passives.count=3;gun.update_weapons(.001)
 	gun.time=.25;A.update(gun)
@@ -67,4 +71,3 @@ func _initialize():
 	check(ordinary.starter_attack.is_empty() and ordinary.shots.size()==1,"Other character gear stays automatic")
 	print("STARTER ATTACK / ",checks," checks / ",failures," failures")
 	quit(1 if failures else 0)
-

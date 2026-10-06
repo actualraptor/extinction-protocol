@@ -4,10 +4,12 @@ uniform float clock = 0.0;
 uniform float age = 0.0;
 uniform float page_duration = 17.0;
 uniform int scene = 0;
+uniform bool progressive_zoom = false;
 float ellipse(vec2 p,vec2 center,vec2 radius){return 1.0-smoothstep(0.5,1.0,length((p-center)/radius));}
 void fragment(){
 	float travel = smoothstep(0.0,17.0,age);
 	float zoom = 1.012+sin(clamp(age/page_duration,0.0,1.0)*3.14159265)*0.025;
+	if(progressive_zoom) zoom = 1.012+clamp(age/page_duration,0.0,1.0)*0.035;
 	vec2 q = (UV-vec2(0.5))/zoom+vec2(0.5);
 	q.x += (scene%2==0?1.0:-1.0)*travel*0.009;
 	vec3 base = texture(TEXTURE,q).rgb;

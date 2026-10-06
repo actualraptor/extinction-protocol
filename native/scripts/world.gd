@@ -296,6 +296,7 @@ func _draw():
 		var p = screen(g.p)
 		if not visible_rect().grow(30).has_point(p): continue
 		prop(3,p,17 if g.value<10 else 28)
+	preload("res://scripts/remnant_system.gd").draw(self,sim)
 	for e in sim.enemies:
 		if e.dead or e.get("boss_prop",false): continue
 		if e.get("breakable",false):
@@ -336,7 +337,9 @@ func _draw():
 		if e.elite or e.anchor:
 			draw_rect(Rect2(p+Vector2(-26,-e.size*2),Vector2(52,4)),Color("352f43"))
 			draw_rect(Rect2(p+Vector2(-26,-e.size*2),Vector2(52*e.hp/e.max_hp,4)),Color("ef917a"))
-	if sim.companions!=null:sim.companions.draw(self,sim,screen)
+	if sim.companions!=null:
+		sim.companions.draw_auras(self,sim,screen)
+		sim.companions.draw(self,sim,screen)
 	var player = screen(sim.pos)
 	glow(player,65,Color(C.HEROES[sim.hero].color))
 	draw_set_transform(player,0,Vector2(1,0.35))
@@ -399,5 +402,3 @@ func draw_hazard(h,target = null):
 		target.draw_arc(p,h.radius,-PI/2,-PI/2+TAU*progress,48,c,3,true)
 		target.draw_line(p-Vector2(8,0),p+Vector2(8,0),c,2)
 		target.draw_line(p-Vector2(0,8),p+Vector2(0,8),c,2)
-
-

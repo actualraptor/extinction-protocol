@@ -1,10 +1,12 @@
 extends RefCounted
 static func affected(g,o):
-	if o.type=="weapon": return [o.id] if g.weapons.has(o.id) else []
-	if o.type not in ["passive","augment"]: return []
+	if o.type in ["weapon","evolution"]: return [o.id] if g.weapons.has(o.id) else []
+	if o.type=="fusion":return g.Evolutions.UNIONS[o.id].parts
+	if o.type not in ["passive","augment","relic"]: return []
 	if o.type=="passive" and o.id in ["health","speed","pickup","regen","luck"]: return []
 	if o.type=="passive" and o.id=="armor": return g.weapons.keys().filter(func(id):return "RETALIATION" in g.C.WEAPONS[id].tags)
-	var d=g.C.AUGMENTS[o.id] if o.type=="augment" else g.C.PASSIVES[o.id]
+	var d=g.C.AUGMENTS[o.id] if o.type=="augment" else g.C.RELICS[o.id] if o.type=="relic" else g.C.PASSIVES[o.id]
+	if o.type=="relic" and d.get("filter",{}).is_empty():return []
 	var result=[]
 	for id in g.weapons:
 		if o.type=="passive" and o.id in ["damage","crit"] and g.C.WEAPONS[id].delivery in ["shield","utility"]: continue

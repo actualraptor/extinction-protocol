@@ -27,7 +27,7 @@ static func available():
 
 static func first_play(save, args):
 	for arg in args:
-		if arg.begins_with("--verify") or arg in ["--capture", "--slam-test","--meteor-test"]: return false
+		if arg.begins_with("--verify") or arg in ["--capture", "--slam-test","--meteor-test","--remnant-test"]: return false
 	return not save.get("settings",{}).get(SEEN_FLAG,false)
 
 static func shot_at(at):
@@ -82,10 +82,12 @@ func _ready():
 	meter.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(meter)
 	narration = AudioStreamPlayer.new()
+	narration.bus="Voice"
 	narration.stream = load("res://assets/intro/narration.mp3")
 	narration.volume_db = -2 if sound_enabled else -80
 	add_child(narration)
 	score = AudioStreamPlayer.new()
+	score.bus="Music"
 	score.stream = load("res://assets/intro/score.ogg")
 	score.volume_db = -80
 	add_child(score)

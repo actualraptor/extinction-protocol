@@ -13,6 +13,7 @@ func all_controls(node,kind):
 		out.append_array(all_controls(c,kind))
 	return out
 func capture(name):
+	if DisplayServer.get_name()=="headless":return
 	await process_frame;await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://build/"+name+"-stone.png")
 func button_bounds():
@@ -62,8 +63,8 @@ func run():
 				var needed=f.get_multiline_string_size(c.text,HORIZONTAL_ALIGNMENT_LEFT,c.size.x,fs)
 				check(needed.y<=c.size.y+2,"Artifact description text fits / "+c.text)
 		var texts=all_controls(game.menu_root,Label).map(func(l):return l.text)
-		check(texts.any(func(t):return "+90.0% projectile speed" in t),"Artifact actual velocity bonus visible")
-		check(texts.any(func(t):return "+54.0 barrier health" in t),"Artifact actual ward bonus visible")
+		check(texts.any(func(t):return "90%"==t),"Artifact actual velocity bonus visible")
+		check(texts.any(func(t):return "54"==t),"Artifact actual ward bonus visible")
 		button_bounds();await capture("artifact-augments-"+str(resolution.x))
 	root.size=Vector2i(1280,720)
 	for group in [["COMMON","UNCOMMON","RARE"],["EPIC","LEGENDARY","ARTIFACT"]]:
@@ -84,9 +85,3 @@ func run():
 	await process_frame
 	print("STONE CARDS / ",checks," checks / ",failures," failures")
 	quit(1 if failures else 0)
-
-
-
-
-
-

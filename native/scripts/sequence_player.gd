@@ -14,6 +14,7 @@ func _ready():
 	black.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(black)
 	player = VideoStreamPlayer.new()
+	player.bus="Cinematic"
 	var stream = VideoStreamTheora.new()
 	stream.file = "res://payload/018.ogv"
 	player.stream = stream

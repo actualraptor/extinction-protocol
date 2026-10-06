@@ -11,8 +11,13 @@ static func install(catalog):
 	if not ProjectSettings.load_resource_pack("res://assets/blocks/04.bin"): return
 	if FileAccess.file_exists("res://assets/blocks/05.bin"):ProjectSettings.load_resource_pack("res://assets/blocks/05.bin")
 	if FileAccess.file_exists("res://assets/blocks/06.bin"):ProjectSettings.load_resource_pack("res://assets/blocks/06.bin")
+	if FileAccess.file_exists("res://assets/blocks/07.bin"):ProjectSettings.load_resource_pack("res://assets/blocks/07.bin")
+	if FileAccess.file_exists("res://assets/blocks/08.bin"):ProjectSettings.load_resource_pack("res://assets/blocks/08.bin")
 	data = JSON.parse_string(FileAccess.get_file_as_string("res://payload/007.dat"))
 	if not data is Dictionary: data = {}; return
+	# Retain the definition for old saves, but the rite is now intrinsic.
+	if data.relics.has("r08"):data.relics.r08.internal_only=true
+	data.hero.innate_hint="Innate rite: stand beside a defeated boss to raise one skeletal ally. The meteor cannot be raised."
 	catalog.HEROES.append(data.hero)
 	catalog.WEAPONS.merge(data.weapons)
 	catalog.PASSIVES.merge(data.passives)
@@ -26,11 +31,19 @@ static func is_profile(g):
 static func visible(save):
 	return save.get("campaign",{}).get(FLAG,false)
 
+static func roster(save):
+	var heroes=[1,0,2,3,4]
+	if visible(save):
+		if save.get("settings",{}).get("noncanon_roster",false):heroes.append(5)
+		else:heroes[0]=5
+	return heroes
+
 static func eligible_finish(g):
 	return g.won and g.finale_defeated and g.hero == 1 and g.mode == "expedition" and g.boss_stage == 3
 
 static func allowed(g,category,id):
 	var table = g.C.WEAPONS if category == "weapons" else g.C.PASSIVES if category == "passives" else g.C.RELICS if category == "relics" else g.C.AUGMENTS
+	if table.get(id,{}).get("internal_only",false):return false
 	var exclusive = table.get(id,{}).get("profile","")
 	if exclusive != "": return exclusive == g.C.HEROES[g.hero].get("profile","")
 	if not is_profile(g): return true

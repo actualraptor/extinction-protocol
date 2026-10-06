@@ -14,5 +14,5 @@ static func biome(id,depth):
 	return {"name":d.biomes[depth].to_upper(),"tag":"%02d / %s"%[depth+1,d.biomes[depth].to_upper()],"ground":d.grounds[depth],"accent":d.color}
 
 static func boss_name(id,stage):
-	var names={"cradle":["THE THORN CROWN","BASALT BEHEMOTH"],"frostbreak":["THE PALE HUNT","THE AURORA MAW"],"observatory":["THE MERIDIAN WARDEN","THE BLOOM BELOW"]}
-	return "THE EXTINCTION ENGINE" if stage==3 else names[id][stage-1]
+	var identities={"cradle":["thorn","basalt"],"frostbreak":["hunt","aurora"],"observatory":["warden","bloom"]}
+	return preload("res://scripts/boss_identity.gd").full_name("meteor" if stage==3 else identities[id][stage-1])

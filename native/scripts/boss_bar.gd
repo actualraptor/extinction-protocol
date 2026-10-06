@@ -4,22 +4,33 @@ var health = 0
 var maximum = 0
 var trail = 100.0
 var resistance_text = ""
+var identity="thorn"
+var encounter_uid=-1
 func set_encounter(g):
 	resistance_text = preload("res://scripts/boss_resistance.gd").caption(g,g.boss) if g.boss!=null else ""
-var frame = preload("res://assets/boss-frame.png")
+	if g.boss!=null:
+		identity=g.boss.get("identity","meteor")
+		if encounter_uid!=g.boss.uid:trail=value;encounter_uid=g.boss.uid
+var frame = preload("res://assets/boss-frames.png")
+const ROWS=[[0,174,113],[174,325,260],[325,480,409],[480,630,562],[630,782,716],[782,931,864],[931,1086,1012]]
 func _process(dt):
 	trail = maxf(value,move_toward(trail,value,dt*32))
 	if value>trail: trail = value
 	queue_redraw()
 func _draw():
 	# Coordinates refer to the authored trough, not a generic widget border.
-	draw_texture_rect(frame,Rect2(Vector2.ZERO,size),false)
-	var channel = Rect2(size.x*0.207,size.y*0.485,size.x*0.667,size.y*0.096)
+	var entry=preload("res://scripts/boss_identity.gd").DATA.get(identity,preload("res://scripts/boss_identity.gd").DATA.meteor)
+	var row=ROWS[entry.frame]
+	var scale_factor=size.x/frame.get_width()
+	var frame_rect=Rect2(0,size.y*.535-(row[2]-row[0])*scale_factor,size.x,(row[1]-row[0])*scale_factor)
+	var channel = Rect2(size.x*.228,size.y*.535-8,size.x*.616,16)
 	draw_rect(channel,Color("251c2c"))
-	draw_rect(Rect2(channel.position,Vector2(channel.size.x*clampf(trail/100,0,1),channel.size.y)),Color("f6c18a"))
+	var color=Color(entry.color)
+	draw_rect(Rect2(channel.position,Vector2(channel.size.x*clampf(trail/100,0,1),channel.size.y)),color.lightened(.5))
 	for y in range(ceili(channel.size.y)):
-		var tone = Color("fa9b55").lerp(Color("a5253b"),float(y)/channel.size.y)
+		var tone = color.lightened(.18).lerp(color.darkened(.6),float(y)/channel.size.y)
 		draw_line(channel.position+Vector2(0,y),channel.position+Vector2(channel.size.x*clampf(value/100,0,1),y),tone,1)
+	draw_texture_rect_region(frame,frame_rect,Rect2(0,row[0],frame.get_width(),row[1]-row[0]))
 
 	var text="%s / %s HP"%[maxi(0,ceili(health)),ceili(maximum)]
 	var font=preload("res://scripts/ui_art.gd").body_font()

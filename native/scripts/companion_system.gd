@@ -2,6 +2,8 @@ extends RefCounted
 
 const LIMIT = 64
 const TEMP_LIMIT = 16
+const Contact=preload("res://scripts/army_collision.gd")
+var collision=Contact.new()
 var raised_by_ability = {}
 var strongest = {}
 var total_losses = 0
@@ -19,6 +21,10 @@ var stationary = 0.0
 var proc_ready = 0.0
 var heal_ready = 0.0
 var reform = []
+var fallen_remnant={}
+var fallen_queue=[]
+var remnant_souls=0.0
+const REMNANT_SOUL_COST=2000.0
 var first_summon = false
 var losses = []
 var owner_angle=PI/2
@@ -37,6 +43,7 @@ var attack_audio_roles={}
 func rank(g,n): return g.buff_power("p%02d"%n)
 func relic(g,n): return g.Relics.strength(g,"r%02d"%n) if "r%02d"%n in g.relics else 0.0
 func role(g,id): return g.C.WEAPONS[id].get("role","")
+static func reanimate_profile(level,evolved):return {"kills":maxi(4,12-int(level/2)),"count":2 if evolved else 1,"lifetime":18.0 if evolved else 12.0}
 func owned(g,r):
 	for id in g.weapons:
 		if role(g,id)==r: return id
@@ -107,9 +114,6 @@ func cast(g,id,s):
 		var target=g.weapon_target(id)
 		if target==null: return
 		var origin=g.pos
-		if r=="spear":
-			for u in units:
-				if u.champion: origin=u.p; break
 		for j in range(mini(8,s.count)):
 			g.shoot(id,origin,(target.p-origin).normalized().rotated((j-(s.count-1)*.5)*.12),s.power,s.velocity,s.lifetime,8 if r=="spear" else 1)
 		return
@@ -136,12 +140,19 @@ func update(g,dt):
 		u.flash=maxf(0,u.flash-dt)
 		if u.hp<=0 or (u.temporary>0 and g.time>=u.expires):
 			if u.hp<=0:
+				if u.get("boss_form",false):
+					var lost={"identity":u.identity,"p":g.pos}
+					if fallen_remnant.is_empty():fallen_remnant=lost;remnant_souls=0.0
+					else:fallen_queue.append(lost)
 				total_losses+=1
 				losses.append(g.time)
 				if relic(g,6)>0 and pending.size()<24: pending.append({"p":u.p,"damage":45*relic(g,6),"id":u.source})
-				if u.temporary<=0 and reform.size()<LIMIT: reform.append({"id":u.source,"at":g.time+(1.5 if g.weapons.get(u.source,{}).get("evolved",false) else 3.0)})
+				if u.temporary<=0 and not u.get("boss_form",false) and reform.size()<LIMIT: reform.append({"id":u.source,"at":g.time+(1.5 if g.weapons.get(u.source,{}).get("evolved",false) else 3.0)})
 			continue
 		survivors.append(u)
+		if u.role=="wraith":
+			update_wraith(g,u,dt)
+			continue
 		if u.p.distance_squared_to(g.pos)>650*650:
 			u.p=g.terrain.open_position(g.pos+Vector2.from_angle(u.angle)*70)
 			u.target=null
@@ -156,10 +167,12 @@ func update(g,dt):
 		var target=u.target
 		if target!=null and not u.has("swing") and absf(target.p.x-u.p.x)>4:u.draw_facing=-1.0 if target.p.x<u.p.x else 1.0
 		if target!=null and target.dead: target=null
-		var speed=180.0 if u.champion else 245.0
+		var speed=(220.0 if u.identity=="hunt" else 155.0) if u.get("boss_form",false) else 180.0 if u.champion else 245.0
 		if u.role=="colossus": speed=135
-		var range_value=230.0 if u.role=="archer" else 70.0 if u.role=="colossus" else 48.0
+		var range_value=(250.0 if u.identity == "aurora" else 100.0) if u.get("boss_form",false) else 230.0 if u.role=="archer" else 70.0 if u.role=="colossus" else 48.0
 		var old_position=u.p
+		if u.get("boss_form",false) and update_remnant_skill(g,u,target,dt):continue
+		if target!=null:range_value=maxf(range_value,Contact.radius(u)+Contact.enemy_radius(target)+8)
 		var destination=g.pos+Vector2.from_angle(u.angle)*90
 		if target!=null: destination=target.p
 		if u.role=="wraith":
@@ -167,10 +180,12 @@ func update(g,dt):
 			destination=target.p if u.attack<.5 and target!=null else orbit
 		if not u.has("swing") and (u.p.distance_squared_to(destination)>range_value*range_value or u.role=="wraith"):
 			u.p=g.terrain.move(u.p,(destination-u.p).normalized()*speed*dt)
+		var wanted=u.p;u.p=old_position
+		u.p=Contact.move_minion(g,u,wanted)
 		u.moving=u.p.distance_squared_to(old_position)>.01
 		u.walk_phase=fmod(u.get("walk_phase",0.0)+u.p.distance_to(old_position)/24.0,4.0)
 		var banner=relic(g,3) if u.p.distance_squared_to(g.pos)<300*300 else 0.0
-		if target!=null and u.p.distance_squared_to(target.p)<pow(28+target.size,2) and g.time>=u.get("hurt_at",0):
+		if target!=null and u.p.distance_squared_to(target.p)<pow(Contact.radius(u)+Contact.enemy_radius(target)+10,2) and g.time>=u.get("hurt_at",0):
 			u.hp-=maxf(2,9+g.depth*4-(5 if u.champion else 0)-banner*3)
 			u.hurt_at=g.time+.8;u.flash=.15
 		animate_attack(g,u,dt)
@@ -178,7 +193,8 @@ func update(g,dt):
 		if target==null or u.attack>0 or u.has("swing") or u.p.distance_squared_to(target.p)>range_value*range_value: continue
 		var s=stats(g,u.source)
 		var haste=1+rank(g,6)*.2+banner*.15+(empowerment if g.time<empowerment_until else 0)
-		u.attack=maxf(.15,(1.7 if u.role=="colossus" else .95)/((1+g.buff_power("haste")*.1)*haste))
+		var cadence=1.25 if u.get("boss_form",false) and u.identity=="hunt" else 1.6 if u.get("boss_form",false) else 1.7 if u.role=="colossus" else .95
+		u.attack=maxf(.15,cadence/((1+g.buff_power("haste")*.1)*haste))
 		var power=s.power*(1.8 if u.champion else 1.0)*(1+momentum*.025+(rank(g,3)*.2 if u.p.distance_squared_to(g.pos)<300*300 else 0)+banner*.15+relic(g,5)*stationary*.025)
 		if u.champion: power*=1+relic(g,0)*.35
 		if g.time<empowerment_until: power*=1.5
@@ -200,7 +216,7 @@ func update(g,dt):
 		for j in range(budget):
 			var event=pending.pop_front()
 			if event.has("summon"):
-				if summon(g,event.summon,12):g.voice_event.emit("resurrection")
+				if summon(g,event.summon,event.get("lifetime",12.0)):g.voice_event.emit("resurrection")
 			else: g.blast(event.p,100*g.area_scale(),event.damage,event.id)
 
 func animate_attack(g,u,dt):
@@ -211,10 +227,13 @@ func animate_attack(g,u,dt):
 		swing.hit=true
 		var victim=swing.target
 		if victim!=null and not victim.dead:
-			if u.role=="archer":
+			if u.get("boss_form",false):
+				remnant_impact(g,u,victim,swing.power)
+			elif u.role=="archer":
 				attack_sound(g,u)
 				for j in range(mini(6,swing.stats.count)):
-					var projectile=g.shoot(u.source,u.p,(victim.p-u.p).normalized().rotated((j-(swing.stats.count-1)*.5)*.08),swing.power,600,1.2,2)
+					var origin=u.p+Vector2(24*u.get("draw_facing",1.0),-34)
+					var projectile=g.shoot(u.source,origin,(victim.p-origin).normalized().rotated((j-(swing.stats.count-1)*.5)*.08),swing.power,600,1.2,2)
 					if projectile!=null:projectile.companion=u
 			elif u.p.distance_to(victim.p)<=100+victim.size:
 				attack_sound(g,u)
@@ -230,7 +249,7 @@ func animate_attack(g,u,dt):
 func attack_sound(g,u):
 	# One sound per completed strike/volley, never per cleaved enemy.
 	if u.p.distance_squared_to(g.pos)>900*900:return
-	var id={"warrior":"unit_blade","guard":"unit_guard","archer":"unit_bow","wraith":"unit_wraith","colossus":"unit_heavy"}.get(u.role,"unit_blade")
+	var id={"warrior":"unit_blade","guard":"unit_guard","archer":"unit_bow","wraith":"unit_wraith","colossus":"unit_heavy","boss":"unit_heavy"}.get(u.role,"unit_blade")
 	if g.time<attack_audio_roles.get(id,-1):return
 	if id!="unit_heavy" and g.time<attack_audio_ready:return
 	attack_audio_ready=g.time+.09
@@ -248,6 +267,14 @@ func strike(g,u,e,power):
 func on_kill(g,e):
 	if e.anchor: return
 	var gain=(5 if (e.elite or e.boss) and rank(g,2)>0 else 1)*(1+rank(g,0)*.2+relic(g,1)*.35)
+	if not fallen_remnant.is_empty():
+		remnant_souls+=gain
+		if remnant_souls>=REMNANT_SOUL_COST:
+			fallen_remnant.p=g.pos
+			if raise_remnant(g,fallen_remnant):
+				fallen_remnant=fallen_queue.pop_front() if not fallen_queue.is_empty() else {};remnant_souls=0
+				g.voice_event.emit("resurrection")
+		return
 	souls+=gain
 	while souls>=next_threshold:
 		match threshold_index%4:
@@ -273,7 +300,11 @@ func on_kill(g,e):
 	if ce!="" and near and g.rng.randf()<.15+g.weapons[ce].level*.015:
 		pending.append({"p":e.p,"damage":g.Rules.stats(g,ce).power+minf(300,e.max_hp*.08),"id":ce})
 	var r=owned(g,"reanimate")
-	if r!="" and g.kills%maxi(4,12-g.weapons[r].level/2)==0: pending.append({"summon":base})
+	if r!="":
+		var rite=reanimate_profile(g.weapons[r].level,g.weapons[r].evolved)
+		if g.kills%rite.kills==0:
+			for j in range(rite.count):
+				if pending.size()<24:pending.append({"summon":base,"lifetime":rite.lifetime})
 	var probability=(.08 if base!="" and g.weapons[base].level>=7 else 0.0)+rank(g,11)*.06+relic(g,7)*.1
 	if near and (e.get("unit_hit",false) or relic(g,7)>0) and g.rng.randf()<minf(.4,probability):pending.append({"summon":base})
 	if relic(g,2)>0 and g.kills%40==0:
@@ -304,6 +335,12 @@ func draw(target,g,screen_pos):
 		var p=screen_pos.call(u.p)
 		if not Rect2(Vector2(-100,-100),target.get_viewport_rect().size+Vector2(200,200)).has_point(p):continue
 		var scale_value=2.0 if u.role=="colossus" else 1.25 if u.champion else 1.0
+		if u.get("boss_form",false):
+			var progress=clampf(u.swing.elapsed/u.swing.duration,0,1) if u.has("swing") else 0.0
+			preload("res://scripts/remnant_rig.gd").draw(target,p,u.identity,u.get("walk_phase",0),progress,u.get("draw_facing",1)<0)
+			target.draw_rect(Rect2(p+Vector2(-25,12),Vector2(50,3)),Color("26342b"))
+			target.draw_rect(Rect2(p+Vector2(-25,12),Vector2(50*maxf(0,u.hp/u.max_hp),3)),Color("87cfa6"))
+			continue
 		var index=5 if u.role=="colossus" else 4 if u.role=="wraith" else 3 if u.role=="archer" else 2 if u.champion else 1
 		var frame=int(u.get("walk_phase",0.0)) if u.get("moving",false) else 0
 		if u.has("swing"):
@@ -311,7 +348,9 @@ func draw(target,g,screen_pos):
 			frame=4 if progress<.2 else 5 if progress<.45 else 6 if progress<.7 else 7
 		target.draw_set_transform(p,0,Vector2(u.get("draw_facing",1.0),1)*scale_value)
 		var texture=preload("res://scripts/content_extension.gd").unit_pose(index-1,frame)
-		if texture!=null:target.draw_texture_rect(texture,preload("res://scripts/content_extension.gd").unit_layout(index-1,frame),false,Color.WHITE if u.flash>0 else Color(.9,.93,.9))
+		if texture!=null:
+			var tint=Color(.48,1.0,.66,.5) if u.role=="wraith" else Color.WHITE if u.flash>0 else Color(.9,.93,.9)
+			target.draw_texture_rect(texture,preload("res://scripts/content_extension.gd").unit_layout(index-1,frame),false,tint)
 
 		if u.hp<u.max_hp:
 			target.draw_rect(Rect2(-12,6,24,2),Color("253433"));target.draw_rect(Rect2(-12,6,24*u.hp/u.max_hp,2),Color("80c3a6"))
@@ -334,6 +373,7 @@ func update_owner(g,dt):
 		if trail.size()>12:trail.pop_front()
 
 func draw_owner(target,p,g,tint):
+	if preload("res://scripts/rite_animation.gd").caster(target,p,g,tint):return
 	var moving=g.velocity.length_squared()>1
 	var surge=clampf((command_until-g.time)/.55,0,1)
 	var lift=-4-sin(g.time*2.3)*1.5
@@ -360,9 +400,110 @@ func credit(unit,damage,killed=false):
 	unit.damage_dealt=float(unit.get("damage_dealt",0))+damage
 	unit.kills=int(unit.get("kills",0))+int(killed)
 	if unit.damage_dealt>float(strongest.get("damage",0)) or strongest.get("uid",-1)==unit.uid:
-		strongest={"uid":unit.uid,"source":unit.source,"role":unit.role,"champion":unit.get("champion",false),"damage":unit.damage_dealt,"kills":unit.kills}
+		strongest={"uid":unit.uid,"source":unit.source,"role":unit.role,"champion":unit.get("champion",false),"damage":unit.damage_dealt,"kills":unit.kills,"identity":unit.get("identity","")}
 
 func army_report():
 	var total=0
 	for count in raised_by_ability.values():total+=count
 	return {"total_summoned":total,"summoned_by_ability":raised_by_ability.duplicate(),"losses":total_losses,"strongest_summon":strongest.duplicate()}
+
+func raise_remnant(g,c):
+	if units.size()>=LIMIT or units.any(func(u):return u.hp>0 and u.get("boss_form",false) and u.identity==c.identity):return false
+	serial+=1
+	var health={"thorn":900.0,"basalt":1300.0,"hunt":650.0,"aurora":800.0,"warden":1100.0,"bloom":1000.0}.get(c.identity,900.0)*(1+g.buff_power("armor")*.05)
+	units.append({"uid":serial,"source":"u10","role":"boss","boss_form":true,"identity":c.identity,"p":c.p,"hp":health,"max_hp":health,"champion":true,"temporary":0.0,"expires":0.0,"attack":.5,"search":0.0,"target":null,"flash":0.0,"angle":0.0,"damage_dealt":0.0,"kills":0})
+	raised_by_ability["u10"]=int(raised_by_ability.get("u10",0))+1
+	return true
+
+func update_wraith(g,u,dt):
+	u.erase("swing")
+	var state=u.get("flight","orbit")
+	var destination=g.pos+Vector2.from_angle(g.time*1.8+u.angle)*110
+	if state=="orbit":
+		u.attack-=dt
+		if u.attack<=0:
+			var victim=null;var best=360.0*360
+			for e in g.nearby(u.p,360):
+				if not e.dead and not e.get("breakable",false) and u.p.distance_squared_to(e.p)<best:
+					best=u.p.distance_squared_to(e.p);victim=e
+			if victim!=null:
+				u.flight="outbound";u.flight_end=victim.p+(victim.p-u.p).normalized()*90;u.flight_hits={};u.flight_until=g.time+1.8
+	elif state=="outbound":
+		destination=u.flight_end
+	else:destination=g.pos
+	var previous=u.p
+	u.p=u.p.move_toward(destination,(390 if state!="orbit" else 245)*dt)
+	u.moving=true;u.walk_phase=fmod(u.get("walk_phase",0.0)+dt*3,4)
+	u.draw_facing=-1.0 if destination.x<u.p.x else 1.0
+	if state=="outbound":
+		for e in g.nearby(previous,previous.distance_to(u.p)+70):
+			if e.dead or u.flight_hits.has(e.uid):continue
+			if Geometry2D.get_closest_point_to_segment(e.p,previous,u.p).distance_to(e.p)>Contact.enemy_radius(e)+18:continue
+			u.flight_hits[e.uid]=true
+			strike(g,u,e,stats(g,u.source).power)
+			attack_sound(g,u)
+		if u.p.distance_to(destination)<8 or g.time>=u.flight_until:u.flight="return"
+	elif state=="return" and u.p.distance_to(g.pos)<24:
+		u.flight="orbit";u.attack=maxf(.15,.95/(1+g.buff_power("haste")*.1+rank(g,6)*.2))
+
+func update_remnant_skill(g,u,victim,dt):
+	if u.has("charge_end"):
+		var old=u.p
+		u.p=g.terrain.move(u.p,(u.charge_end-u.p).normalized()*460*dt)
+		if g.boss!=null and g.boss.get("immovable",false):
+			u.p=Contact.move(old,u.p,[{"p":g.boss.anchor_p,"radius":Contact.radius(u)+Contact.enemy_radius(g.boss),"seed":u.uid}])
+		for e in g.nearby(old,old.distance_to(u.p)+110):
+			if e.dead or u.charge_hits.has(e.uid):continue
+			if Geometry2D.get_closest_point_to_segment(e.p,old,u.p).distance_to(e.p)>Contact.enemy_radius(e)+60:continue
+			u.charge_hits[e.uid]=true;strike(g,u,e,stats(g,u.source).power*1.6)
+		u.moving=true;u.walk_phase=fmod(u.get("walk_phase",0.0)+dt*12,4)
+		if g.time>=u.charge_until or u.p.distance_to(u.charge_end)<18:u.erase("charge_end")
+		return true
+	if victim==null or g.time<u.get("skill_ready",0):return false
+	u.skill_ready=g.time+7
+	match u.identity:
+		"thorn","hunt":
+			u.charge_end=victim.p+(victim.p-u.p).normalized()*100;u.charge_until=g.time+1.2;u.charge_hits={};attack_sound(g,u)
+		"basalt","warden":
+			g.effect.emit("ring",u.p,Color("96c9b4"),220)
+			for e in g.nearby(u.p,220):
+				if not e.dead:strike(g,u,e,stats(g,u.source).power*1.4);e.slow=maxf(e.slow,1.5)
+		"aurora","bloom":
+			for e in g.nearby(victim.p,150):
+				if not e.dead:strike(g,u,e,stats(g,u.source).power*.8);e.slow=maxf(e.slow,2.0)
+			g.effect.emit("ring",victim.p,Color("8bbfd1") if u.identity=="aurora" else Color("8fc79c"),150)
+	return false
+
+func draw_auras(target,g,screen_pos):
+	for id in g.weapons:
+		var d=g.C.WEAPONS[id]
+		if d.get("role","") not in ["chill","banner"] and d.delivery!="aura":continue
+		var radius=minf(160,stats(g,id).radius) if d.get("role","")=="chill" else stats(g,id).radius
+		var center=screen_pos.call(g.pos)
+		var tone=Color("78cbb9") if d.get("role","")=="chill" else Color("a093c7")
+		target.draw_arc(center,radius,0,TAU,64,Color(tone,.17),1.5,true)
+		for j in range(10):
+			var angle=g.time*.18+j*TAU/10
+			var at=center+Vector2.from_angle(angle)*radius*(.88+sin(g.time+j)*.04)
+			target.draw_arc(at,5,angle,angle+PI,8,Color(tone,.3),1.2,true)
+
+func remnant_impact(g,u,victim,power):
+	attack_sound(g,u)
+	match u.identity:
+
+		"aurora":
+			var count=0
+			for e in g.nearby(victim.p,180):
+				if e.dead:continue
+				strike(g,u,e,power*.65);count+=1
+				g.strikes.append({"a":u.p,"b":e.p,"life":.22})
+				if count>=3:break
+		_:
+			if u.p.distance_to(victim.p)>170+victim.size:return
+			var radius=180.0 if u.identity=="basalt" else 120.0 if u.identity=="bloom" else 90.0
+			var hit_count=0
+			for e in g.nearby(victim.p,radius*g.area_scale()):
+				if e.dead:continue
+				strike(g,u,e,power*(1.3 if u.identity=="basalt" else 1));hit_count+=1
+				if hit_count>=48:break
+			g.effect.emit("ring",victim.p,Color("9bccae"),radius)

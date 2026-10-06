@@ -8,6 +8,7 @@ var starter_variant_index = {}
 var enabled = true
 var music_enabled = true
 var bank = {}
+var ritual_voice:AudioStreamPlayer
 var voices = []
 var next_voice = 0
 var tension = 0.0
@@ -21,6 +22,10 @@ var voice_duck = false
 var seasonal_music_start = 11
 
 func _ready():
+	ritual_voice=AudioStreamPlayer.new();ritual_voice.bus="SFX";add_child(ritual_voice)
+	ritual_voice.stream=load("res://assets/audio/rite_hum.wav");ritual_voice.volume_db=-19
+	for id in ["rite_crunch","rite_finish","rite_pulse","rite_lock"]:bank[id]=load("res://assets/audio/"+id+".wav")
+	starter_variants["rite_crunch"]=[load("res://assets/audio/rite_crunch.wav"),load("res://assets/audio/rite_crunch_v1.wav"),load("res://assets/audio/rite_crunch_v2.wav")]
 	for i in range(28):
 		var voice = AudioStreamPlayer.new()
 		add_child(voice)
@@ -67,6 +72,10 @@ func _ready():
 		player.play()
 
 func play(id,volume = -12.0,pitch = 1.0,_music = false):
+	if id=="rite_stop":ritual_voice.stop();return
+	if id=="rite_hum":
+		if enabled:ritual_voice.stream_paused=false;ritual_voice.play()
+		return
 	if halloween and id in ["club","earthshaker"]: id = "pumpkin_smash"
 	if not enabled or not bank.has(id): return
 	var now = Time.get_ticks_msec()
@@ -97,6 +106,7 @@ func sound_stream(id):
 	return bank.get(id)
 
 func _process(dt):
+	if not enabled:ritual_voice.stop()
 	music_duck = maxf(0,music_duck-dt)
 	for i in range(music_players.size()):
 		var audible = i==(seasonal_music_start if halloween else 0) if biome<0 else i==(seasonal_music_start if halloween else 2)+map_index*3+biome
@@ -106,6 +116,7 @@ func _process(dt):
 		music_players[i].volume_db = lerpf(music_players[i].volume_db,target,1-exp(-dt*3))
 
 func shutdown():
+	if ritual_voice!=null:ritual_voice.stop()
 	set_process(false)
 	for voice in voices+music_players:
 		voice.stop()

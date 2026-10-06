@@ -34,9 +34,7 @@ static func pose(hero: int,progress: float,halloween=false):
 	if not textures.has(frame.file): textures[frame.file]=load(frame.file)
 	return {"texture":textures[frame.file],"anchor":Vector2(frame.anchor[0],frame.anchor[1]),"scale":spec.pixel_scale,"name":frame.pose,"index":index}
 
-static func draw_pose(target,p: Vector2,hero: int,progress: float,halloween=false,flip=false,tint=Color.WHITE):
+static func draw_pose(target,p: Vector2,hero: int,progress: float,halloween=false,flip=false,tint=Color.WHITE,phase=0.0,moving=false):
 	var frame=pose(hero,progress,halloween)
 	if frame.is_empty(): return
-	target.draw_set_transform(p+Vector2(0,8),0,Vector2(-1 if flip else 1,1))
-	target.draw_texture_rect(frame.texture,Rect2(-frame.anchor*frame.scale,frame.texture.get_size()*frame.scale),false,tint)
-	target.draw_set_transform(Vector2.ZERO)
+	preload("res://scripts/attack_locomotion.gd").draw(target,frame,p,flip,tint,phase,moving,hero)

@@ -6,6 +6,7 @@ low drums and reverberant bells support the narration's measured cues.
 from pathlib import Path
 import subprocess
 import wave
+import sys
 import numpy as np
 import imageio_ffmpeg
 
@@ -49,9 +50,10 @@ def bowed(freq, seconds, seed):
         sound += np.sin(phase*h+vibrato*h)/(h**1.55)
     return sound*envelope*(.8+.2*np.sin(t*.47+seed))
 
-# Open fifths gradually gain a minor third and an unresolved descending bass.
+# Dread gives way to a suspended, hopeful D-minor/add-sixth champion theme,
+# before the descending bass returns for the threat beyond the breach.
 sections = [(0,17,[73.416,110,146.832]),(12,18,[65.406,98,130.812]),
-            (26.25,19,[73.416,110,174.614,220]),(38.52,13,[58.27,87.31,146.832]),
+            (26.25,15,[73.416,110,146.832,220,246.942]),(38.52,13,[58.27,87.31,146.832]),
             (47.16,16.84,[55,82.407,110,146.832,155.563])]
 for k,(at,length,notes) in enumerate(sections):
     for j,freq in enumerate(notes):
@@ -60,6 +62,22 @@ for k,(at,length,notes) in enumerate(sections):
     breath = noise(len(t),580)*np.minimum(t/3,1)*np.minimum((length-t)/3,1)
     # A filtered breath bed behaves like a distant choir without fake syllables.
     place(breath*(.65+.35*np.sin(t*.29+k)),at,.009,(-1 if k%2 else 1)*.7)
+
+def horn(freq, seconds):
+    """Soft brass formant with a breath attack and human vibrato, no hard edge."""
+    t=np.arange(int(seconds*SR))/SR
+    phase=2*np.pi*freq*t+.035*np.sin(2*np.pi*4.7*t)*np.minimum(t,1)
+    envelope=np.minimum(t/.28,1)*np.minimum((seconds-t)/.65,1)
+    tone=sum(np.sin(phase*h)*np.exp(-((h*freq-650)/1100)**2)/h**1.3 for h in range(1,12))
+    return (tone+.018*noise(len(t),1100))*envelope
+
+# A single restrained theme enters exactly as the three champions appear.
+# The rising sixth suggests hope; its final unresolved fifth hands back to dread.
+for at, freq, length in [(26.25,293.665,2.6),(28.65,349.228,2.5),
+                         (31.0,440.0,3.0),(33.7,493.883,2.5),
+                         (36.0,440.0,2.4),(38.2,293.665,3.4)]:
+    place(horn(freq,length),at,.065,-.12)
+    place(bowed(freq/2,length+1.5,at),at,.025,.42)
 
 def bell(freq, seconds=5):
     t=np.arange(int(seconds*SR))/SR
@@ -81,6 +99,9 @@ score*=.88/max(.88,float(np.max(np.abs(score))))
 wav(TMP/'score.wav',score)
 ffmpeg=imageio_ffmpeg.get_ffmpeg_exe()
 subprocess.run([ffmpeg,'-y','-i',str(TMP/'score.wav'),'-c:a','libvorbis','-q:a','5',str(ROOT/'assets/intro/score.ogg')],capture_output=True,check=True)
+print(f'Opening theme: {duration:.0f}s, peak {np.max(np.abs(score)):.3f}, RMS {np.sqrt(np.mean(score**2)):.3f}')
+if '--score-only' in sys.argv:
+    raise SystemExit(0)
 
 # Five attack signatures; three fixed variants cycle without touching game RNG.
 for role in ['blade','guard','bow','wraith','heavy']:

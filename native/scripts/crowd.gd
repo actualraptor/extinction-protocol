@@ -59,4 +59,5 @@ func finish_move(g,e,_key,movement):
 		var spacing: float = g.boss.size*1.15+radius(e)+18
 		if gap.length_squared()<spacing*spacing:
 			result=g.boss.p+(gap.normalized() if gap.length_squared()>0.01 else Vector2.from_angle(e.uid*2.399))*spacing
+	if g.companions!=null:result=g.companions.collision.block_enemy(e,e.p,result)
 	return result

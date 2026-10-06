@@ -1,3 +1,7 @@
+# 0.13.0 — Current playtest
+
+The new HUD is a first iteration and will have layout, scaling and visual issues. See [spoiler-free release notes](RELEASE-0.13.0.md).
+
 # Extinction Protocol — native Windows edition
 
 A playable Godot 4.7.2 migration of Extinction Bloom, rebuilt around human survivors. Release 0.8 adds armor-scaling thorns, hero level traits, multi-crits, expanded permanent research, automatic daily builds, destructibles, stronger post-boss pressure and an animated extinction defeat. See RELEASE-0.8.md. The old browser game remains in the parent folder.

@@ -52,6 +52,7 @@ var reveal_index = -1
 var buff_label
 var hud_layout = []
 var weapons_hud
+var hero_dock
 var buffs_hud
 const PatchNotes=preload("res://scripts/patch_notes.gd")
 const UIArt=preload("res://scripts/ui_art.gd")
@@ -66,7 +67,9 @@ var progress_path = "user://progress.json"
 func _ready():
 	preload("res://scripts/content_extension.gd").install(C)
 	# Package smoke checks never touch a player's real progression.
-	if "--meteor-test" in OS.get_cmdline_user_args():
+	if "--remnant-test" in OS.get_cmdline_user_args():
+		progress_path=OS.get_executable_path().get_base_dir().path_join("remnant-test-profile.json")
+	elif "--meteor-test" in OS.get_cmdline_user_args():
 		progress_path=OS.get_executable_path().get_base_dir().path_join("meteor-test-profile.json")
 	elif "--slam-test" in OS.get_cmdline_user_args():
 		progress_path=OS.get_executable_path().get_base_dir().path_join("slam-test-profile.json")
@@ -136,6 +139,40 @@ func _ready():
 		sim.passives.area=15;sim.passives.haste=8
 		sim.enemies.clear();sim.spawn_boss(3);sim.build_grid()
 		show_toast("METEOR CINEMATIC TEST","SUPER KAEL / BREAK ANCHORS, THEN THE CORE / ISOLATED SAVE")
+	if "--remnant-test" in OS.get_cmdline_user_args():
+		var lab=preload("res://scripts/remnant_lab.gd").new();lab.game=self;add_child(lab)
+		if "--verify-first-kill" in OS.get_cmdline_user_args():
+			for i in range(3):
+				lab.variant=i*2;lab.configure()
+				await get_tree().create_timer(8).timeout
+				assert(page=="rite-story" and sim.boss==null and sim.boss_corpses.size()==1)
+				for child in layer.get_children():
+					if child.get_script()==preload("res://scripts/first_rite_player.gd"):child.finish()
+				await get_tree().create_timer(.1).timeout
+				assert(page=="playing" and save_data.settings.get("rite_07_seen",false))
+			print("FIRST KILL TEST / all three real boss defeats triggered and returned")
+			audio.shutdown();survivor_voice.stop();release_run();get_tree().quit()
+		if "--verify-rite-flow" in OS.get_cmdline_user_args():
+			var corpse=sim.boss_corpses[0]
+			play_first_rite(corpse.identity,true)
+			await get_tree().create_timer(.25).timeout
+			assert(page=="rite-story" and not corpse.consumed)
+			assert(paused)
+			var frozen_time=sim.time
+			var frozen_position=sim.pos
+			await get_tree().create_timer(.5).timeout
+			assert(sim.time==frozen_time and sim.pos==frozen_position and not corpse.consumed)
+			for child in layer.get_children():
+				if child.get_script()==preload("res://scripts/first_rite_player.gd"):child.finish()
+			await get_tree().create_timer(.1).timeout
+			assert(page=="playing" and paused and not corpse.consumed)
+			print("FIRST RITE FLOW / returned to intact corpse and paused lab")
+			audio.shutdown();survivor_voice.stop();release_run();get_tree().quit()
+		if "--verify-ritual" in OS.get_cmdline_user_args():
+			await get_tree().create_timer(8.0 if "--ritual-late" in OS.get_cmdline_user_args() else 5.6).timeout
+			await RenderingServer.frame_post_draw
+			get_viewport().get_texture().get_image().save_png(OS.get_executable_path().get_base_dir().path_join("ritual-preview.png"))
+			audio.shutdown();survivor_voice.stop();release_run();get_tree().quit()
 	if "--slam-test" in OS.get_cmdline_user_args():
 		var lab=preload("res://scripts/kael_slam_lab.gd").new();lab.game=self;add_child(lab)
 		if "--verify-slam-test" in OS.get_cmdline_user_args():
@@ -357,8 +394,8 @@ func characters():
 	menu_root.add_child(row)
 	# Kael is the entry point for new players, so keep him first without
 	# changing the stable hero IDs used by saves, daily seeds and records.
-	var roster=[1,0,2,3,4]
-	if preload("res://scripts/content_extension.gd").visible(save_data):roster.append(5)
+	var roster=preload("res://scripts/content_extension.gd").roster(save_data)
+	if selected not in roster:selected=roster[0]
 	for i in roster:
 		var data = C.HEROES[i]
 		var panel = PanelContainer.new()
@@ -378,6 +415,7 @@ func characters():
 		v.add_child(art)
 		label(v,data.name,23)
 		var desc = label(v,data.desc,15,"bac8c8")
+		desc.tooltip_text=data.get("innate_hint","")
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.custom_minimum_size.y = 110
 		var unlocked = chosen_mode!="expedition" or Discoveries.hero_open(save_data,i)
@@ -475,6 +513,7 @@ func start_run():
 	sim.sound.connect(func(id):audio.play(id))
 	sim.banner.connect(show_toast)
 	sim.choice_requested.connect(present_upgrade)
+	sim.rite_requested.connect(on_first_rite)
 	sim.ended.connect(run_ended)
 	sim.discovered_content.connect(on_discovery)
 	world.sim = sim
@@ -512,6 +551,9 @@ func daily_menu():
 	button(v,"Main menu",main_menu)
 
 func build_hud():
+	hero_dock=preload("res://scripts/hero_hud.gd").new()
+	hero_dock.game=self
+	hud_root.add_child(hero_dock)
 	for rect in [Rect2(0,827,1440,73)]:
 		var back = ColorRect.new()
 		back.position = rect.position
@@ -669,9 +711,21 @@ func update_hud_scale():
 	xp_bar.size = Vector2(viewport.x/factor-48,106)
 	var dock_visible=sim!=null and not sim.choosing and page!="upgrade"
 	if sim!=null:hud_root.visible=page not in ["upgrade","summary","map"]
-	xp_bar.visible=dock_visible
-	weapons_hud.visible=dock_visible
-	loadout_label.visible=dock_visible
+	xp_bar.visible=false
+	hero_dock.visible=dock_visible
+	toast_panel.position.y=viewport.y-300*factor
+	toast_label.position.y=viewport.y-289*factor
+	var dock_factor=minf(factor,(viewport.x-24)/1250.0)
+	hero_dock.scale=Vector2.ONE*dock_factor
+	hero_dock.size=Vector2(viewport.x/dock_factor,210)
+	hero_dock.set_anchor(SIDE_TOP,1.0)
+	hero_dock.set_anchor(SIDE_BOTTOM,1.0)
+	hero_dock.offset_left=0
+	hero_dock.offset_right=viewport.x/dock_factor
+	hero_dock.offset_top=-210*dock_factor
+	hero_dock.offset_bottom=210*(1.0-dock_factor)
+	weapons_hud.visible=false
+	loadout_label.visible=false
 	for child in hud_root.get_children():
 		if child is ColorRect:
 			child.position = Vector2(0,viewport.y-110)
@@ -690,7 +744,7 @@ func _process(dt):
 	if toast_label: toast_label.modulate.a = minf(1,toast_time)
 	if toast_panel:
 		toast_panel.modulate.a = minf(1,toast_time)
-		toast_panel.visible = sim!=null and not sim.choosing and toast_time>0 and page!="map"
+		toast_panel.visible = false
 	if finish_delay>=0:
 		finish_delay -= dt
 		if finish_delay<0:
@@ -706,7 +760,7 @@ func _process(dt):
 		if campaign_clock>=1:
 			campaign_clock=0
 			flush_campaign()
-	toast_label.visible = not sim.choosing
+	toast_label.visible = false
 	health_label.text = "%s   %s / %s"%[C.HEROES[sim.hero].name,int(maxf(0,sim.hp)),int(sim.max_hp)]
 	health_bar.value = sim.hp/sim.max_hp*100
 	xp_bar.set_progress(sim.xp,sim.xp_goal,sim.level,dt)
@@ -816,12 +870,20 @@ func daily_reel_data(o):
 	return data
 
 func present_upgrade(opts,relic):
+	if not relic and opts.size()==1 and opts[0].type not in ["evolution","fusion"]:
+		var only=opts[0]
+		var current=sim
+		call_deferred("accept_single_upgrade",current,only)
+		return
 	if turbo_test:
 		var run=sim
 		call_deferred("auto_test_upgrade",run)
 		return
 	var run = sim
 	reveal_index = -1
+	if opts[0].type in ["evolution","fusion"]:
+		evolution_menu(opts)
+		return
 	if relic or sim.mode=="daily":
 		page = "relic-spin"
 		clear_menu()
@@ -881,12 +943,21 @@ func present_upgrade(opts,relic):
 	await get_tree().create_timer(0.16).timeout
 	if sim==run and sim.choosing: upgrade_menu(opts,false)
 
+func evolution_menu(opts):
+	page="upgrade";clear_menu();shade(.90)
+	# A chest chooses one transformation; no second ordinary-reward card.
+	var panel=preload("res://scripts/evolution_reveal.gd").build(sim,opts[0],func():pick_upgrade(0))
+	menu_root.add_child(panel)
+	panel.modulate.a=0
+	create_tween().tween_property(panel,"modulate:a",1.0,.35)
+
 func upgrade_menu(opts,relic):
 	page = "upgrade"
 	clear_menu()
 	shade(0.82)
 	var head = column(menu_root,Vector2(95,65),Vector2(1250,110))
-	var tier=label(head,"RELIC RECOVERED" if relic else "LEVEL %s / CHOOSE YOUR POWER"%sim.level,17,"c7a76b")
+	var caption="WEAPON UNION" if opts[0].type=="fusion" else "WEAPON EVOLUTION" if opts[0].type=="evolution" else "RELIC RECOVERED" if relic else "LEVEL %s / CHOOSE YOUR POWER"%sim.level
+	var tier=label(head,caption,17,"c7a76b")
 	tier.add_theme_font_override("font",UIArt.heading_font())
 	label(head,"Take something dangerous" if relic else "Become their extinction",32,"d9bd83")
 	label(menu_root,"Weapons %s / 5  ·  Upgrade your build or fill an empty slot."%sim.weapons.size(),16,"c6baa3").position = Vector2(95,169)
@@ -897,88 +968,25 @@ func upgrade_menu(opts,relic):
 	row.add_theme_constant_override("separation",22)
 	menu_root.add_child(row)
 	for i in range(opts.size()):
-		var o = opts[i]
-		var panel = preload("res://scripts/stone_card.gd").new()
-		panel.custom_minimum_size = Vector2(380,570)
-		panel.size_flags_horizontal = Control.SIZE_FILL
+		var panel=preload("res://scripts/reward_card.gd").build(sim,opts[i],i,func():pick_upgrade(i),relic)
 		row.add_child(panel)
-		var v = Control.new()
-		v.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		panel.add_child(v)
-		var data = C.RELICS[o.id] if o.type=="relic" else C.PASSIVES[o.id] if o.type=="passive" else C.AUGMENTS[o.id] if o.type=="augment" else {"name":"Amber Supplies","desc":"+25 amber and restore 15 health."} if o.type=="supplies" else C.WEAPONS[o.id]
-		var rarity = "EVOLUTION" if o.type=="evolution" else o.get("rarity",data.get("rarity","RARE" if o.type=="augment" else ""))
-		panel.rarity=rarity if rarity!="" else "COMMON"
-		var rarity_label=label(v,panel.rarity,12,panel.COLORS.get(panel.rarity,"a7a99e"))
-		rarity_label.add_theme_font_override("font",UIArt.heading_font())
-		panel.place(rarity_label,Rect2(.23 if panel.rarity=="COMMON" else .11,.065,.65,.04),12)
-		if not rarity.is_empty(): panel.tooltip_text=rarity
-		var main_icon=Icons.control(v,"lens" if o.type=="supplies" else o.id,"relic" if o.type=="supplies" else o.type,1)
-		panel.place(main_icon,Rect2(.37,.135,.26,.17))
-		var title = data.evolution if o.type=="evolution" else data.name
-		var name_label = label(v,title,23,"e6dec5")
-		name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		name_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-		name_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
-		panel.place(name_label,Rect2(.13,.315,.74,.083),23)
-		name_label.add_theme_color_override("font_shadow_color",Color("050a08"))
-		name_label.add_theme_constant_override("shadow_offset_y",2)
-		var tag_text=UpgradeCopy.tags(sim,o)
-		if tag_text!="":
-			var tags_label=label(v,tag_text,13,"c7a76b")
-			tags_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-			tags_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_LEFT
-			tags_label.add_theme_color_override("font_outline_color",Color("080a0a"))
-			tags_label.add_theme_constant_override("outline_size",3)
-			panel.place(tags_label,Rect2(.12,.408,.76,.035),13)
-		var desc = UpgradeCopy.description(sim,o)
-		var affected=UpgradeCopy.affected(sim,o)
-		var affects=label(v,"AFFECTS" if not affected.is_empty() else "NEW WEAPON" if o.type=="weapon" else "SURVIVOR BONUS",11,"e2c691")
-		panel.place(affects,Rect2(.13,.452,.29,.035),11)
-		var icon_row=HBoxContainer.new();icon_row.add_theme_constant_override("separation",4);v.add_child(icon_row)
-		panel.place(icon_row,Rect2(.40,.445,.47,.047))
-		for id in affected:
-			var icon=Icons.control(icon_row,id,"weapon",25)
-			icon.tooltip_text=C.WEAPONS[id].name
-			icon.mouse_filter=Control.MOUSE_FILTER_PASS
-		if o.type=="weapon":
-			desc+="\nMax rank + chest: evolves."
-			var hint=sim.Evolutions.hint(o.id,C.WEAPONS)
-			if hint!="": panel.tooltip_text=hint
-		var description = label(v,desc,17,"e1e0d3")
-		description.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		panel.place(description,Rect2(.13,.515,.74,.258),17)
-		var take=button(v,"TAKE IT / %s"%(i+1),func():pick_upgrade(i),true)
-		take.custom_minimum_size=Vector2(0,0)
-		panel.place(take,Rect2(.17,.805,.66,.077))
-		for state in ["normal","hover","pressed","disabled"]:take.add_theme_stylebox_override(state,panel.action_style(state=="hover"))
-		if not relic and sim.mode!="daily" and sim.banishes>0 and o.type in ["weapon","augment","passive"]:
-			var banish=Button.new()
-			banish.text="BANISH"
-			banish.tooltip_text="One banish per run. This upgrade stops appearing in rewards. Does not spend a reroll."
-			banish.custom_minimum_size.y=0
-			banish.add_theme_font_size_override("font_size",11)
-			banish.add_theme_font_override("font",UIArt.heading_font())
-			banish.add_theme_color_override("font_color",Color("ceb583"))
-			for state in ["normal","hover","pressed","disabled"]:
-				var banish_style=StyleBoxEmpty.new()
-				banish_style.set_content_margin(SIDE_TOP,5)
-				banish_style.set_content_margin(SIDE_BOTTOM,5)
-				banish.add_theme_stylebox_override(state,banish_style)
-			banish.pressed.connect(func():sim.banish_choice(i))
-			v.add_child(banish)
-			panel.place(banish,Rect2(.18,.899,.25,.043))
-		panel.modulate.a = 0
-		panel.pivot_offset = Vector2(200,245)
-		panel.scale = Vector2.ONE*0.96
-		var tween = create_tween()
-		tween.tween_interval(i*0.09)
-		tween.tween_property(panel,"modulate:a",1.0,0.2)
-		tween.parallel().tween_property(panel,"scale",Vector2.ONE,0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		panel.modulate.a=0
+		var tween=create_tween()
+		tween.tween_interval(i*.09)
+		tween.tween_property(panel,"modulate:a",1.0,.2)
 	label(menu_root,"1 / 2 / 3 to choose. Buff types %s / 8. One offensive aura."%sim.buff_slots_used(),18,"95aeae").position=Vector2(95,800)
-	var reroll = button(menu_root,"R / REROLL (%s)"%sim.rerolls,func():sim.reroll_choices())
+	var reroll = preload("res://scripts/ornate_action.gd").new()
+	reroll.text="RE-ROLL  •  %s"%sim.rerolls
+	reroll.tooltip_text="Re-roll choices / R"
+	reroll.pressed.connect(func():sim.reroll_choices())
+	menu_root.add_child(reroll)
 	reroll.position = Vector2(1015,785)
 	reroll.size = Vector2(320,58)
 	reroll.disabled = sim.rerolls<=0
+
+func accept_single_upgrade(current,only):
+	if sim!=current or sim==null or not sim.choosing or sim.options.size()!=1 or sim.options[0]!=only:return
+	finish_upgrade(0)
 
 func pick_upgrade(index):
 	if sim==null or not sim.choosing or index>=sim.options.size() or page!="upgrade": return
@@ -995,6 +1003,7 @@ func finish_upgrade(index):
 
 func pause_menu():
 	paused = true
+	audio.ritual_voice.stream_paused=true
 	page = "pause"
 	clear_menu()
 	shade()
@@ -1009,6 +1018,7 @@ func pause_menu():
 
 func resume():
 	paused = false
+	audio.ritual_voice.stream_paused=false
 	page = "playing"
 	clear_menu()
 
@@ -1181,7 +1191,7 @@ func summary():
 	# This inset excludes the skull crest and the lower corner fossils. All
 	# results belong to it, rather than treating the art's outer bounds as usable.
 	var content=Control.new();content.name="SummaryContent"
-	content.position=Vector2(235,218);content.size=Vector2(970,390);menu_root.add_child(content)
+	content.position=Vector2(235,205);content.size=Vector2(970,490);menu_root.add_child(content)
 	var title=label(content,"EXTINCTION DENIED" if sim.won else "EXPEDITION COMPLETE",32,"f4d49b")
 	title.size=Vector2(970,42)
 	var detail=label(content,"%s · %02d:%02d · %s · %s"%[C.HEROES[sim.hero].name,int(sim.time)/60,int(sim.time)%60,sim.mode.to_upper(),Maps.DATA[sim.map_id].name],18,"b7cbd0")
@@ -1194,7 +1204,10 @@ func summary():
 		var x=(i%3)*330;var y=98+(i/3)*55
 		var caption=label(content,metrics[i][0],13,"afbdc2");caption.position=Vector2(x,y)
 		var value=label(content,str(metrics[i][1]),24,"f0d098");value.position=Vector2(x,y+17);value.size=Vector2(290,32);value.clip_text=true;UIArt.fit_label(value,24)
-	for heading in [["WEAPON",0],["DAMAGE",470],["SHARE",785]]:
+	var army_present=sim.companions!=null
+	var damage_x=355 if army_present else 600
+	var share_x=485 if army_present else 815
+	for heading in [["WEAPON",0],["DAMAGE",damage_x],["SHARE",share_x]]:
 		label(content,heading[0],14,"b7cbd0").position=Vector2(heading[1],209)
 	var ids=sim.damage_by_weapon.keys();ids.sort_custom(func(a,b):return sim.damage_by_weapon[a]>sim.damage_by_weapon[b])
 	var total=maxf(1,sim.damage_total)
@@ -1202,23 +1215,26 @@ func summary():
 		var id=ids[i];var damage=sim.damage_by_weapon[id];var y=236+i*28
 		var icon=Icons.control(content,id,"weapon",24);icon.position=Vector2(0,y)
 		var name_label=label(content,C.WEAPONS.get(id,{"name":"Relics"}).name,17,"e4d9c3")
-		name_label.position=Vector2(34,y);name_label.size=Vector2(420,25);name_label.clip_text=true;UIArt.fit_label(name_label,17)
-		var damage_label=label(content,str(int(damage)),17);damage_label.position=Vector2(470,y);damage_label.size=Vector2(295,25);damage_label.clip_text=true;UIArt.fit_label(damage_label,17)
-		label(content,"%.1f%%"%(damage/total*100),17,"8fdac8").position=Vector2(785,y)
+		name_label.clip_text=true;name_label.position=Vector2(34,y);name_label.size=Vector2(damage_x-48,25);name_label.tooltip_text=name_label.text;UIArt.fit_label(name_label,17)
+		var damage_label=label(content,str(int(damage)),17);damage_label.clip_text=true;damage_label.position=Vector2(damage_x,y);damage_label.size=Vector2(share_x-damage_x-12,25);UIArt.fit_label(damage_label,17)
+		var share=label(content,"%.1f%%"%(damage/total*100),17,"8fdac8");share.position=Vector2(share_x,y);share.size=Vector2(90,25)
 	if sim.companions!=null:
 		var army=sim.companions.army_report()
-		label(content,"ARMY · %s SUMMONED · %s LOST"%[army.total_summoned,army.losses],16,"8fdac8").position=Vector2(0,384)
+		var army_title=label(content,"YOUR ARMY",14,"8fdac8");army_title.position=Vector2(620,209)
+		var army_totals=label(content,"%s summoned · %s lost"%[army.total_summoned,army.losses],16,"8fdac8")
+		army_totals.clip_text=true;army_totals.position=Vector2(620,234);army_totals.size=Vector2(350,24);UIArt.fit_label(army_totals,16)
 		var sources=army.summoned_by_ability.keys()
 		sources.sort()
 		for i in range(sources.size()):
 			var id=sources[i]
-			var x=(i%3)*330;var y=411+(i/3)*28
+			var x=620;var y=266+i*23
 			var entry=label(content,"%s: %s"%[C.WEAPONS.get(id,{"name":id}).name,army.summoned_by_ability[id]],15,"e4d9c3")
-			entry.position=Vector2(x,y);entry.size=Vector2(315,26);entry.clip_text=true;UIArt.fit_label(entry,15)
+			entry.clip_text=true;entry.position=Vector2(x,y);entry.size=Vector2(350,23);UIArt.fit_label(entry,15)
 		if not army.strongest_summon.is_empty():
 			var best=army.strongest_summon
-			var entry=label(content,"STRONGEST · %s #%s · %s DAMAGE · %s KILLS"%[C.WEAPONS.get(best.source,{"name":best.role}).name,best.uid,int(best.damage),best.kills],16,"f0d098")
-			entry.position=Vector2(0,475);entry.size=Vector2(970,28);entry.clip_text=true;UIArt.fit_label(entry,16)
+			var summon_name=preload("res://scripts/boss_identity.gd").short_name(best.identity) if not best.get("identity","").is_empty() else C.WEAPONS.get(best.source,{"name":best.role}).name
+			var entry=label(content,"STRONGEST SUMMON\n%s #%s\n%s damage · %s kills"%[summon_name,best.uid,int(best.damage),best.kills],15,"f0d098")
+			entry.clip_text=true;entry.position=Vector2(0,405);entry.size=Vector2(575,74);UIArt.fit_label(entry,15)
 	var row=HBoxContainer.new();row.position=Vector2(100,800);row.size=Vector2(1240,60);row.add_theme_constant_override("separation",16);menu_root.add_child(row)
 	button(row,"RUN IT BACK",start_run,true).size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	button(row,"Today's build" if sim.mode=="daily" else "Change survivor",daily_menu if sim.mode=="daily" else characters).size_flags_horizontal=Control.SIZE_EXPAND_FILL
@@ -1336,7 +1352,8 @@ func manual():
 func settings():
 	clear_menu()
 	shade(0.94)
-	var v = column(menu_root,Vector2(380,95),Vector2(680,690),15)
+	var scroll=ScrollContainer.new();scroll.position=Vector2(330,50);scroll.size=Vector2(780,730);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;menu_root.add_child(scroll)
+	var v=VBoxContainer.new();v.size_flags_horizontal=Control.SIZE_EXPAND_FILL;v.add_theme_constant_override("separation",12);scroll.add_child(v)
 	label(v,"Make the apocalypse yours.",36)
 	for key in ["sound","music","shake","halloween"]:
 		var check = CheckButton.new()
@@ -1345,6 +1362,27 @@ func settings():
 		check.custom_minimum_size.y = 55
 		check.toggled.connect(func(value):save_data.settings[key]=value;apply_settings();persist())
 		v.add_child(check)
+	for pair in [["sfx_volume","Sound effects volume"],["music_volume","Music volume"],["voice_volume","Voices / narration volume"],["cinematic_volume","Reveal cinematic volume"]]:
+		var key=pair[0]
+		var caption=label(v,pair[1]+" / %s%%"%roundi(save_data.settings.get(key,1.0)*100),18,"b8cdd3")
+		var slider=HSlider.new();slider.min_value=0;slider.max_value=1;slider.step=.01;slider.value=save_data.settings.get(key,1.0);slider.custom_minimum_size=Vector2(500,30)
+		slider.value_changed.connect(func(value):save_data.settings[key]=value;caption.text=pair[1]+" / %s%%"%roundi(value*100);apply_settings();persist())
+		v.add_child(slider)
+	if preload("res://scripts/content_extension.gd").visible(save_data):
+		var alternate=CheckButton.new();alternate.text="Non-canon roster: keep both Kael and Nagash";alternate.button_pressed=save_data.settings.get("noncanon_roster",false);alternate.custom_minimum_size.y=55
+		alternate.toggled.connect(func(value):save_data.settings.noncanon_roster=value;persist());v.add_child(alternate)
+	label(v,"HUD theme",18,"b8cdd3")
+	var skin_choice=OptionButton.new()
+	skin_choice.add_item("Match character",0)
+	var unlocked_skins=preload("res://scripts/hero_hud.gd").available(save_data)
+	var stored_skin=int(save_data.settings.get("hud_skin",-1))
+	for skin in unlocked_skins:
+		skin_choice.add_item(preload("res://scripts/hero_hud.gd").NAMES[skin],skin+1)
+		if skin==stored_skin:skin_choice.select(skin_choice.item_count-1)
+	skin_choice.item_selected.connect(func(index):save_data.settings.hud_skin=skin_choice.get_item_id(index)-1;persist())
+	v.add_child(skin_choice)
+	var minimap_toggle=CheckButton.new();minimap_toggle.text="Show HUD minimap";minimap_toggle.button_pressed=save_data.settings.get("hud_minimap",true)
+	minimap_toggle.toggled.connect(func(value):save_data.settings.hud_minimap=value;persist());v.add_child(minimap_toggle)
 	label(v,"HUD size (live preview; menus stay readable)",18,"b8cdd3")
 	var scale_slider = HSlider.new()
 	scale_slider.min_value = 0.65
@@ -1355,9 +1393,18 @@ func settings():
 	scale_slider.value_changed.connect(func(value):save_data.settings.hud_scale=value;persist())
 	v.add_child(scale_slider)
 	button(v,"Toggle fullscreen / F11",func():DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if DisplayServer.window_get_mode()==DisplayServer.WINDOW_MODE_FULLSCREEN else DisplayServer.WINDOW_MODE_FULLSCREEN))
-	button(v,"Back",func():pause_menu() if sim!=null and sim.active else main_menu())
+	var back=button(menu_root,"Back",func():pause_menu() if sim!=null and sim.active else main_menu());back.position=Vector2(380,810);back.size=Vector2(680,55)
 
 func apply_settings():
+	for pair in [["SFX","sfx_volume"],["Music","music_volume"],["Voice","voice_volume"],["Cinematic","cinematic_volume"]]:
+		var index=AudioServer.get_bus_index(pair[0])
+		if index<0:AudioServer.add_bus();index=AudioServer.bus_count-1;AudioServer.set_bus_name(index,pair[0])
+		var volume=clampf(save_data.settings.get(pair[1],1.0),0,1)
+		AudioServer.set_bus_mute(index,volume<=0)
+		AudioServer.set_bus_volume_db(index,linear_to_db(maxf(.0001,volume)))
+	for player in audio.voices:player.bus="SFX"
+	for player in audio.music_players:player.bus="Music"
+	if survivor_voice!=null and survivor_voice.player!=null:survivor_voice.player.bus="Voice"
 	audio.enabled = save_data.settings.sound
 	if survivor_voice!=null:
 		survivor_voice.enabled=save_data.settings.sound
@@ -1392,12 +1439,13 @@ func _exit_tree():
 	Icons.cache.clear()
 
 func release_run():
+	if audio!=null and audio.ritual_voice!=null:audio.ritual_voice.stop()
 	if survivor_voice!=null:survivor_voice.stop()
 	if is_instance_valid(defeat_cinematic): defeat_cinematic.queue_free()
 	defeat_cinematic=null
 	if world!=null: world.sim = null
 	if sim!=null:
-		for signal_name in ["effect","sound","banner","choice_requested","ended","discovered_content","voice_event"]:
+		for signal_name in ["effect","sound","banner","choice_requested","ended","discovered_content","voice_event","rite_requested"]:
 			for connection in sim.get_signal_connection_list(signal_name):
 				sim.disconnect(signal_name,connection.callable)
 	sim = null
@@ -1500,3 +1548,35 @@ Choose upgrades and enter boss portals as usual.",21)
 
 func auto_test_upgrade(run):
 	if sim==run and turbo_test and sim.choosing and not sim.options.is_empty():finish_upgrade(0)
+
+
+func on_first_rite(defeated):
+	if "--remnant-test" in OS.get_cmdline_user_args() and "--first-kill-test" not in OS.get_cmdline_user_args():return
+	if not preload("res://scripts/first_rite.gd").eligible(sim,defeated,save_data):return
+	if not preload("res://scripts/first_rite_player.gd").available():return
+	sim.rite_pending=true
+	play_first_rite.call_deferred(defeated.get("identity","thorn"),false)
+
+func play_first_rite(identity="thorn",preview=false):
+	if sim==null or page=="rite-story":return
+	var run=sim
+	var was_paused=paused
+	paused=true;page="rite-story"
+	audio.ritual_voice.stream_paused=true
+	if not preview and "--first-kill-test" not in OS.get_cmdline_user_args():clear_menu()
+	survivor_voice.stop()
+	for voice in audio.voices:voice.stop()
+	for music in audio.music_players:music.stream_paused=true
+	if not preview:await get_tree().create_timer(1.25).timeout
+	if sim!=run:return
+	var story=preload("res://scripts/first_rite_player.gd").new()
+	story.identity=identity;story.sound_enabled=save_data.settings.sound;story.music_enabled=save_data.settings.music
+	story.completed.connect(func():
+		if sim!=run:return
+		if not preview:
+			save_data.settings[preload("res://scripts/first_rite.gd").SEEN_FLAG]=true;persist()
+		for music in audio.music_players:music.stream_paused=false
+		audio.ritual_voice.stream_paused=false
+		apply_settings();page="playing";paused=was_paused;run.rite_pending=false
+		if not preview and "--first-kill-test" not in OS.get_cmdline_user_args():run.open_choices(true))
+	layer.add_child(story)
