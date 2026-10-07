@@ -41,3 +41,4 @@ On Windows, extract the ZIP and run **Extinction Protocol.exe**. No engine insta
 
 Screenshots show current development gameplay with the rebuilt dinosaur roster. Interface polish is ongoing.
 
+Support development - https://buymeacoffee.com/actualraptor
