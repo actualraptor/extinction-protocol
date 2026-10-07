@@ -96,4 +96,3 @@ class Cue:
                 data=np.frombuffer(w.readframes(w.getnframes()),'<i2').reshape(-1,2).astype(float)/32768
             save(wav,data[start:end]*gain)
         print(self.name,json.dumps(report),flush=True)
-

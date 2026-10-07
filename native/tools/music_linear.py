@@ -31,4 +31,3 @@ def render_linear(cue, NAME):
     assert len(x)==210*rate and np.max(abs(x))<.999
     (OUT/(NAME+'-review.json')).write_text(json.dumps(report,indent=2),encoding='utf-8')
     print(json.dumps(report,indent=2),flush=True)
-
