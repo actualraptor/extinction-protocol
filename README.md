@@ -3,7 +3,7 @@
 
 ![Extinction Protocol gameplay](docs/assets/voss-hordes-ui.webp)
 
-**A prehistoric survivor roguelite. Guns, ancient fury, forbidden magic—and five weapon slots to turn them into something unreasonable.**
+**A prehistoric survivor roguelite, bullet heaven/Hell, Guns, ancient fury, forbidden magic—and five weapon slots to turn them into something unreasonable.**
 
 Public hobby playtest **0.14.1 · A World Reborn**. Free to download and try.
 
@@ -18,7 +18,7 @@ Public hobby playtest **0.14.1 · A World Reborn**. Free to download and try.
 | Platform | Download | Status |
 | --- | --- | --- |
 | Windows x64 | [Windows ZIP](https://github.com/actualraptor/extinction-protocol/releases/download/v0.14.1/Extinction-Protocol-Windows-0.14.1.zip) | Tested native build |
-| Linux x64 | [Linux archive](https://github.com/actualraptor/extinction-protocol/releases/download/v0.14.1/Extinction-Protocol-Linux-0.14.1-UNVERIFIED.tar.gz) | Exported; runtime compatibility still unverified |
+| Linux x64 | [Linux archive](https://github.com/actualraptor/extinction-protocol/releases/download/v0.14.1/Extinction-Protocol-Linux-0.14.1-UNVERIFIED.tar.gz) | Exported; runtime - kinda tested, seems to work natively |
 
 On Windows, extract the ZIP and run **Extinction Protocol.exe**. No engine installation needed. For Linux instructions and feedback tips, see the [tester guide](native/PRIVATE-TEST-README.md).
 
@@ -38,7 +38,5 @@ On Windows, extract the ZIP and run **Extinction Protocol.exe**. No engine insta
 | **Read the attacks. Earn the next rift.** | **New ground. New ways to die.** |
 
 ![Weapon upgrade choices](docs/assets/upgrades-ui.webp)
-
-Screenshots show current development gameplay with the rebuilt dinosaur roster. Interface polish is ongoing.
 
 Support development - https://buymeacoffee.com/actualraptor
