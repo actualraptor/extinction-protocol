@@ -1,6 +1,6 @@
 # 0.13.0 — Current playtest
 
-The new HUD is a first iteration and will have layout, scaling and visual issues. See [spoiler-free release notes](RELEASE-0.13.0.md).
+The new HUD is a first iteration and will have layout, scaling and visual issues. See [release notes](RELEASE-0.13.0.md).
 
 # Extinction Protocol — native Windows edition
 

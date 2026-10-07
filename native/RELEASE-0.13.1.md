@@ -14,6 +14,6 @@ The pause menu, score panel and location timer now match your selected HUD theme
 
 ## FIRST ITERATION — KEEP THE FEEDBACK COMING
 
-The new UI remains a first iteration and will have issues. Please report clipped text, scaling problems, awkward spacing or hard-to-read markers. Existing saves and progression are retained. The website now has fresh gameplay screenshots and a short spoiler-free trailer.
+The new UI remains a first iteration and will have issues. Please report clipped text, scaling problems, awkward spacing or hard-to-read markers. Existing saves and progression are retained. The website now has fresh gameplay screenshots and a short trailer.
 
 Windows x64 has been tested. Linux x64 is available as an unverified test build.
