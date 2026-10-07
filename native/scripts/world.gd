@@ -43,6 +43,10 @@ func _ready():
 	kael_ground.world=self
 	kael_ground.z_index=-1
 	add_child(kael_ground)
+	var ritual_ground=preload("res://scripts/ritual_ground.gd").new()
+	ritual_ground.world=self;ritual_ground.z_index=-1;add_child(ritual_ground)
+	var ritual_fog=preload("res://scripts/ritual_fog.gd").new()
+	ritual_fog.world=self;add_child(ritual_fog)
 	for r in JSON.parse_string(FileAccess.get_file_as_string("res://assets/monster-regions.json"))[0]: monster_regions.append(Rect2(r[0],r[1],r[2],r[3]))
 	for r in JSON.parse_string(FileAccess.get_file_as_string("res://assets/frontier-regions.json")): frontier_regions.append(Rect2(r[0],r[1],r[2],r[3]))
 	var swarm = preload("res://scripts/swarm_renderer.gd").new()
@@ -59,6 +63,8 @@ func _ready():
 	frontier_swarm.frontier=true
 	frontier_swarm.z_index=1
 	add_child(frontier_swarm)
+	var summons=preload("res://scripts/summon_renderer.gd").new()
+	summons.world=self;summons.z_index=1;add_child(summons)
 	for i in range(10):
 		var emitter = GPUParticles2D.new()
 		emitter.emitting = false
@@ -129,6 +135,12 @@ func fx(kind,p,color,size):
 			numbers.append({"p":p,"color":color,"text":str(int(size)),"tier":tier,"life":duration,"max":duration,"sway":sin(p.x*.071+p.y*.093)})
 		return
 	var life = 0.10 if kind in ["muzzle","crit"] else 1.15 if kind in ["level","evolve","victory"] else 0.52
+	if kind.begins_with("dino_death_"):life=1.8;shake=maxf(shake,12)
+	if kind.begins_with("dino_fall_"):life=.65
+	if kind=="dino_roar":shake=maxf(shake,6)
+	if kind=="dino_step":shake=maxf(shake,1.8)
+	if kind=="rite_snap":shake=maxf(shake,11.0);life=.11
+	if kind=="rite_snap_small":shake=maxf(shake,4.0);life=.06
 	if kind.begins_with("kael_slam_") or kind.begins_with("kael_crater_"):
 		life=clampf(float(kind.get_slice("_",5))*.001,.10,1.6)
 		# Retire only old visual fronts; all queued damage bands still execute.
@@ -160,7 +172,10 @@ func _process(dt):
 		if camera_run!=sim:
 			camera_pos = sim.pos
 			camera_run = sim
-		camera_pos = camera_pos.lerp(sim.pos,1-exp(-dt*35))
+		var target=sim.pos
+		if sim.boss!=null and sim.boss_stage<3 and sim.boss.get("action","")=="intro":
+			target=sim.pos.lerp(sim.boss.p,.3)
+		camera_pos = camera_pos.lerp(target,1-exp(-dt*12))
 	else: camera_run = null
 	shake = maxf(0,shake-dt*25)
 	flashes = maxf(0,flashes-dt*1.5)
@@ -321,25 +336,13 @@ func _draw():
 			draw_circle(Vector2.ZERO,e.size,Color(0,0,0,0.28))
 			draw_set_transform(Vector2.ZERO)
 			var tint = Color(1.8,1.8,1.8) if e.flash>0 else Color("a2c3ff") if e.slow>0 or e.get("frozen",0)>0 or sim.buffs.get("freeze",0)>0 else Color("eabcff") if e.mutated else Color.WHITE
-			if e.kind>=5:
-				var region = frontier_regions[e.kind-14] if e.kind>=14 else monster_regions[e.kind-5]
-				var sheet=frontier_sheet if e.kind>=14 else monster_sheet
-				if sim.halloween:
-					var group=2 if e.kind>=14 else 1
-					sheet=Seasonal.texture_for(group)
-					region=Seasonal.regions_for(group)[e.kind-14 if e.kind>=14 else e.kind-5]
-				var dimensions = region.size/maxf(region.size.x,region.size.y)*size
-				draw_set_transform(p,0,Vector2(-1 if e.p.x>sim.pos.x else 1,1))
-				draw_texture_rect_region(sheet,Rect2(Vector2(-dimensions.x/2,-dimensions.y*0.75),dimensions),region,tint)
-				draw_set_transform(Vector2.ZERO)
-			else: sprite(3+e.kind,p+Vector2(0,0 if sim.rooted(e) else sin(clock*9+e.uid)*2),size,e.p.x>sim.pos.x,tint,0 if sim.rooted(e) else sin(clock*7+e.uid)*0.035)
+			preload("res://scripts/dinosaur_art.gd").draw(self,e,p,clock,tint,sim.buffs.get("freeze",0)>0)
 			if e.elite: draw_arc(p,e.size+8,0,TAU,32,Color("fca25c"),2,true)
 		if e.elite or e.anchor:
 			draw_rect(Rect2(p+Vector2(-26,-e.size*2),Vector2(52,4)),Color("352f43"))
 			draw_rect(Rect2(p+Vector2(-26,-e.size*2),Vector2(52*e.hp/e.max_hp,4)),Color("ef917a"))
 	if sim.companions!=null:
 		sim.companions.draw_auras(self,sim,screen)
-		sim.companions.draw(self,sim,screen)
 	var player = screen(sim.pos)
 	glow(player,65,Color(C.HEROES[sim.hero].color))
 	draw_set_transform(player,0,Vector2(1,0.35))
@@ -402,3 +405,17 @@ func draw_hazard(h,target = null):
 		target.draw_arc(p,h.radius,-PI/2,-PI/2+TAU*progress,48,c,3,true)
 		target.draw_line(p-Vector2(8,0),p+Vector2(8,0),c,2)
 		target.draw_line(p-Vector2(0,8),p+Vector2(0,8),c,2)
+
+func draw_dinosaur_deaths(canvas):
+	for death in effects:
+		if death.kind.begins_with("dino_death_"):
+			var art=preload("res://scripts/dinosaur_boss_art.gd").corpse(death.kind.trim_prefix("dino_death_"))
+			var p=screen(death.p);var width=preload("res://scripts/dinosaur_boss_art.gd").WIDTH[death.kind.trim_prefix("dino_death_")]
+			var dimensions=art.get_size()*width/art.get_width()
+			canvas.draw_texture_rect(art,Rect2(p-dimensions/2,dimensions),false,Color(1,1,1,minf(1,death.life/.5)))
+		elif death.kind.begins_with("dino_fall_"):
+			var kind=int(death.kind.trim_prefix("dino_fall_"));var age=1-death.life/death.max;var p=screen(death.p)
+			canvas.draw_set_transform(p,sin(age*PI/2)*.65,Vector2(1,1-age*.5))
+			var width=death.size*4
+			canvas.draw_texture_rect_region(preload("res://scripts/dinosaur_art.gd").SHEET,Rect2(-width/2,-width*.72,width,width*.75),preload("res://scripts/dinosaur_art.gd").region(kind,5),Color(1,1,1,1-age))
+			canvas.draw_set_transform(Vector2.ZERO)

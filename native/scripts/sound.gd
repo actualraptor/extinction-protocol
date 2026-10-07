@@ -19,9 +19,20 @@ var biome = -1
 var map_index = 0
 var halloween = false
 var voice_duck = false
-var seasonal_music_start = 11
+const SOUNDTRACK = ["menu", "cradle", "frostbreak", "observatory", "thorn", "basalt", "hunt", "aurora", "warden", "bloom", "meteor"]
+const BOSS_IDS = ["thorn", "basalt", "hunt", "aurora", "warden", "bloom"]
+var encounter_id = ""
+var encounter_time = 0.0
+var encounter_paused = false
+var clock_paused = false
+var meteor_started = false
+var sync_check = 0.0
 
 func _ready():
+	for dinosaur in ["thorn","basalt","hunt","aurora","warden","bloom"]:
+		for cue in ["step","windup","attack","impact","roar","death"]:
+			var id="dino_"+dinosaur+"_"+cue
+			bank[id]=load("res://assets/audio/"+id+".wav")
 	ritual_voice=AudioStreamPlayer.new();ritual_voice.bus="SFX";add_child(ritual_voice)
 	ritual_voice.stream=load("res://assets/audio/rite_hum.wav");ritual_voice.volume_db=-19
 	for id in ["rite_crunch","rite_finish","rite_pulse","rite_lock"]:bank[id]=load("res://assets/audio/"+id+".wav")
@@ -53,23 +64,17 @@ func _ready():
 		for suffix in ["","_v1","_v2"]:
 			starter_variants[id].append(load("res://assets/audio/"+id+suffix+".wav"))
 		bank[id]=starter_variants[id][0]
-	var tracks=["music_cradle","music_extinction_layer"]
-	for map in range(3):
-		for depth in range(3): tracks.append("frontier_%s_%s"%[map,depth])
-	seasonal_music_start = tracks.size()
-	for map in range(3):
-		for depth in range(3): tracks.append("hollow_%s_%s"%[map,depth])
-	for id in tracks:
+	for id in SOUNDTRACK:
 		var player = AudioStreamPlayer.new()
-		var stream = load("res://assets/audio/"+id+".wav").duplicate()
-		stream.loop_mode = AudioStreamWAV.LOOP_FORWARD
-		stream.loop_begin = 0
-		stream.loop_end = int(round(stream.get_length()*stream.mix_rate))
+		var stream = load("res://assets/audio/soundtrack/"+id+".ogg").duplicate()
+		stream.loop = id != "meteor"
+		stream.loop_offset = 0.0
 		player.stream = stream
+		player.bus = "Music"
 		player.volume_db = -80
 		add_child(player)
 		music_players.append(player)
-		player.play()
+		# Start only the selected cue; inactive tracks consume no decoder time.
 
 func play(id,volume = -12.0,pitch = 1.0,_music = false):
 	if id=="rite_stop":ritual_voice.stop();return
@@ -108,12 +113,41 @@ func sound_stream(id):
 func _process(dt):
 	if not enabled:ritual_voice.stop()
 	music_duck = maxf(0,music_duck-dt)
+	if encounter_id != "meteor":meteor_started=false
+	if encounter_paused != clock_paused:
+		clock_paused=encounter_paused
+		for player in music_players:player.stream_paused=clock_paused
 	for i in range(music_players.size()):
-		var audible = i==(seasonal_music_start if halloween else 0) if biome<0 else i==(seasonal_music_start if halloween else 2)+map_index*3+biome
-		var target = (-16.0 if biome<0 else -15.0+tension) if music_enabled and audible else -80.0
+		var audible = i==selected_music_index()
+		var target = (-3.0 if biome<0 else -5.0+tension) if music_enabled and audible else -80.0
+		if music_enabled and audible and not music_players[i].playing and not music_players[i].stream_paused:
+			if i != 10:
+				music_players[i].play()
+			elif not meteor_started and encounter_time < 210.0:
+				music_players[i].play(maxf(0,encounter_time))
+				meteor_started=true
 		if music_duck>0: target -= 22.0 if music_duck>0.2 else 2.5
 		if voice_duck: target -= 5.0
 		music_players[i].volume_db = lerpf(music_players[i].volume_db,target,1-exp(-dt*3))
+		if not audible and music_players[i].volume_db < -65.0:
+			music_players[i].stop()
+	sync_check+=dt
+	if sync_check>=1.0:
+		sync_check=0.0
+		if encounter_id=="meteor" and not encounter_paused and music_players[10].playing:
+			var offset=music_players[10].get_playback_position()+AudioServer.get_time_since_last_mix()
+			if absf(offset-encounter_time)>0.35:music_players[10].seek(clampf(encounter_time,0,209.99))
+
+func set_encounter(identity:String, elapsed:float, is_paused:bool):
+	encounter_id=identity;encounter_time=elapsed;encounter_paused=is_paused
+
+func selected_music_index() -> int:
+	# Depth and seasonal presentation retain the same approved map theme.
+	if biome < 0:return 0
+	if encounter_id=="meteor":return 10
+	var boss_index=BOSS_IDS.find(encounter_id)
+	if boss_index>=0:return 4+boss_index
+	return 1+clampi(map_index,0,2)
 
 func shutdown():
 	if ritual_voice!=null:ritual_voice.stop()

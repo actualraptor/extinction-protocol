@@ -1,4 +1,5 @@
 extends RefCounted
+static var inscriptions={}
 const BEAT_START=.65
 const BEAT_PERIOD=1.35
 static func beats(g,before,after):
@@ -12,6 +13,9 @@ static func flare(clock):
 # Aurebesh stroke forms traced from the supplied alphabet reference.
 # Paths use a small local square, making every glyph reusable at any scale.
 const GLYPHS={
+ "C":[[0,0,1,0,.65,.9,0,.9],[0,.4,.6,.4]],
+ "P":[[0,0,.7,0,1,.3,.7,.6,0,.6],[0,0,0,.95]],
+ "Z":[[0,0,1,0,0,.9,1,.9]],
  "A":[[0,.1,.5,.1,1,-.1],[0,.5,.5,.5,1,.85],[0,.35,0,.85]],
  "B":[[0,.15,.2,0,.8,0,1,.2],[0,.75,.2,.9,.8,.9,1,.7],[.2,.4,.75,.4]],
  "D":[[0,.1,1,.1,.4,.6,.7,.6,.1,1]],
@@ -36,15 +40,33 @@ const GLYPHS={
 static func stroke(canvas,origin,points,color,width=1.0):
  var projected=PackedVector2Array()
  for point in points:projected.append(origin+point*Vector2(1,.72))
- canvas.draw_polyline(projected,Color(color,color.a*.12),width+7,true)
- canvas.draw_polyline(projected,Color(color,color.a*.23),width+3,true)
- canvas.draw_polyline(projected,color,width,true)
+ canvas.draw_polyline(projected,Color(color,color.a*.12),width+7,false)
+ canvas.draw_polyline(projected,Color(color,color.a*.23),width+3,false)
+ canvas.draw_polyline(projected,color,width,false)
 static func glyph(canvas,origin,letter,centre,angle,size,color):
  for path in GLYPHS.get(letter,[]):
   var points=PackedVector2Array()
   for i in range(0,path.size(),2):
    points.append(centre+(Vector2(path[i]-.5,path[i+1]-.45)*size).rotated(angle))
   stroke(canvas,origin,points,color,1.45)
+static func inscription(identity):
+ if inscriptions.has(identity):return inscriptions[identity]
+ var name=preload("res://scripts/boss_identity.gd").short_name(identity)+" "
+ var chant=name.repeat(maxi(1,floori(36.0/name.length())))
+ var lines=PackedVector2Array()
+ for i in range(chant.length()):
+  var angle=-PI/2+i*TAU/chant.length()
+  var centre=Vector2.from_angle(angle)*53
+  if chant[i]==" ":
+   lines.append(centre-Vector2.from_angle(angle)*1.4);lines.append(centre+Vector2.from_angle(angle)*1.4)
+  else:
+   for path in GLYPHS.get(chant[i],[]):
+    var previous=centre+(Vector2(path[0]-.5,path[1]-.45)*Vector2(8,11)).rotated(angle+PI/2)
+    for n in range(2,path.size(),2):
+     var next=centre+(Vector2(path[n]-.5,path[n+1]-.45)*Vector2(8,11)).rotated(angle+PI/2)
+     lines.append(previous);lines.append(next);previous=next
+ inscriptions[identity]=lines
+ return lines
 static func draw(canvas,g,c,marker,blocked,complete=false,opacity=1.0):
  var active=c.raising or c.charge>0
  var pulse=.5+.5*sin(g.time*2.4)
@@ -57,26 +79,21 @@ static func draw(canvas,g,c,marker,blocked,complete=false,opacity=1.0):
  # Ground projection; no floating icon or instruction label.
  canvas.draw_set_transform(marker,0,Vector2(1,.72))
  canvas.draw_circle(Vector2.ZERO,74,Color(ink,(.09 if complete else .025)*opacity))
- canvas.draw_arc(Vector2.ZERO,74+beat*9,0,TAU,96,Color(ink,beat*.45*opacity),2+beat*2,true)
+ canvas.draw_arc(Vector2.ZERO,74+beat*9,0,TAU,96,Color(ink,beat*.45*opacity),2+beat*2,false)
  for radius in [40,65,74]:
-  canvas.draw_arc(Vector2.ZERO,radius,0,TAU,96,Color(ink,ink.a*.6),1,true)
- canvas.draw_arc(Vector2.ZERO,77,-PI/2,-PI/2+TAU*charged,96,ink,2,true)
+  canvas.draw_arc(Vector2.ZERO,radius,0,TAU,96,Color(ink,ink.a*.6),1,false)
+ canvas.draw_arc(Vector2.ZERO,77,-PI/2,-PI/2+TAU*charged,96,ink,2,false)
  canvas.draw_set_transform(Vector2.ZERO)
- var chant=(preload("res://scripts/boss_identity.gd").short_name(c.identity)+" ").repeat(3)
  var rotation=g.time*.045 if active else 0.0
- for i in range(chant.length()):
-  var angle=-PI/2+i*TAU/chant.length()+rotation
-  var centre=Vector2.from_angle(angle)*53
-  if chant[i]==" ":
-   stroke(canvas,marker,[centre-Vector2.from_angle(angle)*1.4,centre+Vector2.from_angle(angle)*1.4],ink)
-  else:
-   if beat>.02 or complete:
-    var glow=Color("baffd7");glow.a=(1.0 if complete else beat)*opacity
-    for path in GLYPHS.get(chant[i],[]):
-     var points=PackedVector2Array()
-     for n in range(0,path.size(),2):points.append(centre+(Vector2(path[n]-.5,path[n+1]-.45)*Vector2(8,11)).rotated(angle+PI/2))
-     stroke(canvas,marker,points,Color(glow,glow.a*.55),3.5)
-   glyph(canvas,marker,chant[i],centre,angle+PI/2,Vector2(8,11),ink)
+ var lines=PackedVector2Array()
+ var turn=Transform2D(rotation,Vector2.ZERO)
+ for point in inscription(c.identity):lines.append(marker+(turn*point)*Vector2(1,.72))
+ canvas.draw_multiline(lines,Color(ink,ink.a*.12),8.45,false)
+ canvas.draw_multiline(lines,Color(ink,ink.a*.23),4.45,false)
+ canvas.draw_multiline(lines,ink,1.45,false)
+ if beat>.02 or complete:
+  var glow=Color("baffd7");glow.a=(1.0 if complete else beat)*opacity*.55
+  canvas.draw_multiline(lines,glow,3.5,false)
  # Six warding signs link the inscription to the outer seal.
  for i in range(6):
   var angle=i*TAU/6-PI/2

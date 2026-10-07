@@ -12,6 +12,7 @@ func _process(_dt):
 func _draw():
 	var s = world.sim
 	if s==null: return
+	world.draw_dinosaur_deaths(self)
 	# Boss silhouette and hostile casts stay above every friendly spell layer.
 	if s.boss!=null and s.boss_stage==3:
 		world.sprite(8,world.screen(s.boss.p),310*(1+(s.phase-1)*0.12),false,Color.WHITE,sin(world.clock*0.5)*0.08,self)
@@ -20,19 +21,7 @@ func _draw():
 		var p=world.screen(e.p)+Vector2(0,-e.get("lift",0.0))
 		var tint=Color(1.6,1.6,1.6) if e.flash>0 else Color.WHITE
 		tint.a=e.get("fade",1.0)
-		if e.kind>=5:
-			var region=world.frontier_regions[e.kind-14] if e.kind>=14 else world.monster_regions[e.kind-5]
-			var sheet=world.frontier_sheet if e.kind>=14 else world.monster_sheet
-			if s.halloween:
-				var seasonal=preload("res://scripts/seasonal_theme.gd")
-				var group=2 if e.kind>=14 else 1
-				sheet=seasonal.texture_for(group)
-				region=seasonal.regions_for(group)[e.kind-14 if e.kind>=14 else e.kind-5]
-			var dims=region.size/maxf(region.size.x,region.size.y)*e.size*3
-			draw_set_transform(p,e.get("pose",0.0),Vector2(-1 if e.get("aim",s.pos-e.p).x<0 else 1,1))
-			draw_texture_rect_region(sheet,Rect2(Vector2(-dims.x/2,-dims.y*0.75),dims),region,tint)
-			draw_set_transform(Vector2.ZERO)
-		else: world.sprite(3+e.kind,p,e.size*3,e.p.x>s.pos.x,tint,e.get("pose",0.0),self)
+		preload("res://scripts/dinosaur_boss_art.gd").draw(self,e,world.screen(e.p),world.clock,tint)
 	preload("res://scripts/boss_visuals.gd").draw(self,world)
 	for h in s.hazards:
 		if h.kind=="friendly": continue

@@ -36,17 +36,17 @@ func _initialize():
 		for x in range(-16,17):
 			for y in range(-16,17): signature+=str(g.terrain.kind(Vector2i(x,y)))
 		signatures.append(hash(signature))
-		var seen={Vector2i.ZERO:true};var queue=[Vector2i.ZERO];var cursor=0
-		while cursor<queue.size():
-			var cell=queue[cursor];cursor+=1
-			for dir in [Vector2i.LEFT,Vector2i.RIGHT,Vector2i.UP,Vector2i.DOWN]:
-				var next=cell+dir
-				if abs(next.x)>30 or abs(next.y)>30 or seen.has(next) or g.terrain.kind(next)==1: continue
-				seen[next]=true;queue.append(next)
-		for marker in g.landmarks: check(seen.has(g.terrain.cell(marker.p)),"Reachable discovery / %s / %s"%[map,marker.id])
+		for marker in g.landmarks:
+			var reachable=true
+			var distance=g.stage.spawn.distance_to(marker.p)
+			for step in range(ceili(distance/64.0)+1):
+				var point=g.stage.spawn.lerp(marker.p,minf(1,step*64.0/maxf(1,distance)))
+				if not g.terrain.walkable(point,15):reachable=false;break
+			check(reachable,"Authored route reaches discovery / %s / %s"%[map,marker.id])
 		for depth in range(3):
 			var pool=M.pool(map,depth,300)
-			check(0 in pool and 4 in pool,"Shared enemies / %s / %s"%[map,depth])
+			var habitat={"cradle":"grasslands","frostbreak":"frost","observatory":"jungle"}[map]
+			check(4 not in pool and pool.all(func(kind):return g.Bestiary.DATA[kind].habitat==habitat),"Distinct biome dinosaurs; Compys event-only / %s / %s"%[map,depth])
 			check(M.biome(map,depth).name.length()>0,"Named biome / %s / %s"%[map,depth])
 		g.spawn_boss(1);g.kill(g.boss)
 		check(g.campaign_bosses==1,"Boss kill recorded / "+map)

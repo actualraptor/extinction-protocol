@@ -152,10 +152,14 @@ var reroll_exclude = []
 var boss_corpses=[]
 var portal = null
 var linger = 0.0
+const BOSS_RESPITE_SECONDS = 24.0
+var spawn_respite = 0.0
 var portal_charge = 0.0
 var transition_time = 0.0
 var ground_attack_ready = 0.0
 var brood_queue = []
+var stampede_push_left=0.0
+var stampede_contacts={}
 var encounter_epoch = 0
 var extinction_timeout = false
 var death_reason = "The ecosystem won."
@@ -286,14 +290,21 @@ func tick(dt, direction):
 		transition_time = maxf(0,transition_time-dt)
 		return
 	time += dt
+	var resting = spawn_respite>0
+	if resting:
+		spawn_respite=maxf(0,spawn_respite-dt)
+		spawn_budget=0.0
+		next_elite+=dt
+		director.respite_shift+=dt
+		if spawn_respite==0:banner.emit("THE HORDES RETURN","ENTER THE RIFT BEFORE THEY OVERWHELM YOU")
 	if portal!=null:
 		var old_pressure = linger_pressure()
-		linger += dt
+		if not resting:linger += dt
 		if old_pressure<=0 and linger_pressure()>0:
 			banner.emit("THE WORLD CLOSES IN", "Enemy health doubles every 25 seconds. Take the rift.")
 		if linger_pressure()>0:
 			next_elite=minf(next_elite,time+elite_interval())
-		portal_charge = portal_charge+dt if pos.distance_to(portal)<48 and linger>2 else 0.0
+		portal_charge = portal_charge+dt if pos.distance_to(portal)<48 and (linger>2 or (resting and BOSS_RESPITE_SECONDS-spawn_respite>2)) else 0.0
 		if portal_charge>=PORTAL_CHARGE_SECONDS:
 			enter_portal()
 			return
@@ -312,15 +323,15 @@ func tick(dt, direction):
 	if combo_time == 0: streak = 0
 	hp = minf(max_hp,hp+(buff_power("regen")*0.35+research_ranks.get("recovery",0)*0.15)*dt)
 	for key in relic_timers: relic_timers[key] = maxf(0,relic_timers[key]-dt)
-	director.update(self,dt)
+	if not resting:director.update(self,dt)
 	var spawn_rate = 2.4+time/18.0 if time<120 else 3+time/14.0+depth*5
 	spawn_rate *= lerpf(0.65,1.0,clampf(time/120.0,0.0,1.0))
 	spawn_rate *= stage.modifiers.get("density",1.0)*(1+minf(5,linger_pressure()/12.0))
-	spawn_budget = minf(12,spawn_budget+dt*spawn_rate*(0.4 if boss != null else 1.0))
+	spawn_budget = 0.0 if resting else minf(12,spawn_budget+dt*spawn_rate*(0.4 if boss != null else 1.0))
 	while spawn_budget >= 1:
 		spawn_budget -= 1
 		if enemies.size()<director.cap(self): spawn_enemy()
-	if time >= next_elite:
+	if not resting and time >= next_elite:
 		next_elite = time+elite_interval()
 		if enemies.size()<director.cap(self): spawn_enemy(true)
 	if boss == null and portal==null and time >= next_boss and boss_stage < 3:
@@ -396,13 +407,16 @@ func spawn_enemy(elite = false, at = null, kind_override = -1, announce = true):
 	next_uid += 1
 	var e = {"uid":next_uid,"p":p,"hp":health,"max_hp":health,"kind":kind,"role":species.role,"elite":elite,"mutated":mutated,"boss":false,"anchor":false,"size":species.size*(1.7 if elite else 1.0)*(1.25 if mutated else 1.0),"speed":species.speed*stage.modifiers.get("enemy_speed",1.0)*(1+minf(time/2000,0.6))*(1+minf(1.0,linger_pressure()/80.0)),"flash":0.0,"slow":0.0,"burn":0.0,"burn_tick":0.0,"attack":rng.randf_range(3,8),"dead":false}
 	enemies.append(e)
+	if species.role=="stampede":preload("res://scripts/compy_stampede.gd").configure(self,e,Vector2.from_angle(angle))
 	if elite and announce: banner.emit("MUTATION DETECTED","An apex hunter enters the field")
 	return e
 
 func update_enemies(dt):
+	stampede_push_left=105.0*dt
 	if companions!=null:companions.collision.build(companions.units)
 	enemy_frame += 1
 	crowd.build(enemies)
+	preload("res://scripts/compy_stampede.gd").prepare(self,dt)
 	for e in enemies:
 		if e.dead or e.get("breakable",false): continue
 		if not e.boss and not e.anchor and not e.get("encounter_guard",false) and e.p.distance_squared_to(pos)>pow(maxf(2400,spawn_view.length()*0.9),2):
@@ -432,10 +446,14 @@ func update_enemies(dt):
 				hit(e,e.get("burn_damage",8.0),e.get("burn_source","fire"),false,false)
 		if e.dead or e.anchor or e.get("boss_prop",false): continue
 		if not e.boss and (buffs.get("freeze",0)>0 or e.frozen>0): continue
+		if e.get("role","")=="stampede" and e.has("flow"):
+			preload("res://scripts/compy_stampede.gd").update(self,e,step)
+			continue
 		var delta = pos-e.p
 		var move = delta.normalized()
 		if not e.boss:
 			var slow_scale = 0.48 if e.slow>0 or buffs.get("slow",0)>0 else 1.0
+			if e.get("enraged_until",0)>time:slow_scale*=1.3
 			var role = e.get("role","chase")
 			if e.get("spit_wait",0)>0:
 				e.spit_wait -= step
@@ -452,7 +470,8 @@ func update_enemies(dt):
 				if e.get("charge_time",0)>0:
 					e.charge_time -= step
 					e.p = crowd.move(self,e,e.charge_dir*390*step,step)
-					if e.p.distance_to(pos)<e.size+15: hurt(22+depth*7,"Tuskbreaker charge")
+					e.motion=e.charge_dir;e.anim_attack=true
+					if e.p.distance_to(pos)<e.size+15: hurt(22+depth*7,Bestiary.DATA[e.kind].name+" charge")
 					continue
 				if e.attack<=0 and delta.length()<430 and time>=charge_ready:
 					charge_ready=time+maxf(0.75,1.15-depth*0.15)
@@ -460,9 +479,11 @@ func update_enemies(dt):
 					e.charge_wait = 0.9
 					e.charge_dir = move
 					continue
-			if role in ["fly","phase"]:
-				move = move.rotated(sin(time*2+e.uid)*0.5)
-				e.p = crowd.move(self,e,move*e.speed*slow_scale*step,step)
+			if role=="fly":
+				preload("res://scripts/dinosaur_behaviors.gd").flyby(self,e,step,slow_scale)
+				continue
+			elif role=="phase":
+				preload("res://scripts/dinosaur_behaviors.gd").ambush(self,e,step,slow_scale)
 			else:
 				e.nav_timer = e.get("nav_timer",0.0)-step
 				if e.nav_timer<=0:
@@ -471,7 +492,9 @@ func update_enemies(dt):
 				move = e.get("nav",move)
 				if role=="spit" and delta.length()<250: move *= -0.25
 				var ground = terrain.kind(terrain.cell(e.p))
+				var old_position=e.p
 				e.p = crowd.move(self,e,move*e.speed*slow_scale*(0.65 if ground==2 else 1.0)*step,step)
+				e.motion=(e.p-old_position).normalized();e.anim_attack=false
 				if ground==3:
 					e.hp -= e.max_hp*0.08*step
 					if e.hp<=0: kill(e)
@@ -494,10 +517,10 @@ func update_enemies(dt):
 				var start=e.p
 				e.p=terrain.move(e.p,chase*speeds.get(e.get("identity","thorn"),76.0)*(1.12 if phase==2 else 1.0)*step,32)
 				if companions!=null:e.p=companions.collision.block_enemy(e,start,e.p)
-				e.aim=chase
+				e.aim=chase;e.motion=chase
 			delta=pos-e.p
 		# Boss contact hurts the player, but never shoves the boss.
-		if delta.length()<e.size+15:
+		if (preload("res://scripts/dinosaur_attacks.gd").body_contains(e,pos) if e.boss and boss_stage<3 else (pos-e.p).length()<e.size+15) and not (e.boss and e.get("action","")=="intro"):
 			hurt(16+depth*8+(18 if e.elite else 0),"Overwhelmed by the horde")
 			if not e.boss and not e.anchor and not e.get("boss_prop",false):
 				if e.kind==2: e.p -= move*15
@@ -506,8 +529,9 @@ func update_enemies(dt):
 	var hatchlings = brood_queue
 	brood_queue = []
 	for p in hatchlings:
-		if enemies.size()<director.cap(self):
-			var child = spawn_enemy(false,p,4)
+		if spawn_respite<=0 and enemies.size()<director.cap(self):
+			var child = spawn_enemy(false,p.p,p.kind)
+			child.role="chase"
 			child.hp *= 0.4
 			child.max_hp = child.hp
 			child.size = 11
@@ -553,7 +577,8 @@ func nearby(p, radius):
 	for x in range(a.x,b.x+1):
 		for y in range(a.y,b.y+1):
 			for e in grid.get(Vector2i(x,y),[]):
-				if not e.dead and e.p.distance_squared_to(p)<pow(radius+e.size,2): out.append(e)
+				if not e.dead and (preload("res://scripts/dinosaur_attacks.gd").body_distance(e,p)<radius if e.boss and boss_stage<3 else e.p.distance_squared_to(p)<pow(radius+e.size,2)):out.append(e)
+	if boss!=null and boss_stage<3 and not boss.dead and not out.has(boss) and preload("res://scripts/dinosaur_attacks.gd").body_distance(boss,p)<radius:out.append(boss)
 	return out
 func nearest(p, radius = 680.0, excluded = []):
 	var best = null
@@ -640,7 +665,9 @@ func update_shots(dt):
 		for e in candidates:
 			if e.uid in shot.hit: continue
 			var closest = Geometry2D.get_closest_point_to_segment(e.p,shot.old,shot.p)
-			if closest.distance_squared_to(e.p)>pow(width+e.size,2): continue
+			if e.boss and boss_stage<3:
+				if not preload("res://scripts/dinosaur_attacks.gd").segment_hits(e,shot.old,shot.p,width):continue
+			elif closest.distance_squared_to(e.p)>pow(width+e.size,2): continue
 			shot.hit.append(e.uid)
 			if impact_budget>0:
 				impact_budget -= 1
@@ -678,7 +705,7 @@ func blast(p,radius,damage,id,hit_channel = "impact"):
 	effect.emit("blast_"+visual,p,Color(C.WEAPONS.get(id,{"color":"ffad68"}).color),radius)
 	for e in nearby(p,radius):
 		hit(e,damage,id,true,true,hit_channel)
-		if not e.boss and not e.anchor and not e.get("boss_prop",false) and not rooted(e) and "KNOCKBACK" in tags: e.p = terrain.move(e.p,(e.p-p).normalized()*35)
+		if not e.boss and not e.anchor and not e.get("boss_prop",false) and not rooted(e) and "KNOCKBACK" in tags: e.p = terrain.move(e.p,(e.p-p).normalized()*35*Bestiary.DATA[e.kind].get("knockback",1.0))
 
 func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "impact"):
 	if not active or e.dead: return 0.0
@@ -812,6 +839,7 @@ func kill(e):
 		return
 	add_gem(e.p,(25 if e.elite else 1+depth*0.3)*(1.3 if e.get("event_spawn",false) else 1.0))
 	if not e.boss: Pickups.drop(self,e.p,false,e.elite)
+	if not e.boss:effect.emit("dino_fall_"+str(e.kind),e.p,Color.WHITE,e.size)
 	var mods = Relics.modifiers(self)
 	if mods.has("heal_every") and kills%int(mods.heal_every)==0 and time>=blood_ready:
 		hp = minf(max_hp,hp+mods.heal)
@@ -827,6 +855,9 @@ func kill(e):
 				relic_chests.append(terrain.open_position(e.p))
 				if e.get("event_spawn",false): elite_chest_ready = time+35
 	if e.boss:
+		if boss_stage<3:
+			BossEncounters.cue(self,"death")
+			effect.emit("dino_death_"+e.identity,e.p,Color.WHITE,e.size)
 		preload("res://scripts/remnant_system.gd").leave(self,e)
 		# One sweep of existing XP. This does not start a timed magnet.
 		for gem in gems: gem.magnet=true
@@ -852,14 +883,17 @@ func kill(e):
 		grid.clear()
 		portal = preload("res://scripts/remnant_system.gd").portal_position(self,boss_corpses.back())
 		linger = 0.0
+		spawn_respite = BOSS_RESPITE_SECONDS
+		spawn_budget = 0.0
+		director.budget = 0.0
 		portal_charge = 0.0
 		hp = minf(max_hp,hp+max_hp*0.3)
-		banner.emit("A WAY THROUGH","COLLECT YOUR SPOILS / ENTER THE RIFT WHEN READY")
+		banner.emit("A BRIEF RESPITE","THE HORDES ARE GATHERING / COLLECT YOUR SPOILS")
 		rite_requested.emit(e)
 		if rite_pending:return
 		open_choices(true)
 	elif e.get("role","")=="brood" and brood_queue.size()<24:
-		for j in range(3): brood_queue.append(e.p+Vector2.from_angle(j*TAU/3)*24)
+		for j in range(3): brood_queue.append({"p":e.p+Vector2.from_angle(j*TAU/3)*24,"kind":e.kind})
 
 func enter_portal():
 	if not active or choosing or portal==null or boss!=null: return
@@ -873,6 +907,7 @@ func enter_portal():
 		map_id=maps[(maps.find(map_id)+1)%maps.size()];terrain.layout=Maps.DATA[map_id].layout
 	else:depth = mini(2,depth+1)
 	portal = null
+	spawn_respite = 0.0
 	linger = 0.0
 	portal_charge = 0.0
 	encounter_epoch += 1
@@ -1064,7 +1099,7 @@ func spawn_boss(stage):
 	boss_pattern = 0
 	phase = 1
 	core_time = 0
-	var p = pos+Vector2(0,-230)
+	var p = pos+(Vector2(0,-230) if stage==3 else Vector2(250,95))
 	terrain.arena = p
 	terrain.refresh = 0
 	next_uid += 1

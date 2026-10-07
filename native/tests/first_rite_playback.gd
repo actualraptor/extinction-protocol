@@ -6,6 +6,8 @@ func check(ok):
  checks+=1;assert(ok)
 func _initialize():call_deferred("run")
 func run():
+ root.size=Vector2i(1920,1080)
+ root.content_scale_size=Vector2i(1920,1080)
  X.install(preload("res://scripts/catalog.gd"))
  check(P.available())
  for identity in ["thorn","hunt","warden"]:
@@ -16,10 +18,13 @@ func run():
   check(player.pages[0].size==player.stage.size and player.pages[0].position==Vector2.ZERO)
   check(abs(player.narration.stream.get_length()-120.48)<.1)
   check(player.score.stream.get_length()>120)
-  for at in [0,48,72,104,120]:
+  for at in [3,50,72,90,105,120]:
    player.clock=at;player.update_frame();await process_frame
    await RenderingServer.frame_post_draw
+   root.get_texture().get_image().save_png("D:/Utveckling CODEX/Dummy test/native/build/dinosaur-cinematic-"+identity+"-"+str(at)+".png")
+  await RenderingServer.frame_post_draw
+  root.get_texture().get_image().save_png("D:/Utveckling CODEX/Dummy test/native/build/dinosaur-cinematic-"+identity+".png")
   var completed=[false];player.completed.connect(func():completed[0]=true)
   player.finish();check(completed[0]);await process_frame
- print("FIRST RITE PLAYBACK / ",checks," checks passed; three variants rendered")
+ print("FIRST RITE PLAYBACK / ",checks," checks passed; three first-boss variants rendered")
  quit()

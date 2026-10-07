@@ -24,10 +24,14 @@ const SEEN_FLAG="rite_07_seen"
 var skip: Button
 var meter: ProgressBar
 
-static func available():return FileAccess.file_exists("res://payload/rite/voice.dat")
-static func painting(id):
-	var route="02" if id in ["hunt","aurora"] else "03" if id in ["warden","bloom"] else "01"
-	var im=Image.new();im.load_png_from_buffer(FileAccess.get_file_as_bytes("res://payload/rite/"+route+".dat"))
+static func available():
+	if not FileAccess.file_exists("res://payload/rite/voice.dat"):return false
+	for id in ["thorn","hunt","warden"]:
+		for shot in SHOTS:
+			if not FileAccess.file_exists("res://payload/dinosaurs/story-"+id+"-"+str(shot)+".dat"):return false
+	return true
+static func story_painting(id,shot):
+	var im=Image.new();im.load_png_from_buffer(FileAccess.get_file_as_bytes("res://payload/dinosaurs/story-"+id+"-"+str(shot)+".dat"))
 	return ImageTexture.create_from_image(im)
 static func audio_file(path,mp3):
 	if mp3:
@@ -50,13 +54,9 @@ func _ready():
 	stage.clip_contents=true
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(stage)
-	var sheet=painting(identity)
 	for name in SHOTS:
 		var painting = TextureRect.new()
-		var width=sheet.get_width()
-		var height=sheet.get_height()/4
-		# Each atlas row is a complete panoramic composition, not a portrait crop.
-		painting.texture=ImageTexture.create_from_image(sheet.get_image().get_region(Rect2i(0,name*height,width,height)))
+		painting.texture=story_painting(identity,name)
 		painting.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		painting.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		painting.position=Vector2.ZERO

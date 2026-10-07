@@ -17,7 +17,7 @@ var narration: AudioStreamPlayer
 var score: AudioStreamPlayer
 var stage: Control
 var pages = []
-var title: Label
+var title: TextureRect
 const SEEN_FLAG="opening_0120_seen"
 var skip: Button
 var meter: ProgressBar
@@ -59,15 +59,7 @@ func _ready():
 		painting.material = material
 		stage.add_child(painting)
 		pages.append(painting)
-	title = Label.new()
-	title.text = "EXTINCTION PROTOCOL"
-	title.add_theme_font_override("font",preload("res://scripts/ui_art.gd").heading_font())
-	title.add_theme_font_size_override("font_size",42)
-	title.add_theme_color_override("font_color",Color("eee1c5"))
-	title.add_theme_color_override("font_shadow_color",Color.BLACK)
-	title.add_theme_constant_override("shadow_offset_y",3)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	title = preload("res://scripts/official_brand.gd").logo(0)
 	stage.add_child(title)
 	skip = Button.new()
 	skip.text = "Hold to skip Â· Esc / Space"
@@ -106,9 +98,9 @@ func layout():
 	var w = minf(size.x,size.y*16.0/9.0)
 	stage.size = Vector2(w,w*9.0/16.0)
 	stage.position = (size-stage.size)/2
-	title.position = Vector2(0,stage.size.y*.82)
-	title.size = Vector2(stage.size.x,60)
-	title.add_theme_font_size_override("font_size",maxi(20,roundi(stage.size.x/34)))
+	var logo_height=stage.size.y*.22
+	title.size=Vector2(logo_height*2.721,logo_height)
+	title.position=Vector2((stage.size.x-title.size.x)/2,stage.size.y-logo_height-34)
 	skip.size = Vector2(240,34)
 	skip.position = Vector2(size.x-264,size.y-58)
 	meter.position = skip.position+Vector2(0,36)

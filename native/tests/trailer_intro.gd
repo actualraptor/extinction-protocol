@@ -11,19 +11,12 @@ func begin():
  root.add_child(story)
  var shade=ColorRect.new();shade.color=Color(0,0,0,.32)
  shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);root.add_child(shade)
- title=Label.new();title.text="EXTINCTION\nPROTOCOL"
- title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- title.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
- title.position=Vector2(160,315);title.size=Vector2(1600,340)
- title.add_theme_font_override("font",preload("res://scripts/ui_art.gd").heading_font())
- title.add_theme_font_size_override("font_size",106)
- title.add_theme_color_override("font_color",Color("eee1c5"))
- title.add_theme_color_override("font_shadow_color",Color.BLACK)
- title.add_theme_constant_override("shadow_offset_y",5)
+ title=preload("res://scripts/official_brand.gd").logo(0)
+ title.position=Vector2(365,325);title.size=Vector2(1190,437)
  root.add_child(title)
  subtitle=Label.new();subtitle.text="SURVIVE  /  ADAPT  /  DENY EXTINCTION"
  subtitle.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- subtitle.position=Vector2(160,690);subtitle.size=Vector2(1600,70)
+ subtitle.position=Vector2(160,810);subtitle.size=Vector2(1600,70)
  subtitle.add_theme_font_override("font",preload("res://scripts/ui_art.gd").heading_font())
  subtitle.add_theme_font_size_override("font_size",28)
  subtitle.add_theme_color_override("font_color",Color("eee1c5"))

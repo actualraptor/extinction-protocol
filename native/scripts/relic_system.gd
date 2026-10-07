@@ -201,7 +201,7 @@ static func definitions(base):
 	for id in icons: out[id].icon = icons[id]
 	var additions = {
 		"flint":{"name":"Hunter's Flint","desc":"All damage +10%.","mods":{"damage":0.1},"icon":4},
-		"wrap":{"name":"Mammoth Wrap","desc":"Gain 20 maximum health and heal 20.","acquire":{"health":20},"icon":2},
+		"wrap":{"name":"Saurian Wrap","desc":"Gain 20 maximum health and heal 20.","acquire":{"health":20},"icon":2},
 		"coil":{"name":"Quickening Coil","desc":"All attacks recharge 12% faster.","mods":{"haste":0.12},"icon":6},
 		"lens":{"name":"Amber Lens","desc":"Earn 15% more experience.","mods":{"xp":0.15},"icon":6},
 		"prism":{"name":"Prism of Plenty","desc":"An extra projectile, chain target, orbiting blade or bombardment.","mods":{"count":1},"filter":{"any":["PROJECTILE","CHAIN","ORBITAL","GROUND_EFFECT"]},"icon":5},

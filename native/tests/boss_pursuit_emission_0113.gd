@@ -12,6 +12,7 @@ func _initialize():
 		for stage in [1,2,3]:
 			var g=E.new();g.setup(1,"expedition",{},113,map);g.spawn_boss(stage)
 			var b=g.boss;var original=b.p
+			if stage<3:b.action="recover"
 			g.pos=b.p+Vector2(260,220);g.invul=100
 			for i in range(30):g.update_enemies(1.0/30.0)
 			check(b.p==original if stage==3 else b.p.distance_to(original)>30,"Only meteor remains stationary / %s / %s"%[map,stage])

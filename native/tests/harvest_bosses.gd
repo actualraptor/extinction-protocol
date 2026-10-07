@@ -21,16 +21,12 @@ func _initialize():
    check(b.attack_index>=5,"Several attack cycles / "+b.identity)
    check(actions.has("windup") and actions.has("recover"),"Anticipation and recovery / "+b.identity)
    check(g.hostile_shots.size()<=48 and b.props.size()<=6,"Bounded attacks / "+b.identity)
-   if b.identity=="thorn":check(actions.has("charge"),"Thorn Crown charges")
-   if b.identity=="hunt":check(actions.has("pounce"),"Pale Hunt pounces")
-   if b.identity=="aurora":check(actions.has("vanish") and actions.has("breath"),"Aurora relocates and breathes")
+   if b.identity=="thorn":check(actions.has("charge"),"Triceratops charges")
+   if b.identity=="hunt":check(actions.has("pounce"),"Cryolophosaurus pounces")
+   if b.identity=="aurora":check(actions.has("charge") and actions.has("strike"),"Yutyrannus rushes and calls its pack")
    if b.identity in ["warden","bloom"]:
-    Bosses.pod(g,g.pos,"lens" if b.identity=="warden" else "growth",10)
-    var prop=b.props[-1]
-    Bosses.hazard(g,"line",prop.p,0,25,1,1,30,b.identity,{"source_uid":prop.uid,"length":700})
-    g.kill(prop);g.update_hazards(0.05)
-    check(not g.hazards.any(func(h):return h.get("source_uid",-1)==prop.uid),"Destroyed prop cancels owned attack")
-    check(b.exposed>0,"Breaking props opens damage window")
+    check(actions.has("strike"),"Claw and jaw attacks commit to a physical strike")
+    check(b.props.is_empty() and g.hostile_shots.is_empty(),"Legacy fantasy projectiles and props are absent")
    Bosses.prepare(g)
    var locked=b.aim;var locked_target=b.target
    g.pos+=Vector2(500,500);g.update_boss(0.1)

@@ -3,8 +3,8 @@ extends RefCounted
 const DATA={
  "cradle":{
   "bounds":Rect2(-40000,-34000,80000,68000),"spawn":Vector2.ZERO,
-  "identity":"Wide jungle trails. +5% movement speed. Hunt for recovery and physical-build supplies.",
-  "modifiers":{"player_speed":1.05},"ground_profile":"jungle","environment_profile":"grove",
+  "identity":"Open prehistoric grasslands. +5% movement speed. Hunt for recovery and physical-build supplies.",
+  "modifiers":{"player_speed":1.05},"ground_profile":"grasslands","environment_profile":"grove",
   "passives":[
    {"id":"speed","p":Vector2(6000,-1000),"category":"passive","overflow":true,"maxed_amber":25},
    {"id":"regen","p":Vector2(-14000,8000),"category":"passive","overflow":true,"maxed_amber":25},
@@ -23,7 +23,7 @@ const DATA={
   "regions":[
    {"name":"Firstfire Clearing","p":Vector2.ZERO,"radius":2800.0,"kind":"grove","color":"496e49"},
    {"name":"Hunter's Trail","p":Vector2(6000,-1000),"radius":4000.0,"kind":"grove","color":"7f7351"},
-   {"name":"Mammoth Graveyard","p":Vector2(-11500,-7000),"radius":5500.0,"kind":"bones","color":"887860"},
+   {"name":"Saurian Graveyard","p":Vector2(-11500,-7000),"radius":5500.0,"kind":"bones","color":"887860"},
    {"name":"Mosswater Basin","p":Vector2(-14000,8000),"radius":6000.0,"kind":"marsh","color":"335e58"},
    {"name":"Stormsplit Ruins","p":Vector2(16000,-16000),"radius":6500.0,"kind":"ruins","color":"54626f"},
    {"name":"Last Camp","p":Vector2(-22000,16000),"radius":4800.0,"kind":"grove","color":"726347"},
@@ -32,7 +32,7 @@ const DATA={
   "landmarks":[
    {"id":"firstfire","name":"Firstfire Camp","p":Vector2(0,-320),"landmark_art":0,"scale":260.0},
    {"id":"ancient_tree","name":"Heartwood Giant","p":Vector2(-5000,-21350),"landmark_art":2,"scale":620.0},
-   {"id":"mammoth","name":"Mammoth Graveyard","p":Vector2(-11500,-7350),"landmark_art":1,"scale":600.0},
+   {"id":"mammoth","name":"Saurian Graveyard","p":Vector2(-11500,-7350),"landmark_art":1,"scale":600.0},
    {"id":"rift_ruins","name":"Stormsplit Ruins","p":Vector2(16000,-16400),"landmark_art":3,"scale":480.0},
    {"id":"last_camp","name":"Voss's Last Camp","p":Vector2(-22000,15650),"landmark_art":0,"scale":420.0},
    {"id":"spine","name":"Titan's Spine","p":Vector2(19000,15650),"landmark_art":1,"scale":560.0}]},

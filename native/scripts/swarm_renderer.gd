@@ -9,7 +9,7 @@ var seasonal_regions = []
 var buffer = PackedFloat32Array()
 const CAPACITY = 2400
 func _ready():
-	texture = world.frontier_sheet if frontier else world.monster_sheet if extra else world.atlas
+	texture = preload("res://scripts/dinosaur_art.gd").SHEET
 	multimesh = MultiMesh.new()
 	multimesh.transform_format = MultiMesh.TRANSFORM_2D
 	multimesh.use_colors = true
@@ -22,32 +22,10 @@ func _ready():
 	buffer.resize(CAPACITY*16)
 	var shader = ShaderMaterial.new()
 	shader.shader = preload("res://shaders/swarm.gdshader")
-	if extra or frontier:
-		shader.set_shader_parameter("custom_regions",true)
-		var regions = PackedVector4Array()
-		for r in (world.frontier_regions if frontier else world.monster_regions):
-			regions.append(Vector4(r.position.x/texture.get_width(),r.position.y/texture.get_height(),r.size.x/texture.get_width(),r.size.y/texture.get_height()))
-		while regions.size()<9: regions.append(Vector4.ZERO)
-		shader.set_shader_parameter("regions",regions)
 	material = shader
 
 func _apply_seasonal(enabled: bool):
-	seasonal_active = enabled
-	if enabled:
-		var theme = preload("res://scripts/seasonal_theme.gd")
-		var group = 2 if frontier else 1 if extra else 0
-		texture = theme.texture_for(group)
-		seasonal_regions = theme.regions_for(group)
-	else:
-		texture = world.frontier_sheet if frontier else world.monster_sheet if extra else world.atlas
-	material.set_shader_parameter("custom_regions",enabled or extra or frontier)
-	if enabled or extra or frontier:
-		var regions = PackedVector4Array()
-		var source = seasonal_regions if enabled else world.frontier_regions if frontier else world.monster_regions
-		for r in source:
-			regions.append(Vector4(r.position.x/texture.get_width(),r.position.y/texture.get_height(),r.size.x/texture.get_width(),r.size.y/texture.get_height()))
-		while regions.size()<9: regions.append(Vector4.ZERO)
-		material.set_shader_parameter("regions",regions)
+	seasonal_active=enabled
 
 func _process(dt):
 	var s = world.sim
@@ -66,29 +44,27 @@ func _process(dt):
 		var p = world.screen(e.render_p)
 		if not world.visible_rect().grow(100).has_point(p): continue
 		if count>=CAPACITY: break
-		var size_value = e.size*3
-		var index = e.kind-14 if frontier else e.kind-5 if extra else 3+e.kind
-		var aspect = Vector2.ONE
-		if extra or frontier or seasonal_active:
-			var dimensions = (seasonal_regions if seasonal_active else world.frontier_regions if frontier else world.monster_regions)[index].size
-			aspect = dimensions/maxf(dimensions.x,dimensions.y)
+		var size_value=e.size*4.0*e.get("visual_scale",1.0)
+		var index=e.kind
+		var aspect=Vector2(1,.75)
 		var tint = Color(1.8,1.8,1.8) if e.flash>0 else Color("a2c3ff") if frozen or e.slow>0 or e.get("frozen",0)>0 else Color("eabcff") if e.mutated else Color.WHITE
+		tint*=e.get("visual_tint",Color.WHITE)
 		var offset = count*16
 		# 2D transform is two rows of four floats, then RGBA and custom RGBA.
-		buffer[offset] = (-size_value if e.p.x>s.pos.x else size_value)*aspect.x
+		buffer[offset] = (-size_value if e.get("motion",Vector2.RIGHT).x<-.01 else size_value)*aspect.x
 		buffer[offset+1] = 0
 		buffer[offset+2] = 0
 		buffer[offset+3] = p.x
 		buffer[offset+4] = 0
 		buffer[offset+5] = size_value*aspect.y
 		buffer[offset+6] = 0
-		buffer[offset+7] = p.y-size_value*0.25
+		buffer[offset+7] = p.y-size_value*0.345
 		buffer[offset+8] = tint.r
 		buffer[offset+9] = tint.g
 		buffer[offset+10] = tint.b
 		buffer[offset+11] = 1
-		buffer[offset+12] = index%3
-		buffer[offset+13] = floorf(index/3.0)
+		buffer[offset+12] = index
+		buffer[offset+13] = preload("res://scripts/dinosaur_art.gd").frame(e,world.clock,frozen)
 		buffer[offset+14] = float(e.uid%100)*0.17
 		buffer[offset+15] = 0.0 if frozen or e.get("frozen",0)>0 else 1.0
 		count += 1

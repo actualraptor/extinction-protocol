@@ -3,8 +3,6 @@ render_mode unshaded;
 varying vec2 frame;
 varying vec4 tint;
 varying float iced;
-uniform bool custom_regions = false;
-uniform vec4 regions[9];
 void vertex() {
 	frame = INSTANCE_CUSTOM.xy;
 	tint = COLOR;
@@ -15,10 +13,7 @@ void fragment() {
 	// QuadMesh V runs upward in canvas coordinates. Flip inside the cell,
 	// before adding its atlas row, so every species stays upright.
 	vec2 uv = vec2(UV.x,1.0-UV.y);
-	if (custom_regions) {
-		vec4 r = regions[int(frame.x+frame.y*3.0)];
-		COLOR = texture(TEXTURE,r.xy+uv*r.zw)*tint;
-	} else COLOR = texture(TEXTURE,(uv+frame)/3.0)*tint;
+	COLOR = texture(TEXTURE,(uv+vec2(frame.y,frame.x))/vec2(6.0,19.0))*tint;
 	if (iced>0.5) {
 		float facets = pow(abs(sin(uv.x*8.0+uv.y*5.0)*cos(uv.y*11.0)),10.0);
 		float light = dot(COLOR.rgb,vec3(0.3,0.5,0.2));

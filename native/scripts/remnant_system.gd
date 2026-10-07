@@ -1,30 +1,12 @@
 extends RefCounted
 const CHANNEL=2.5
-const RITUAL=12.0
+const RITUAL=18.0
 const ID="r08"
 const IDENTITIES=["thorn","basalt","hunt","aurora","warden","bloom"]
 static var corpse_poses={}
 static func corpse_art(identity):
-	if corpse_poses.has(identity):return corpse_poses[identity]
-	var index=IDENTITIES.find(identity)
-	if index<0:return null
-	var art=AtlasTexture.new();art.atlas=preload("res://assets/field-remains.png")
-	var regions=[Rect2(0,50,550,470),Rect2(550,50,465,470),Rect2(1015,50,521,470),Rect2(0,525,525,499),Rect2(525,515,490,509),Rect2(1015,520,521,504)]
-	art.region=regions[index];art.filter_clip=true
-	# Match painted wound fluid and ground stains to the ritual's boss palette.
-	if identity in ["basalt","aurora","warden","bloom"]:
-		var image=art.atlas.get_image()
-		var target=preload("res://scripts/rite_animation.gd").fluid(identity)
-		var bounds=Rect2i(art.region)
-		for y in range(bounds.position.y,bounds.end.y):
-			for x in range(bounds.position.x,bounds.end.x):
-				var pixel=image.get_pixel(x,y)
-				if pixel.a>.01 and pixel.r>pixel.g*1.65 and pixel.r>pixel.b*1.45 and pixel.s>.55:
-					var stained=Color.from_hsv(target.h,target.s,pixel.v,pixel.a)
-					image.set_pixel(x,y,stained)
-		art.atlas=ImageTexture.create_from_image(image)
-	corpse_poses[identity]=art
-	return art
+	if identity not in IDENTITIES:return null
+	return preload("res://scripts/dinosaur_boss_art.gd").corpse(identity)
 
 static func enabled(g):return g.companions!=null and preload("res://scripts/content_extension.gd").is_profile(g)
 static func occupied(g,identity=""):return g.companions!=null and g.companions.units.any(func(u):return u.hp>0 and u.get("boss_form",false) and u.identity==identity)
@@ -32,7 +14,8 @@ static func leave(g,b):
 	if g.boss_corpses.any(func(c):return c.uid==b.uid):return
 	var identity=b.get("identity","meteor")
 	var marker=g.terrain.open_position(b.p+Vector2(-90,125))
-	g.boss_corpses.append({"uid":b.uid,"p":b.p,"kind":b.kind,"identity":identity,"marker":marker,"charge":0.0,"ritual":0.0,"raising":false,"consumed":false,"size":b.size})
+	var footprint=preload("res://scripts/dinosaur_boss_art.gd").WIDTH.get(identity,b.size*3.2)/3.2
+	g.boss_corpses.append({"uid":b.uid,"p":b.p,"kind":b.kind,"identity":identity,"marker":marker,"charge":0.0,"ritual":0.0,"raising":false,"consumed":false,"ritual_seed":randf_range(0,TAU),"size":footprint})
 	g.log_event("remnant-left",{"identity":identity})
 static func portal_position(g,corpse):
 	for radius in [320,420,540]:
@@ -59,14 +42,25 @@ static func update(g,dt):
 			if c.charge>=CHANNEL:
 				c.raising=true;c.ritual=0;g.sound.emit("rite_hum")
 		else:
+			# Pause only the ritual for the impact beat; combat keeps running.
+			if c.get("snap_hold",0.0)>0:
+				c.snap_hold=maxf(0,c.snap_hold-dt)
+				continue
 			var before=c.ritual
 			c.ritual+=dt
+			var first_snap=preload("res://scripts/rite_animation.gd").split_time(0)
+			if before<first_snap and c.ritual>=first_snap:
+				c.ritual=first_snap;c.snap_hold=.075
+				g.effect.emit("rite_snap",c.p,Color("bfffd9"),c.size*3.2)
+			c.stain_time=maxf(c.get("stain_time",0.0),c.ritual)
 			preload("res://scripts/rite_circle.gd").beats(g,CHANNEL+before,CHANNEL+c.ritual)
 			for piece in [0,3,6,8]:
 				var beat=preload("res://scripts/rite_animation.gd").split_time(piece)
-				if before<beat and c.ritual>=beat:g.sound.emit("rite_crunch")
+				if before<beat and c.ritual>=beat:
+					g.sound.emit("rite_crunch")
+					if piece!=0:g.effect.emit("rite_snap_small",c.p,Color("75dca7"),c.size*3.2)
 			for part in range(9):
-				var lock=5.92+part*.64
+				var lock=11.92+part*.64
 				if before<lock and c.ritual>=lock:g.sound.emit("rite_lock")
 			if c.ritual>=RITUAL and g.companions.raise_remnant(g,c):
 				c.consumed=true
@@ -88,7 +82,7 @@ static func draw(world,g):
 		var amount=clampf(c.ritual/RITUAL,0,1) if c.raising else 0.0
 		world.draw_set_transform(p,-.16,Vector2(1,.48))
 		var shade=1-smoothstep(.05,.4,amount) if c.raising else 1.0
-		world.draw_circle(Vector2.ZERO,c.size*1.3*(.65+.35*shade),Color(0,0,0,.4*shade))
+		world.draw_circle(Vector2.ZERO,c.size*1.05*(.65+.35*shade),Color(0,0,0,.13*shade))
 		if c.raising:
 			var settled=smoothstep(.82,1,amount)
 			world.draw_circle(Vector2.ZERO,c.size*.75,Color(0,0,0,.25*settled))
@@ -98,13 +92,16 @@ static func draw(world,g):
 		else:
 			var art=corpse_art(c.identity)
 			if c.raising:
-				preload("res://scripts/rite_animation.gd").runoff(world,c,p,amount,true)
+				preload("res://scripts/ritual_parchment.gd").wrap(world,c,p,amount,false)
 				preload("res://scripts/rite_animation.gd").collapse(world,c,p,amount)
 				preload("res://scripts/rite_animation.gd").blood(world,c,p,amount)
 				preload("res://scripts/rite_animation.gd").runoff(world,c,p,amount,false)
+				preload("res://scripts/rite_animation.gd").shedding(world,c,p,amount,false)
 			else:
 				var dimensions=art.get_size()/art.get_width()*c.size*3.2
-				world.draw_texture_rect(art,Rect2(p-dimensions*.5,dimensions),false)
+				var bounds=Rect2(p-dimensions*.5,dimensions)
+				preload("res://scripts/dinosaur_blood.gd").pools(world,bounds)
+				world.draw_texture_rect(art,bounds,false)
 
 		if not enabled(g) or c.identity not in IDENTITIES:continue
 		var marker=world.screen(c.marker)
@@ -113,4 +110,5 @@ static func draw(world,g):
 		if c.raising:
 			preload("res://scripts/rite_animation.gd").energy(world,g,c,p)
 			preload("res://scripts/rite_animation.gd").assemble(world,c,p,amount)
+			preload("res://scripts/ritual_parchment.gd").wrap(world,c,p,amount,true)
 			preload("res://scripts/rite_animation.gd").mist(world,g,c,p)

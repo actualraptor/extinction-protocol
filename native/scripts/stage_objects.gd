@@ -28,7 +28,7 @@ static func update(g):
   var distance=g.pos.distance_squared_to(item.p)
   if distance<=900*900:item.seen=true
   if item.get("encounter","")=="ambush":
-   if not item.started and distance<=150*150:
+   if not item.started and distance<=150*150 and g.spawn_respite<=0:
     item.started=true
     for i in range(item.guard_count):
      var at=item.p+Vector2.from_angle(TAU*i/item.guard_count)*260

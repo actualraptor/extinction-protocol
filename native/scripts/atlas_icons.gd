@@ -55,6 +55,9 @@ static func has_icon(id,category="weapon",halloween=false):
 
 
 static func get_icon(id,category = "weapon",halloween = false):
+	if category=="boss" and id in BOSSES and id!="meteor":
+		var art=AtlasTexture.new();art.atlas=preload("res://scripts/dinosaur_boss_art.gd").SHEET
+		art.region=Rect2(0,BOSSES.find(id)*768,512,384);return art
 	var extension=preload("res://scripts/content_extension.gd").icon(id)
 	if extension!=null:return extension
 	var name=_icon_name(id,category,halloween)

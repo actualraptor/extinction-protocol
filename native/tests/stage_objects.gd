@@ -1,9 +1,17 @@
 extends SceneTree
 const Objects=preload("res://scripts/stage_objects.gd")
 class Harness extends RefCounted:
+ const BuffRewards=preload("res://scripts/buff_rewards.gd")
+ const C=preload("res://scripts/catalog.gd")
+ const Relics=preload("res://scripts/relic_system.gd")
+ var rng=RandomNumberGenerator.new();var buff_stacks={}
+ var research_ranks={};var mods={};var luck=0;var chest_pity=0;var level=1
+ var permanent_luck=0.0;var relic_state={}
+ func rank_of(id):return int(passives.get(id,augments.get(id,0)))
+ func buff_power(id):return BuffRewards.power(self,id)
  var stage={};var stage_objects=[];var collected_stage_objects={};var map_id="cradle";var depth=0
  var terrain=preload("res://scripts/terrain_map.gd").new()
- var active=true;var choosing=false;var pos=Vector2.ZERO
+ var active=true;var choosing=false;var pos=Vector2.ZERO;var spawn_respite=0.0
  var passives={};var augments={};var weapons={"club":{"level":1,"evolved":false,"timer":0}}
  var armor=4;var hp=100;var max_hp=170;var amber=0;var modifier_cache={"test":1}
  var cache_calls=0;var events=[];var discovered=[]
@@ -34,7 +42,7 @@ func _initialize():
  check(item.seen and not item.collected,"Close enough to see but outside collection range")
  g.pos=item.p;Objects.update(g)
  check(item.collected and g.passives.armor==1 and g.passives.size()==9,"World passive exceeds normal capacity")
- check(g.armor==6 and g.max_hp==182 and g.hp==112,"Armor includes health and armor benefits")
+ check(g.armor>4 and g.max_hp>170 and g.hp==100+(g.max_hp-170),"Armor includes rolled health and armor benefits")
  check(g.modifier_cache.is_empty(),"Cached modifiers invalidated")
  Objects.update(g);check(g.passives.armor==1,"Collection only once")
  Objects.setup(g);check(g.stage_objects[0].collected,"Collected state survives setup and depth rebuild")

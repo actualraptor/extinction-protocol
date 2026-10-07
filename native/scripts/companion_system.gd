@@ -169,7 +169,7 @@ func update(g,dt):
 		if target!=null and target.dead: target=null
 		var speed=(220.0 if u.identity=="hunt" else 155.0) if u.get("boss_form",false) else 180.0 if u.champion else 245.0
 		if u.role=="colossus": speed=135
-		var range_value=(250.0 if u.identity == "aurora" else 100.0) if u.get("boss_form",false) else 230.0 if u.role=="archer" else 70.0 if u.role=="colossus" else 48.0
+		var range_value=100.0 if u.get("boss_form",false) else 230.0 if u.role=="archer" else 70.0 if u.role=="colossus" else 48.0
 		var old_position=u.p
 		if u.get("boss_form",false) and update_remnant_skill(g,u,target,dt):continue
 		if target!=null:range_value=maxf(range_value,Contact.radius(u)+Contact.enemy_radius(target)+8)
@@ -467,11 +467,14 @@ func update_remnant_skill(g,u,victim,dt):
 		"basalt","warden":
 			g.effect.emit("ring",u.p,Color("96c9b4"),220)
 			for e in g.nearby(u.p,220):
-				if not e.dead:strike(g,u,e,stats(g,u.source).power*1.4);e.slow=maxf(e.slow,1.5)
+				if not e.dead and (e.p-u.p).normalized().dot((victim.p-u.p).normalized())>.15:
+					strike(g,u,e,stats(g,u.source).power*1.4);e.slow=maxf(e.slow,1.5)
 		"aurora","bloom":
 			for e in g.nearby(victim.p,150):
 				if not e.dead:strike(g,u,e,stats(g,u.source).power*.8);e.slow=maxf(e.slow,2.0)
 			g.effect.emit("ring",victim.p,Color("8bbfd1") if u.identity=="aurora" else Color("8fc79c"),150)
+	if u.identity not in ["thorn","hunt"]:
+		u.swing={"elapsed":0.0,"duration":.65,"hit":true,"target":victim,"power":0.0,"stats":stats(g,u.source),"aim":(victim.p-u.p).normalized()}
 	return false
 
 func draw_auras(target,g,screen_pos):
@@ -496,7 +499,7 @@ func remnant_impact(g,u,victim,power):
 			for e in g.nearby(victim.p,180):
 				if e.dead:continue
 				strike(g,u,e,power*.65);count+=1
-				g.strikes.append({"a":u.p,"b":e.p,"life":.22})
+				g.effect.emit("blast_club",e.p,Color("8bbfd1"),22)
 				if count>=3:break
 		_:
 			if u.p.distance_to(victim.p)>170+victim.size:return

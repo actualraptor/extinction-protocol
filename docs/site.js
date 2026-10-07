@@ -1,12 +1,12 @@
 const repository = document.documentElement.dataset.repository || 'actualraptor/extinction-protocol';
 const base = `https://github.com/${repository}`;
 // Keep the downloads paired with the screenshots and notes for this release.
-const releaseTag = 'v0.13.1';
+const releaseTag = 'v0.14.0';
 const links = {
  repo:base,
  release:`${base}/releases/tag/${releaseTag}`,
- windows:`${base}/releases/download/${releaseTag}/Extinction-Protocol-Windows-0.13.1.zip`,
- linux:`${base}/releases/download/${releaseTag}/Extinction-Protocol-Linux-0.13.1-UNVERIFIED.tar.gz`,
+ windows:`${base}/releases/download/${releaseTag}/Extinction-Protocol-Windows-0.14.0.zip`,
+ linux:`${base}/releases/download/${releaseTag}/Extinction-Protocol-Linux-0.14.0-UNVERIFIED.tar.gz`,
  feedback:`${base}/issues/new/choose`
 };
 document.querySelectorAll('[data-link]').forEach(link=>{link.href=links[link.dataset.link];});
@@ -17,7 +17,9 @@ const shots = [
  ['voss-thermal-ui','Development preview · Mara Voss: fire, ice and bombardment.','Mara Voss using several elemental and ranged abilities against enemies'],
  ['vesper-orbits-ui','Development preview · Vesper: lightning and orbiting blades.','Vesper fighting a horde with violet lightning and green orbiting blades'],
  ['kael-blades-ui','Development preview · Kael: firepower meets close combat.','Kael combining his club with ranged attacks and orbiting blades'],
- ['upgrades-ui','Development preview · Illustrated upgrade cards and matching action buttons.','Three illustrated upgrade cards with Take and re-roll controls']
+ ['discoveries','Development preview · Discoveries: a clear grid of unlocks and equipment.','The redesigned Discoveries grid'],
+ ['expedition','Development preview · A stampede crosses a live expedition.','Compys rushing through an active expedition'],
+ ['main-menu','Development preview · The official logo and redesigned main menu.','Extinction Protocol main menu']
 ];
 let current=0;
 const active=document.querySelector('#active-shot'),large=document.querySelector('#large-shot'),dialog=document.querySelector('#lightbox'),thumbs=document.querySelector('#thumbnails');

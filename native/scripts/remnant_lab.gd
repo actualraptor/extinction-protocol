@@ -16,6 +16,7 @@ func _ready():
 func configure():
 	var g=game.sim
 	if game.page=="rite-story":return
+	game.world.effects.clear()
 	g.sound.emit("rite_stop")
 	g.enemies.clear();g.boss=null;g.boss_corpses.clear();g.portal=null;g.shots.clear();g.hazards.clear();g.zones.clear()
 	g.weapons.clear()
@@ -35,7 +36,7 @@ func configure():
 		g.companions.summon(g,"u00")
 		var warrior=g.companions.units.back();warrior.p=b.p+Vector2(-35,25);warrior.attack=3.0
 		g.build_grid()
-		caption.text="FIRST BOSS KILL TEST / %s\nYour warrior defeats the boss in a few seconds / F6: next map, fresh first kill / F5: replay / Hold Esc: skip story"%g.map_id
+		caption.text="FIRST BOSS KILL TEST / %s\nYour warrior defeats the boss in a few seconds / F6: next boss, fresh first kill / F5: replay / Hold Esc: skip story"%g.map_id
 		return
 	g.kill(b)
 	g.enemies.clear();g.choosing=false;g.options.clear()
@@ -44,7 +45,7 @@ func configure():
 	for i in range(8):
 		var e=g.spawn_enemy(false,b.p+Vector2.from_angle(i*TAU/8)*240);e.hp=1000000;e.max_hp=e.hp
 	g.build_grid()
-	caption.text="LOCAL RITUAL TEST / %s\nF4: narrated story / F5: replay ritual / F6: next boss / F7: reset / WASD: move / F9: kill ally"%R.IDENTITIES[variant]
+	caption.text="LOCAL RITUAL TEST / %s\nF4: narrated story / F5: replay ritual / F6: next boss / F7: reset / WASD: move / F9: kill ally"%preload("res://scripts/boss_identity.gd").short_name(R.IDENTITIES[variant])
 func pressed(key):
 	var down=Input.is_physical_key_pressed(key);var edge=down and not keys.get(key,false);keys[key]=down;return edge
 func _process(dt):
@@ -53,11 +54,11 @@ func _process(dt):
 		if first_kill_test and pressed(KEY_F6):
 			for child in game.layer.get_children():
 				if child.get_script()==preload("res://scripts/first_rite_player.gd"):
-					child.finish();variant=(variant+2)%6;configure();break
+					child.finish();variant=(variant+1)%6;configure();break
 		return
 	var g=game.sim
 	g.transition_time=maxf(0,g.transition_time-dt)
-	if pressed(KEY_F6):variant=(variant+(2 if first_kill_test else 1))%6;configure()
+	if pressed(KEY_F6):variant=(variant+1)%6;configure()
 	if pressed(KEY_F4):game.play_first_rite(R.IDENTITIES[variant],true);return
 	if pressed(KEY_F5):
 		configure()

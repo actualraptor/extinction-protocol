@@ -6,20 +6,20 @@ func _initialize():
  var r=preload("res://scripts/remnant_system.gd");var events=[]
  g.sound.connect(func(id):events.append(id))
  r.update(g,r.CHANNEL);assert(events.count("rite_hum")==1)
- r.update(g,1.2);assert(events.count("rite_crunch")==1)
+ r.update(g,preload("res://scripts/rite_animation.gd").split_time(0));assert(events.count("rite_crunch")==1)
  g.pos+=Vector2(100,0);r.update(g,.1);assert(events.count("rite_stop")==1)
  g.pos=g.boss_corpses[0].marker;r.update(g,r.CHANNEL);events.clear()
- for i in range(120):r.update(g,.1)
+ for i in range(int((r.RITUAL+.5)*10)):r.update(g,.1)
  r.update(g,.01)
  assert(events.count("rite_crunch")==4 and events.count("rite_finish")==1 and events.count("rite_stop")==1)
- assert(events.count("rite_lock")==9 and events.count("rite_pulse")==9)
+ assert(events.count("rite_lock")==9 and events.count("rite_pulse")==10)
  assert(g.boss_corpses[0].consumed)
  assert(g.boss_corpses[0].afterglow>0)
  r.update(g,1.0);assert(g.boss_corpses[0].afterglow==0)
  var animation=preload("res://scripts/rite_animation.gd")
- var order=[4,3,7,6,0,1,8,5,2]
+ var order=animation.assembly_order("thorn")
  for i in range(8):
-  var at=(5.92+i*.64)/animation.DURATION
+  var at=(11.92+i*.64)/animation.DURATION
   assert(animation.assembly_join(order[i],at)>.999 and animation.assembly_join(order[i+1],at)==0)
  for id in range(9):
   var at=animation.split_time(id)/animation.DURATION
@@ -41,6 +41,8 @@ func _initialize():
  for speed in [-60.0,10.0]:
   var flight=animation.fluid_flight(40,speed)
   assert(flight>0 and absf(speed*flight+130*flight*flight-40)<.001)
- assert(animation.fluid("basalt").r>.9 and animation.fluid("aurora").b>.9)
+ for identity in ["thorn","basalt","hunt","aurora","warden","bloom"]:
+  var blood=animation.fluid(identity)
+  assert(blood.r>blood.g*4 and blood.r>blood.b*4)
  print("RITUAL FOLEY / start, four cues, cancellation and completion verified")
  quit()

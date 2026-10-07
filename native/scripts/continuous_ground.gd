@@ -18,7 +18,7 @@ func _draw():
 	if key!=stage_key:
 		stage_key = key
 		var frontier = sim!=null and sim.map_id!="cradle"
-		shader_material.set_shader_parameter("ground_tex",world.frontier_ground if frontier else world.terrain)
+		shader_material.set_shader_parameter("ground_tex",world.frontier_ground if frontier else preload("res://assets/dinosaurs/grasslands-ground.png") if sim!=null else world.terrain)
 		var index = sim.depth+(3 if sim.map_id=="observatory" else 0) if frontier else 0
 		shader_material.set_shader_parameter("atlas_region",Vector4((index%3)/3.0,floori(index/3.0)/2.0,1.0/3,0.5) if frontier else Vector4(0,0,1,1))
 		var locations = PackedVector4Array()

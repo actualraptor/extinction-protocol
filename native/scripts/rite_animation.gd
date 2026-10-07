@@ -1,10 +1,27 @@
 extends RefCounted
 const SHEET=preload("res://assets/rite-cast.png")
 const HANDS=[Vector2(265,250),Vector2(310,195),Vector2(340,145),Vector2(355,105),Vector2(355,70),Vector2(355,70),Vector2(340,145),Vector2(265,250)]
-static var mist_texture:GradientTexture2D
+static var mist_texture:Texture2D
 static var fragments={}
-const DURATION=12.0
-static func split_time(id):return (.12+id*.013)*9.0
+static var surfaces={}
+static var hide_textures={}
+static var hide_images={}
+static var blood_stamps={}
+static func surface(identity,id):
+	if not surfaces.has(identity):
+		var image=preload("res://scripts/remnant_system.gd").corpse_art(identity).get_image()
+		var cells=[]
+		for section in range(9):cells.append([])
+		for y in range(0,image.get_height(),8):
+			for x in range(0,image.get_width(),8):
+				if image.get_pixel(x,y).a<.5:continue
+				var section=mini(2,int(float(y)/image.get_height()*3))*3+mini(2,int(float(x)/image.get_width()*3))
+				cells[section].append(Vector2(float(x)/image.get_width()-.5,float(y)/image.get_height()-.5))
+		surfaces[identity]=cells
+	return surfaces[identity][id]
+const DURATION=18.0
+static func lift_amount(clock):return smoothstep(2.5,4.5,clock)*40
+static func split_time(id):return 7.08+id*.065
 static func fold_amount(id,t):return clampf((t*DURATION-split_time(id))/2.34,0,1)
 static func inward_amount(fold):return smoothstep(.2,1,fold)
 static func passage(id,t):return clampf((t*DURATION-split_time(id)-.468)/1.7,0,1)
@@ -17,13 +34,15 @@ static func flesh_position(offset,p,id,t):
 	var fold=fold_amount(id,t)
 	var spread=spread_amount(fold)
 	var inward=inward_amount(fold)
-	var lift=smoothstep(.03,.2,t)*28
+	var lift=lift_amount(t*DURATION)
 	var at=p+offset*(1+spread*1.35-inward*.78)+Vector2(0,-lift-inward*12-spread*18)
 	if passage(id,t)>0:at=passage_position(offset,p,passage(id,t))
 	return at+drift(id,t)*smoothstep(.025,.1,fold)
-static func assembly_join(id,t):
-	var order=[4,3,7,6,0,1,8,5,2]
-	var start=5.4+order.find(id)*.64
+static func assembly_order(identity):
+	return {"thorn":[2,5,8,4,7,6,3,1,0],"basalt":[7,6,4,3,0,1,8,5,2],"hunt":[7,4,6,3,1,0,8,5,2],"aurora":[7,4,3,6,0,1,8,5,2],"warden":[7,4,1,0,3,6,8,5,2],"bloom":[4,1,0,3,6,7,8,5,2]}.get(identity,[4,3,7,6,0,1,8,5,2])
+static func assembly_join(id,t,identity="thorn"):
+	var order=assembly_order(identity)
+	var start=11.4+order.find(id)*.64
 	return smoothstep(start,start+.52,t*DURATION)
 static func orbit_position(offset,p,id,t):
 	var at=passage_position(offset,p,passage(id,t))
@@ -36,8 +55,8 @@ static func orbit_position(offset,p,id,t):
 	var seed=id*2.399
 	var weaving=Vector2(sin(age*2.1+seed)-sin(seed),cos(age*1.6+seed)-cos(seed))*12
 	return pivot+swirl+weaving*smoothstep(0,.3,age)
-static func bone_position(id,p,t,left,dimensions,flesh_dimensions):
-	var join=assembly_join(id,t)
+static func bone_position(id,p,t,left,dimensions,flesh_dimensions,identity="thorn"):
+	var join=assembly_join(id,t,identity)
 	var cell=Vector2(id%3+.5,int(id/3)+.5)
 	var ground=p+Vector2(0,-sin(smoothstep(.45,1,t)*PI)*18)
 	var destination=ground+Vector2(left,-dimensions.y)+cell*dimensions/3
@@ -45,9 +64,9 @@ static func bone_position(id,p,t,left,dimensions,flesh_dimensions):
 	return orbit_position(offset,p,id,t).lerp(destination,join)+drift(id,t)*(1-join)
 static func wisp(canvas,points,strength):
 	if strength<=0:return
-	canvas.draw_polyline(points,Color(.06,.52,.27,strength*.045),16,true)
-	canvas.draw_polyline(points,Color(.16,.81,.46,strength*.15),3.5,true)
-	canvas.draw_polyline(points,Color(.53,1,.72,strength*.18),.8,true)
+	canvas.draw_polyline(points,Color(.06,.52,.27,strength*.045),16,false)
+	canvas.draw_polyline(points,Color(.16,.81,.46,strength*.15),3.5,false)
+	canvas.draw_polyline(points,Color(.53,1,.72,strength*.18),.8,false)
 static func part_mist(canvas,c,p,t):
 	var flesh=preload("res://scripts/remnant_system.gd").corpse_art(c.identity)
 	var flesh_dimensions=flesh.get_size()/flesh.get_width()*c.size*3.2
@@ -55,33 +74,20 @@ static func part_mist(canvas,c,p,t):
 	var art=rig.atlas_pose(c.identity,0)
 	if art==null:return
 	var index=rig.IDS.find(c.identity)
-	var factor=(135.0 if c.identity=="basalt" else 105.0)/rig.layouts[index][0][3]
+	var factor=rig.height(c.identity)/rig.layouts[index][0][3]
 	var left=(rig.layouts[index][0][0]-.5*rig.sheets[c.identity].get_width()/4)*factor
 	var dimensions=art.get_size()*factor
 	var strength=smoothstep(.04,.15,t)*(1-smoothstep(.78,.98,t))
 	for id in range(9):
 		var offset=(Vector2(id%3+.5,int(id/3)+.5)/3-Vector2(.5,.5))*flesh_dimensions
-		var at=flesh_position(offset,p,id,t) if passage(id,t)<.54 else bone_position(id,p,t,left,dimensions,flesh_dimensions)
+		var at=flesh_position(offset,p,id,t) if passage(id,t)<.54 else bone_position(id,p,t,left,dimensions,flesh_dimensions,c.identity)
 		var seed=id*2.399
-		# Curling tendrils remain attached to each flesh/bone section.
-		for strand in range(2):
-			var points=PackedVector2Array()
-			for k in range(24):
-				var u=k/23.0
-				var angle=u*TAU*(.42+.2*sin(seed))+t*DURATION*1.4+seed+strand*2.1
-				var radius=7+sin(u*PI)*15+u*14
-				points.append(at+Vector2(cos(angle)*radius,sin(angle)*radius*.5+(u-.5)*36)+Vector2(sin(u*9+seed)*5,cos(u*7+seed)*4))
-			wisp(canvas,points,strength*.7)
-		# An actual motion trail follows the section's previous positions.
-		var trail=PackedVector2Array()
-		for k in range(16):
-			var u=k/15.0
-			var past=maxf(0,t-u*.055)
-			var point=flesh_position(offset,p,id,past) if passage(id,past)<.54 else bone_position(id,p,past,left,dimensions,flesh_dimensions)
-			trail.append(point+Vector2(sin(u*8+t*12+seed),cos(u*9-t*10+seed))*u*8)
-		wisp(canvas,trail,strength*.45)
-		var puff=Vector2(40,27)
-		canvas.draw_texture_rect(mist_texture,Rect2(at-puff*.5,puff),false,Color(.08,.6,.3,strength*.16))
+		# Soft clouds follow the moving sections, with no hard luminous strands.
+		for cloud in range(3):
+			var angle=seed+cloud*2.1+t*DURATION*.8
+			var puff=Vector2(96,66)*(1.0+.18*sin(angle))
+			var cloud_at=at+Vector2(cos(angle)*16,sin(angle)*12)
+			canvas.draw_texture_rect(mist_texture,Rect2(cloud_at-puff*.5,puff),false,Color(.14,.66,.37,strength*.42*(1-smoothstep(.45,.66,passage(id,t))*.78)))
 static func passage_position(offset,p,u):
 	var start=p+offset*2.35+Vector2(0,-46)
 	var centre=p+Vector2(0,-48)
@@ -97,17 +103,32 @@ static func passage_position(offset,p,u):
 	return centre.lerp(control,v).lerp(control.lerp(exit,v),v)
 static func spread_amount(fold):
 	# Yank in 94 ms, hold apart for 374 ms, then pool inward.
-	if fold<.04:return 1-pow(1-fold/.04,4)
+	if fold<.03:return 1-pow(1-fold/.03,5)
 	return 1-inward_amount(fold)
 static func fluid(identity):
 	match identity:
-		"basalt":return Color(1,.24,.015)
-		"aurora":return Color(.35,.8,1)
-		"warden":return Color(.48,.39,.055)
-		"bloom":return Color(.43,.7,.15)
+		"basalt":return Color(.46,.018,.022)
+		"aurora":return Color(.42,.015,.025)
+		"warden":return Color(.38,.012,.02)
+		"bloom":return Color(.44,.02,.018)
 	return Color(.4,.015,.025)
 static func fluid_flight(height,velocity):
 	return (-velocity+sqrt(velocity*velocity+2*260*height))/260
+static func blood_stamp(identity,variant):
+	var key=identity+str(variant)
+	if blood_stamps.has(key):return blood_stamps[key]
+	var image=Image.create(48,48,false,Image.FORMAT_RGBA8)
+	var ink=fluid(identity)
+	for y in range(48):
+		for x in range(48):
+			var alpha=0.0
+			var uv=(Vector2(x,y)-Vector2(24,24))/24.0
+			for lobe in range(5):
+				var centre=Vector2.from_angle(variant+lobe*2.399)*(.09+lobe*.055)
+				var radius=.31+fmod(variant+lobe,4)*.045
+				alpha=maxf(alpha,(1-smoothstep(radius*.6,radius*1.4,uv.distance_to(centre)))*.58)
+			image.set_pixel(x,y,Color(ink*.65,alpha))
+	var texture=ImageTexture.create_from_image(image);blood_stamps[key]=texture;return texture
 static func falling_fluid(canvas,identity,origin,height,velocity,age,seed,ground):
 	if age<0:return
 	var flight=fluid_flight(height,velocity.y)
@@ -116,15 +137,10 @@ static func falling_fluid(canvas,identity,origin,height,velocity,age,seed,ground
 	var ink=fluid(identity)
 	if ground:
 		if age<flight:return
-		var landed=age-flight
-		var fade=1-smoothstep(.3,2.1,landed)
-		if fade<=0:return
-		canvas.draw_set_transform(at,0,Vector2(1,.38))
-		for j in range(5):
-			var a=seed+j*2.399
-			var radius=2.5+fmod(seed+j,3)
-			canvas.draw_circle(Vector2.from_angle(a)*(2+j*.9),radius,Color(ink,fade*.6))
-		canvas.draw_set_transform(Vector2.ZERO)
+		var fade=1.0
+		var stamp=blood_stamp(identity,int(seed)%4)
+		var size=Vector2(26,12)
+		canvas.draw_texture_rect(stamp,Rect2(at-size*.5,size),false)
 	elif age<flight:
 		var trail=Vector2(velocity.x,velocity.y+260*age).normalized()*5
 		canvas.draw_line(at-trail,at,Color(ink,.85),1.7,true)
@@ -134,25 +150,113 @@ static func runoff(canvas,c,p,t,ground):
 	var dimensions=art.get_size()/art.get_width()*c.size*3.2
 	var clock=t*DURATION
 	for id in range(9):
-		var offset=(Vector2(id%3+.5,int(id/3)+.5)/3-Vector2(.5,.5))*dimensions
+		var points=surface(c.identity,id)
+		if points.is_empty():continue
+		var offset=points[(id*31)%points.size()]*dimensions
 		for drop in range(4):
 			var emitted=.38+drop*.24+id*.055
-			var lift=smoothstep(.03,.2,emitted/DURATION)*28
-			var origin=p+offset+Vector2(sin(id*3.1+drop)*12,6)
+			var lift=lift_amount(emitted)
+			var origin=p+points[(id*31+drop*67)%points.size()]*dimensions+Vector2(0,6)
 			falling_fluid(canvas,c.identity,origin,lift+5,Vector2(sin(id+drop)*8,10),clock-emitted,id*7+drop,ground)
 		# Launch from each moving section during the sharp outward yank.
 		var emitted=split_time(id)+.065
 		var fold=fold_amount(id,emitted/DURATION)
 		var spread=spread_amount(fold)
 		var origin=p+offset*(1+spread*1.35)
-		var height=smoothstep(.03,.2,emitted/DURATION)*28+spread*18
+		var height=lift_amount(emitted)+spread*18
 		for drop in range(5):
 			var velocity=Vector2(offset.x*.6+sin(id*2.7+drop)*45,-25-drop*7)
-			falling_fluid(canvas,c.identity,origin,height,velocity,clock-emitted,id*11+drop,ground)
+			var scatter=Vector2(sin(id*1.79+drop*2.399)*16,cos(id*2.73+drop*1.71)*24)
+			falling_fluid(canvas,c.identity,origin+scatter,height,velocity,clock-emitted,id*11+drop,ground)
+static func hide_scrap(identity,id,flake):
+	var key=identity+":"+str(id)+":"+str(flake)
+	if hide_textures.has(key):return hide_textures[key]
+	if not hide_images.has(identity):
+		hide_images[identity]=preload("res://scripts/remnant_system.gd").corpse_art(identity).get_image()
+	var original=hide_images[identity]
+	# Sample the torso's own exterior, not horns, feet or neighbouring atlas poses.
+	var candidates=surface(identity,4)
+	if candidates.is_empty():candidates=surface(identity,id)
+	var centre=(candidates[(id*31+flake*67)%candidates.size()]+Vector2(.5,.5))*Vector2(original.get_size())
+	var feathered=identity in ["aurora","warden"]
+	var image=Image.create(48,48,false,Image.FORMAT_RGBA8)
+	var seed=id*2.399+flake*1.71
+	for y in range(48):
+		for x in range(48):
+			var uv=(Vector2(x,y)-Vector2(23.5,23.5))/23.5
+			var shape=Vector2(uv.x*(2.3 if feathered else 1.0),uv.y)
+			var angle=atan2(shape.y,shape.x)
+			var rim=.82+.09*sin(angle*5+seed)+.06*sin(angle*9-seed)
+			var alpha=1-smoothstep(rim-.09,rim,shape.length())
+			if alpha<=0:continue
+			var sample=centre+Vector2(x-24,y-24)*1.4
+			var pixel=original.get_pixel(clampi(int(sample.x),0,original.get_width()-1),clampi(int(sample.y),0,original.get_height()-1))
+			var stain=smoothstep(.35,.85,sin(uv.x*4+uv.y*3+seed))*.32
+			pixel=pixel.lerp(fluid(identity),stain)
+			pixel.a=original.get_pixel(clampi(int(sample.x),0,original.get_width()-1),clampi(int(sample.y),0,original.get_height()-1)).a*alpha
+			# Fine barbs keep feather scraps legible while retaining species colours.
+			if feathered:
+				pixel.a*=.72+.28*abs(sin(y*1.7+abs(uv.x)*8))
+			image.set_pixel(x,y,pixel)
+	var texture=ImageTexture.create_from_image(image)
+	hide_textures[key]=texture
+	return texture
+static func scrap_flight(c,id,flake):
+	if not c.has("scrap_flights"):c.scrap_flights={}
+	var key=id*3+flake
+	if c.scrap_flights.has(key):return c.scrap_flights[key]
+	var art=preload("res://scripts/remnant_system.gd").corpse_art(c.identity)
+	var dimensions=art.get_size()/art.get_width()*c.size*3.2
+	var seed=id*2.399+flake*1.71+c.get("ritual_seed",0.0)
+	var emitted=split_time(id)+1.05+flake*.19+.09*sin(seed)
+	var offset=(Vector2(id%3+.5,int(id/3)+.5)/3-Vector2(.5,.5))*dimensions
+	var source=flesh_position(offset,Vector2.ZERO,id,emitted/DURATION)
+	var before=flesh_position(offset,Vector2.ZERO,id,(emitted-.025)/DURATION)
+	var after=flesh_position(offset,Vector2.ZERO,id,(emitted+.025)/DURATION)
+	var inherited=((after-before)/.05).limit_length(240)
+	var radial=(source+Vector2(0,45)).normalized().rotated(sin(seed)*.5)
+	if radial.length_squared()<.1:radial=Vector2.from_angle(seed)
+	var plane=inherited*.65+radial*(85+flake*22)+Vector2.from_angle(seed)*28
+	var height=55+flake*14
+	var velocity=Vector2(0,-45-flake*12)
+	var flight=fluid_flight(height,velocity.y)
+	var record={"emitted":emitted,"source":source,"plane":plane,"height":height,"velocity":velocity,"flight":flight,"seed":seed}
+	c.scrap_flights[key]=record
+	return record
+static func shedding(canvas,c,p,t,ground):
+	for id in range(9):
+		if surface(c.identity,id).is_empty():continue
+		for flake in range(3):
+			var motion=scrap_flight(c,id,flake)
+			var age=t*DURATION-motion.emitted
+			if age<0:continue
+			var elapsed=minf(age,motion.flight)
+			var source=p+motion.source
+			var at=source+motion.plane*elapsed+Vector2(0,motion.velocity.y*elapsed+130*elapsed*elapsed)
+			var size=Vector2(30+flake*4,24+flake*3)
+			var texture=hide_scrap(c.identity,id,flake)
+			falling_fluid(canvas,c.identity,source+motion.plane*elapsed+Vector2(0,motion.height),motion.height,motion.velocity,age,id*13+flake,ground)
+			if ground and age>=motion.flight:
+				canvas.draw_set_transform(at,motion.seed+motion.flight*4,Vector2(1,.48))
+				canvas.draw_texture_rect(texture,Rect2(-size*.5,size),false,Color(.78,.72,.68,.92))
+				canvas.draw_set_transform(Vector2.ZERO)
+			elif not ground and age<motion.flight:
+				canvas.draw_set_transform(at,motion.seed+age*4,Vector2(.45+.55*abs(cos(age*7+motion.seed)),1))
+				canvas.draw_texture_rect(texture,Rect2(-size*.5,size),false)
+				canvas.draw_set_transform(Vector2.ZERO)
+			var impact_age=age-motion.flight
+			if impact_age>=0:
+				var landing=source+motion.plane*motion.flight+Vector2(0,motion.height)
+				for drop in range(3):
+					var splash_velocity=Vector2(sin(motion.seed+drop*2.399)*35,-20-drop*3)
+					falling_fluid(canvas,c.identity,landing,0,splash_velocity,impact_age,id*17+drop,ground)
 static func fragment(art,col,row,cols,rows,key,soft=true):
 	if fragments.has(key):return fragments[key]
-	var region=Rect2(art.region.position+Vector2(col,row)*art.region.size/Vector2(cols,rows),art.region.size/Vector2(cols,rows))
-	var image=art.atlas.get_image().get_region(Rect2i(region))
+	# Both corpse and skeletal poses can be standalone textures.
+	# Extract from the rendered pose, never assume an atlas backing texture.
+	var source=art.get_image()
+	var cell=Vector2(source.get_size())/Vector2(cols,rows)
+	var image=source.get_region(Rect2i(Vector2(col,row)*cell,cell))
 	for y in range(image.get_height()):
 		for x in range(image.get_width()):
 			var pixel=image.get_pixel(x,y)
@@ -165,63 +269,21 @@ static func fragment(art,col,row,cols,rows,key,soft=true):
 	var texture=ImageTexture.create_from_image(image);fragments[key]=texture;return texture
 static func mist(canvas,g,c,p):
 	if mist_texture==null:
-		var gradient=Gradient.new()
-		gradient.offsets=PackedFloat32Array([0,.3,.65,1])
-		gradient.colors=PackedColorArray([Color(1,1,1,.8),Color(1,1,1,.55),Color(1,1,1,.12),Color(1,1,1,0)])
-		mist_texture=GradientTexture2D.new();mist_texture.gradient=gradient
-		mist_texture.width=64;mist_texture.height=64
-		mist_texture.fill=GradientTexture2D.FILL_RADIAL
-		mist_texture.fill_from=Vector2(.5,.5);mist_texture.fill_to=Vector2(1,.5)
+		# Cache one irregular, feathered cloud; reuse it for every boss and frame.
+		var noise=FastNoiseLite.new()
+		noise.seed=7419;noise.frequency=.055;noise.fractal_octaves=3
+		var image=Image.create(128,128,false,Image.FORMAT_RGBA8)
+		for y in range(128):
+			for x in range(128):
+				var uv=(Vector2(x,y)-Vector2(63.5,63.5))/63.5
+				var cloud=clampf(.62+noise.get_noise_2d(x,y)*.65,0,1)
+				var edge=1-smoothstep(.18,1.0,uv.length())
+				image.set_pixel(x,y,Color(1,1,1,cloud*edge))
+		mist_texture=ImageTexture.create_from_image(image)
 	var t=clampf(c.ritual/DURATION,0,1)
 	var veil=smoothstep(.06,.25,t)*(1-smoothstep(.73,.99,t))
 	var art=preload("res://scripts/remnant_system.gd").corpse_art(c.identity)
 	var dimensions=art.get_size()/art.get_width()*c.size*3.2
-	var centre=p+Vector2(0,-lerpf(t*25,65,smoothstep(.38,.7,t)))
-	var release=smoothstep(.73,1,t)
-	# The transformation happens inside this dense central veil.
-	var cover=smoothstep(.15,.23,t)*(1-smoothstep(.46,.57,t))
-	for j in range(6):
-		var size=Vector2(100,65)
-		var at=p+Vector2(sin(g.time*2+j)*14,-48+cos(g.time*1.7+j)*10)
-		canvas.draw_texture_rect(mist_texture,Rect2(at-size*.5,size),false,Color(.04,.42,.22,cover*.45))
-	# Broad, translucent smoke ribbons wind over and around the body.
-	# Each ribbon has a feathered width and a finer luminous filament.
-	for j in range(36):
-		var points=PackedVector2Array()
-		var seed=j*2.399
-		var radius=.24+.2*absf(sin(seed*1.7))
-		var band=sin(seed*3.17)*dimensions.y*.24
-		for k in range(40):
-			var u=k/39.0
-			var a=u*TAU*(.65+.35*sin(seed*2.3))+seed+g.time*(.5+.12*sin(seed))
-			var flow=Vector2(cos(a)*dimensions.x*radius,sin(a)*dimensions.y*.19+band)
-			flow+=Vector2(sin(a*2.1+seed-g.time)*22,cos(a*2.7+seed)*13)
-			flow.y-=release*(20+u*35)
-			flow.x+=release*sin(seed)*18
-			points.append(centre+flow)
-		for layer in range(4):
-			var wide=[29.0,16.0,5.0,.8][layer]
-			var alpha=[.065,.085,.085,.08][layer]*veil
-			var color=[Color(.035,.36,.2),Color(.08,.58,.33),Color(.2,.82,.51),Color(.57,1,.76)][layer]
-			var polygon=PackedVector2Array()
-			var colors=PackedColorArray()
-			for side in [1,-1]:
-				for n in range(40):
-					var k=n if side==1 else 39-n
-					var u=k/39.0
-					var tangent=points[mini(39,k+1)]-points[maxi(0,k-1)]
-					var normal=Vector2(-tangent.y,tangent.x).normalized()
-					var taper=pow(sin(u*PI),.7)
-					polygon.append(points[k]+normal*wide*taper*side*(.6+.4*sin(u*8+seed)))
-					colors.append(Color(color,alpha*taper))
-			for k in range(39):
-				var vertices=PackedVector2Array([polygon[k],polygon[k+1],polygon[78-k],polygon[79-k]])
-				var shades=PackedColorArray([colors[k],colors[k+1],colors[78-k],colors[79-k]])
-				canvas.draw_primitive(vertices,shades,PackedVector2Array())
-		# Soft smoke gathered along the ribbons rather than a separate blob.
-		for k in range(3,38,6):
-			var size=Vector2(38,22)
-			canvas.draw_texture_rect(mist_texture,Rect2(points[k]-size*.5,size),false,Color(.06,.48,.26,veil*.16))
 	part_mist(canvas,c,p,t)
 static func active(g):
 	for c in g.boss_corpses:
@@ -257,30 +319,25 @@ static func energy(canvas,g,c,p):
 	var rig=preload("res://scripts/remnant_rig.gd")
 	var bone_art=rig.atlas_pose(c.identity,0)
 	var index=rig.IDS.find(c.identity)
-	var factor=(135.0 if c.identity=="basalt" else 105.0)/rig.layouts[index][0][3]
+	var factor=rig.height(c.identity)/rig.layouts[index][0][3]
 	var left=(rig.layouts[index][0][0]-.5*rig.sheets[c.identity].get_width()/4)*factor
-	for stream in range(6):
-		var id=[0,2,3,5,6,8][stream]
+	for id in range(9):
+		var launch=preload("res://scripts/ritual_parchment.gd").launch_time(id)
+		var travel=clampf((c.ritual-launch)/.85,0,1)
+		if travel<=0:continue
 		var offset=(Vector2(id%3+.5,int(id/3)+.5)/3-Vector2(.5,.5))*flesh_dimensions
-		var endpoint=flesh_position(offset,p,id,t) if passage(id,t)<.54 else bone_position(id,p,t,left,bone_art.get_size()*factor,flesh_dimensions)
+		var at=flesh_position(offset,p,id,t) if passage(id,t)<.54 else bone_position(id,p,t,left,bone_art.get_size()*factor,flesh_dimensions,c.identity)
+		var endpoint=preload("res://scripts/ritual_parchment.gd").path(at,id,c.ritual,p,flesh_dimensions)[0]
 		var points=PackedVector2Array()
-		for j in range(25):
-			var u=j/24.0
-			points.append((start+Vector2((stream%2)*8*flip,(stream%2)*5)).lerp(endpoint,u)+Vector2(sin(u*TAU*1.4-g.time*2+stream)*16,-sin(u*PI)*(30+stream*5))*sin(u*PI))
-		wisp(canvas,points,strength*.9)
-		for j in range(4):
-			var u=fmod(j/15.0+g.time*.45,1)
-			var at=points[mini(24,int(u*24))]
-			canvas.draw_circle(at,1+sin(u*PI),Color(.24,1,.5,strength*.16))
-	for j in range(32):
-		var a=j*2.399+g.time*.7
-		var at=p+Vector2(cos(a)*65,sin(a)*24-45*t-20*sin(j+g.time*2))
-		canvas.draw_circle(at,4+3*sin(j+g.time),Color(.08,.8,.4,strength*.12))
+		for j in range(33):
+			var u=j/32.0*travel
+			points.append(start.lerp(endpoint,u)+Vector2(sin(u*TAU*1.4-g.time*2+id)*16,-sin(u*PI)*(30+id*3))*sin(u*PI))
+		preload("res://scripts/ritual_parchment.gd").ribbon(canvas,points,13+id%2*2,(1-smoothstep(.86,1,t)),g.time+id)
 
 static func collapse(canvas,c,p,t):
 	var art=preload("res://scripts/remnant_system.gd").corpse_art(c.identity)
 	var dimensions=art.get_size()/art.get_width()*c.size*3.2
-	var lift=smoothstep(.03,.2,t)*28
+	var lift=lift_amount(t*DURATION)
 	# Staggered flesh sections fold toward the chest while suspended.
 	for row in range(3):
 		for col in range(3):
@@ -305,7 +362,7 @@ static func assemble(canvas,c,p,t):
 	var art=rig.atlas_pose(c.identity,0)
 	if art==null:return
 	var index=rig.IDS.find(c.identity)
-	var factor=(135.0 if c.identity=="basalt" else 105.0)/rig.layouts[index][0][3]
+	var factor=rig.height(c.identity)/rig.layouts[index][0][3]
 	var bounds=rig.layouts[index][0]
 	var left=(bounds[0]-.5*rig.sheets[c.identity].get_width()/4.0)*factor
 	var dimensions=art.get_size()*factor
@@ -314,10 +371,10 @@ static func assemble(canvas,c,p,t):
 	# Each section emerges from the far side of the same passage as its flesh.
 	var corpse=preload("res://scripts/remnant_system.gd").corpse_art(c.identity)
 	var flesh_dimensions=corpse.get_size()/corpse.get_width()*c.size*3.2
-	var order=[4,3,7,6,0,1,8,5,2]
+	var order=assembly_order(c.identity)
 	for id in order:
 		var col=id%3;var row=int(id/3)
-		var join=assembly_join(id,t)
+		var join=assembly_join(id,t,c.identity)
 		var travel=passage(id,t)
 		var revealed=smoothstep(.54,.66,travel)
 		if revealed<=0:continue
@@ -326,9 +383,9 @@ static func assemble(canvas,c,p,t):
 		var destination=ground+Vector2(left,-dimensions.y)+(Vector2(col,row)+Vector2(.5,.5))*size
 		var offset=(Vector2(col+.5,row+.5)/3-Vector2(.5,.5))*flesh_dimensions
 		var emerged=passage_position(offset,p,travel)
-		var at=bone_position(id,p,t,left,dimensions,flesh_dimensions)
+		var at=bone_position(id,p,t,left,dimensions,flesh_dimensions,c.identity)
 		canvas.draw_set_transform(at,(sin(id*1.9)*.65+tumble(id,t))*(1-join),Vector2.ONE)
-		canvas.draw_texture_rect(piece,Rect2(-size*.5,size),false,Color(.7+join*.3,1,.78+join*.22,revealed*(1-solid)))
+		canvas.draw_texture_rect(piece,Rect2(-size*.5,size),false,Color(.9+join*.1,1,.9+join*.1,revealed*(1-solid)))
 	canvas.draw_set_transform(Vector2.ZERO)
 	canvas.draw_texture_rect(art,Rect2(ground+Vector2(left,-dimensions.y),dimensions),false,Color(1,1,1,solid))
 static func blood(canvas,c,p,t):
@@ -345,7 +402,7 @@ static func blood(canvas,c,p,t):
 		if age<0 or age>1.1:continue
 		var fold=fold_amount(id,t)
 		var local=Vector2(col/3.0-.5,(row+.5)/3.0-.5) if vertical else Vector2((col+.5)/3.0-.5,row/3.0-.5)
-		var lift=smoothstep(.03,.2,t)*28
+		var lift=lift_amount(t*DURATION)
 		var spread=spread_amount(fold)
 		var inward=inward_amount(fold)
 		var origin=p+local*dimensions*(1+spread*1.35-inward*.78)+Vector2(0,-lift-inward*12-spread*18)
@@ -366,4 +423,4 @@ static func blood(canvas,c,p,t):
 			canvas.draw_circle(at,1.2+j%3*.55,ink)
 		var tear=PackedVector2Array()
 		for j in range(9):tear.append(origin+tangent*(j-4)*dimensions.y/36.0+normal*sin(j*2.7+seam)*3)
-		canvas.draw_polyline(tear,Color(fluid(c.identity),fade*.65),3,true)
+		canvas.draw_polyline(tear,Color(fluid(c.identity),fade*.65),3,false)

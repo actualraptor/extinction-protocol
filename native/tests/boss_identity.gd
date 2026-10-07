@@ -9,10 +9,10 @@ func run():
   var entry=identities.DATA[identity]
   assert(entry.frame not in frames);frames.append(entry.frame)
   if identity!="meteor":
-   for letter in entry.name:assert(circles.GLYPHS.has(letter))
+   for letter in entry.name:assert(letter==" " or circles.GLYPHS.has(letter))
  for map in ["cradle","frostbreak","observatory"]:
   for stage in [1,2]:assert(", THE " in maps.boss_name(map,stage))
  assert(maps.boss_name("cradle",3)=="THE EXTINCTION ENGINE")
- assert(identities.short_name("basalt")=="BASALT")
+ assert(identities.short_name("basalt")=="TYRANNOSAURUS REX")
  print("BOSS IDENTITIES / unique frames, names and complete Aurebesh coverage verified")
  quit()

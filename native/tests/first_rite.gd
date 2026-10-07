@@ -9,6 +9,7 @@ func _initialize():
 	assert(Rite.eligible(g,boss,{}))
 	assert(not Rite.eligible(g,{"boss":true,"dead":false},{}))
 	assert(not Rite.eligible(g,boss,{"settings":{Rite.SEEN_FLAG:true}}))
+	g.boss_stage=2;assert(not Rite.eligible(g,boss,{}))
 	g.boss_stage=3;assert(not Rite.eligible(g,boss,{}))
 	g.boss_stage=1;g.hero=1;assert(not Rite.eligible(g,boss,{}))
-	print("FIRST RITE / 8 checks passed");quit()
+	print("FIRST RITE / 9 checks passed; second bosses excluded");quit()

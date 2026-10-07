@@ -8,7 +8,7 @@ var caption
 var curtain
 func _ready():
 	mouse_filter=Control.MOUSE_FILTER_STOP
-	origin=world.screen(world.sim.boss.p) if world.sim.boss!=null else get_viewport_rect().size*0.5
+	origin=world.screen(world.sim.boss.p) if world.sim!=null and world.sim.boss!=null else get_viewport_rect().size*0.5
 	curtain=ColorRect.new();curtain.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	var shader=ShaderMaterial.new();shader.shader=preload("res://shaders/extinction_end.gdshader");curtain.material=shader
 	add_child(curtain)

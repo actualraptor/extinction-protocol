@@ -1,32 +1,32 @@
 extends RefCounted
 ## Player-facing changes only; unrevealed content stays out of public notes.
-const VERSION="0.13.1"
-const TITLE="Hollow Harvest: Framed"
+const VERSION="0.14.0"
+const TITLE="A World Reborn"
 const ENTRIES=[
- {
-  "icon": "map",
-  "category": "relic",
-  "title": "ONE INTEGRATED HUD",
-  "body": "The illustrated bottom HUD now uses a continuous frame with bounded layout sections. The minimap, portrait, character name, health, abilities, carried items and utility buttons fit together, including at wider resolutions."
- },
- {
-  "icon": "compass",
-  "category": "weapon",
-  "title": "HEALTH AND EXPERIENCE, REFRAMED",
-  "body": "Health and experience displays have received a fresh art pass. The level badge is integrated into the portrait section, and the experience bar sits above the abilities within the HUD frame. Item pages keep overflow accessible through the backpack."
- },
- {
-  "icon": "tablet",
-  "category": "weapon",
-  "title": "MATCHING MENUS AND FIELD PANELS",
-  "body": "The pause menu, score panel and location timer now match your selected HUD theme. Location and countdown text are centered more clearly. The pause menu has simpler labels and fewer unnecessary actions."
- },
- {
-  "icon": "clock",
-  "category": "relic",
-  "title": "FIRST ITERATION — KEEP THE FEEDBACK COMING",
-  "body": "The new UI remains a first iteration and will have issues. Please report clipped text, scaling problems, awkward spacing or hard-to-read markers. Existing saves and progression are retained. The website now has fresh gameplay screenshots and a short spoiler-free trailer."
- }
+  {
+    "icon": "spear",
+    "category": "weapon",
+    "title": "A PREHISTORIC WORLD",
+    "body": "Individually rebuilt dinosaur and boss artwork brings cleaner silhouettes, corrected anatomy and clearer creatures across all three maps. The opening story now matches the prehistoric roster."
+  },
+  {
+    "icon": "compass",
+    "category": "weapon",
+    "title": "SURVIVE THE STAMPEDE",
+    "body": "Tightly packed Compy flocks rush across the battlefield, pushing survivors and nearby creatures aside. The first stampede arrives around 45 seconds into a run."
+  },
+  {
+    "icon": "tablet",
+    "category": "weapon",
+    "title": "A NEW HOME FOR DISCOVERIES",
+    "body": "Browse a large discovery grid with categories, unlock states, requirements and a dedicated detail panel. Main-menu buttons, the official logo, moving mist and flickering lights give the menu a fresh look."
+  },
+  {
+    "icon": "clock",
+    "category": "relic",
+    "title": "SOUNDTRACK AND A MOMENT TO BREATHE",
+    "body": "New orchestral themes accompany the maps and boss encounters, including a full score for the final countdown. Defeating a boss grants a brief respite from new spawns while the next horde gathers."
+  }
 ]
 static func releases():
 	var all=[{"version":VERSION,"title":TITLE,"entries":ENTRIES}]

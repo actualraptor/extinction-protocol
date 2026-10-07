@@ -65,6 +65,10 @@ var normal_profile_path="user://progress.json"
 var progress_path = "user://progress.json"
 
 func _ready():
+	if "--soundtrack-test" in OS.get_cmdline_user_args():
+		get_window().title="Extinction Protocol / SOUNDTRACK PLAY TEST V16"
+		progress_path=OS.get_executable_path().get_base_dir().path_join("soundtrack-test-profile.json")
+	if "--individual-art-test" in OS.get_cmdline_user_args():get_window().title="Extinction Protocol / INDIVIDUAL MINIONS PLAY TEST V14"
 	preload("res://scripts/content_extension.gd").install(C)
 	# Package smoke checks never touch a player's real progression.
 	if "--remnant-test" in OS.get_cmdline_user_args():
@@ -128,8 +132,10 @@ func _ready():
 		if item is Control and not item is ColorRect and item != xp_bar and item.get_script()!=preload("res://scripts/player_health.gd") and item.get_script()!=preload("res://scripts/navigation.gd"):
 			hud_layout.append({"node":item,"position":item.position})
 	main_menu()
-	if preload("res://scripts/opening_story.gd").available() and preload("res://scripts/opening_story.gd").first_play(save_data,OS.get_cmdline_user_args()):
+	if "--soundtrack-test" not in OS.get_cmdline_user_args() and preload("res://scripts/opening_story.gd").available() and preload("res://scripts/opening_story.gd").first_play(save_data,OS.get_cmdline_user_args()):
 		play_opening()
+	if "--soundtrack-test" in OS.get_cmdline_user_args():
+		var lab=preload("res://scripts/soundtrack_lab.gd").new();lab.game=self;add_child(lab)
 	if "--meteor-test" in OS.get_cmdline_user_args():
 		selected=1;chosen_mode="expedition";selected_map="cradle"
 		start_run()
@@ -169,7 +175,15 @@ func _ready():
 			print("FIRST RITE FLOW / returned to intact corpse and paused lab")
 			audio.shutdown();survivor_voice.stop();release_run();get_tree().quit()
 		if "--verify-ritual" in OS.get_cmdline_user_args():
-			await get_tree().create_timer(8.0 if "--ritual-late" in OS.get_cmdline_user_args() else 5.6).timeout
+			await get_tree().create_timer(23.0 if "--ritual-complete" in OS.get_cmdline_user_args() else 8.0 if "--ritual-late" in OS.get_cmdline_user_args() else 5.6).timeout
+			if "--ritual-complete" in OS.get_cmdline_user_args():
+				var rig=preload("res://scripts/remnant_rig.gd")
+				for identity in rig.IDS:
+					for frame in [0,1,2,4,5]:
+						assert(ResourceLoader.exists("res://assets/minions-individual-runtime/%s-%s.png"%[identity,frame]))
+						assert(not rig.atlas_pose(identity,frame).get_image().is_empty())
+				assert(sim.companions.units.size()>0)
+				print("PLAY TEST V14: ritual completed; summon active; all 30 individual sprite assets loaded")
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png(OS.get_executable_path().get_base_dir().path_join("ritual-preview.png"))
 			audio.shutdown();survivor_voice.stop();release_run();get_tree().quit()
@@ -293,45 +307,10 @@ func main_menu():
 	clear_menu()
 	var seasonal=save_data.settings.get("halloween",true)
 	if seasonal:preload("res://scripts/seasonal_menu.gd").create(menu_root)
-	var v = column(menu_root,Vector2(90,78),Vector2(590,730),13)
-	label(v,"HOLLOW HARVEST / HALLOWEEN EVENT" if seasonal else "A WORLD OUT OF TIME. A SPECIES OUT OF LUCK.",15,"dca573" if seasonal else "b9ac91")
-	label(v,"EXTINCTION\nPROTOCOL",65,"f1e5cf")
-	label(v,"The end of the world has a health bar.",24,"c0cbc8")
-	label(v,"Guns. Ancient fury. Forbidden magic.\nSurvive the ecosystem. Kill the extinction.",18,"8daba8")
-	button(v,"ENTER THE RIFT",func():chosen_mode="expedition";characters(),true)
-	var row = HBoxContainer.new()
-	row.add_theme_constant_override("separation",12)
-	v.add_child(row)
-	var daily = button(row,"Daily challenge",daily_menu)
-	daily.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var safari = button(row,"Meteor trial",func():chosen_mode="safari";characters())
-	safari.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button(v,"The archive / permanent upgrades",research_menu)
-	button(v,"Discoveries / survivors & equipment",discovery_menu)
-	button(v,"Field manual / controls",manual)
-	var row2 = HBoxContainer.new()
-	row2.add_theme_constant_override("separation",12)
-	v.add_child(row2)
-	button(row2,"Settings",settings).size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	button(row2,"Quit",func():get_tree().quit()).size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	label(v,"%s AMBER    /    %s EXTINCTIONS DENIED    /    NATIVE %s"%[save_data.amber,save_data.wins,ProjectSettings.get_setting("application/config/version")],14,"c5ac82")
-	if save_error!="": label(v,save_error,14,"ff877e")
-	var caption = column(menu_root,Vector2(870,715),Vector2(475,100))
-	label(caption,"THE HOLLOW HARVEST" if seasonal else "THE EXTINCTION ENGINE",23,"f2bc88")
-	label(caption,"Ancient bones. Borrowed souls. One more night." if seasonal else "It ended an era. You brought a revolver.",16,"bcb4b5")
-	var news=PanelContainer.new()
-	news.position=Vector2(875,110);news.size=Vector2(450,250)
-	news.add_theme_stylebox_override("panel",UIArt.button_style())
-	menu_root.add_child(news)
-	var info=VBoxContainer.new();info.add_theme_constant_override("separation",12);news.add_child(info)
-	label(info,"LATEST INFO / "+PatchNotes.VERSION,16,"d3ad69").add_theme_font_override("font",UIArt.heading_font())
-	label(info,PatchNotes.TITLE,25,"eed8ac")
-	var teaser=label(info,"News from the rift. See what changed in the latest update.",18,"c6baa3")
-	teaser.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	button(info,"Open patch notes",patch_notes,true)
-	button(info,"Watch opening cinematic",play_opening)
+	preload("res://scripts/main_menu_scene.gd").create(self,seasonal)
 	audio.tension = 0.1
 	audio.biome = -1
+	audio.set_encounter("",0,false)
 	audio.halloween=seasonal
 
 func play_opening():
@@ -785,6 +764,7 @@ func _process(dt):
 	elif sim.shrine_progress>0 and not sim.shrine_done:
 		objective_label.text = "HOLD THE RIFT: %s / %s"%[int(sim.shrine_progress),int(sim.RIFT_CHARGE_SECONDS)]
 	audio.tension = clampf(sim.time/1000+(0.3 if sim.boss!=null else 0),0,1)
+	audio.set_encounter("meteor" if sim.boss!=null and sim.boss_stage==3 else str(sim.boss.get("identity","")) if sim.boss!=null else "",sim.boss_time,paused or sim.choosing or not sim.active)
 	audio.biome = sim.depth
 	audio.map_index = Maps.DATA[sim.map_id].music
 	audio.halloween = sim.halloween
@@ -991,7 +971,7 @@ func pause_menu():
 	shade()
 	var Skin=preload("res://scripts/hud_skin.gd")
 	var active_skin=Skin.THEMES[preload("res://scripts/hero_hud.gd").selected(save_data,sim.hero)]
-	var menu_factor=minf(1.0,minf(get_viewport_rect().size.x/760.0,get_viewport_rect().size.y/820.0))
+	var menu_factor=0.8*minf(1.0,minf(get_viewport_rect().size.x/760.0,get_viewport_rect().size.y/820.0))
 	var v=column(menu_root,Vector2(720,450)-Vector2(620,734)*menu_factor/2,Vector2(620,734),14)
 	v.scale=Vector2.ONE*menu_factor
 	var heading=TextureRect.new();heading.texture=Skin.asset(Skin.configuration(active_skin).menu.heading.texture)
@@ -1034,56 +1014,11 @@ func discovery_menu():
 	page = "discoveries"
 	clear_menu()
 	shade(0.96)
-	label(menu_root,"THE DISCOVERY ARCHIVE",36,"f0d5a0").position = Vector2(100,55)
-	label(menu_root,"%s AMBER  /  Kill milestones unlock automatically. Explore signals with Tab for other discoveries."%save_data.amber,18,"afc6cf").position = Vector2(100,113)
-	var body = scrolling_body()
-	for id in Discoveries.ENTRIES:
-		var d = Discoveries.ENTRIES[id]
-		var found = id in save_data.discoveries
-		var bought = id in save_data.unlocks
-		var panel = PanelContainer.new()
-		panel.add_theme_stylebox_override("panel",UIArt.button_style())
-		body.add_child(panel)
-		var row = HBoxContainer.new()
-		row.add_theme_constant_override("separation",16)
-		panel.add_child(row)
-		if d.has("hero"):
-			var portrait = TextureRect.new()
-			portrait.texture = texture(d.hero)
-			portrait.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			portrait.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			portrait.custom_minimum_size = Vector2(60,60)
-			row.add_child(portrait)
-		elif id in ["map_frost","map_observatory"]:
-			Icons.control(row,id,"discovery",60)
-		else:
-			var category = "weapon" if d.has("weapons") else "augment" if d.has("augments") else "relic"
-			var id_list = d.get("weapons",d.get("augments",d.get("relics",["tablet"])))
-			Icons.control(row,id_list[0],category,60)
-		var text = VBoxContainer.new()
-		text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		row.add_child(text)
-		label(text,d.name,23,"e9d2a9").autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-		label(text,Campaign.requirement(save_data,id),14,"dfb67a").autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-		label(text,d.desc,16,"b3c5cb").autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-		var buy_button = button(row,"UNLOCKED" if bought else "%s AMBER"%d.cost if found else "IN PROGRESS" if d.has("goal") else "UNDISCOVERED",func():
-			if preload("res://scripts/archive_respec.gd").buy_discovery(save_data,id):
-				persist()
-				discovery_menu())
-		buy_button.custom_minimum_size.x = 220
-		buy_button.disabled = bought or not found or save_data.amber<d.cost
-	label(body,"DISCOVERED COMBINATIONS / %s"%save_data.recipes.size(),23,"d6b580")
-	if save_data.recipes.is_empty(): label(body,"Max both compatible weapons to rank 10, then open a chest.",18,"b3c5cb")
-	for id in save_data.recipes:
-		if not C.WEAPONS.has(id): continue
-		var parts = Expedition.Evolutions.UNIONS[id].parts
-		label(body,"%s + %s → %s"%[C.WEAPONS[parts[0]].name,C.WEAPONS[parts[1]].name,C.WEAPONS[id].name],21,"e6d2b2")
-	var back = button(menu_root,"← Main menu",main_menu)
-	back.position = Vector2(100,780)
-	back.size = Vector2(605,60)
-	var refund=button(menu_root,"Refund paid unlocks",func():archive_refund_menu(false))
-	refund.position=Vector2(720,780);refund.size=Vector2(620,60)
-	refund.disabled=preload("res://scripts/archive_respec.gd").discovery_total(save_data)<=0
+	var archive=preload("res://scripts/discovery_grid.gd").new()
+	archive.game=self
+	archive.size=Vector2(1440,900)
+	menu_root.add_child(archive)
+	archive.build()
 
 func map_menu():
 	paused = false
@@ -1163,6 +1098,7 @@ func run_ended(victory):
 		victory_credits_pending=sim.finale_defeated and sim.boss_stage==3
 		finish_delay = 3.5
 	elif sim.extinction_timeout:
+		save_data.settings.extinction_cinematic_seen=true;persist()
 		page="extinction-ending"
 		hud_root.hide()
 		defeat_cinematic=preload("res://scripts/extinction_end.gd").new()
@@ -1384,7 +1320,41 @@ func settings():
 	scale_slider.value_changed.connect(func(value):save_data.settings.hud_scale=value;persist())
 	v.add_child(scale_slider)
 	button(v,"Toggle fullscreen / F11",func():DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if DisplayServer.window_get_mode()==DisplayServer.WINDOW_MODE_FULLSCREEN else DisplayServer.WINDOW_MODE_FULLSCREEN))
+	if sim==null or not sim.active:
+		label(v,"Unlocked cinematics",24)
+		for entry in preload("res://scripts/cinematic_gallery.gd").entries(save_data):
+			var identity=entry.id
+			button(v,entry.title,func():replay_cinematic(identity))
 	var back=button(menu_root,"Back",func():pause_menu() if sim!=null and sim.active else main_menu());back.position=Vector2(380,810);back.size=Vector2(680,55)
+
+func replay_cinematic(identity):
+	if sim!=null and sim.active:return
+	if not preload("res://scripts/cinematic_gallery.gd").entries(save_data).any(func(entry):return entry.id==identity):return
+	clear_menu()
+	var previous_page=page
+	page="cinematic-gallery"
+	for music in audio.music_players:music.stream_paused=true
+	var restore=func():
+		for music in audio.music_players:music.stream_paused=false
+		page=previous_page;audio.music_duck=0;apply_settings();settings()
+	var story
+	match identity:
+		"intro":
+			story=preload("res://scripts/opening_story.gd").new()
+			story.sound_enabled=save_data.settings.sound;story.music_enabled=save_data.settings.music
+		"reveal":story=preload("res://scripts/sequence_player.gd").new()
+		"extinction":
+			story=preload("res://scripts/extinction_end.gd").new()
+			story.world=world;story.audio=audio
+		_:
+			story=preload("res://scripts/first_rite_player.gd").new()
+			story.identity=identity;story.sound_enabled=save_data.settings.sound;story.music_enabled=save_data.settings.music
+	if identity=="extinction":
+		get_tree().create_timer(5.2).timeout.connect(func():
+			if is_instance_valid(story):story.queue_free()
+			restore.call())
+	else:story.completed.connect(restore)
+	layer.add_child(story)
 
 func apply_settings():
 	for pair in [["SFX","sfx_volume"],["Music","music_volume"],["Voice","voice_volume"],["Cinematic","cinematic_volume"]]:
@@ -1549,6 +1519,7 @@ func on_first_rite(defeated):
 	play_first_rite.call_deferred(defeated.get("identity","thorn"),false)
 
 func play_first_rite(identity="thorn",preview=false):
+	if identity not in ["thorn","hunt","warden"]:return
 	if sim==null or page=="rite-story":return
 	var run=sim
 	var was_paused=paused

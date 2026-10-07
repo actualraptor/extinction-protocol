@@ -226,6 +226,7 @@ func _draw():
 			piece(7,p,Vector2.ONE*e.size*2,progress*TAU,1-progress)
 			piece(7,p,Vector2.ONE*e.size*1.6,progress*TAU+PI,(1-progress)*0.55)
 	for h in s.hazards:
+		if h.get("physical",false):continue
 		if h.has("launch") and h.wait>0:
 			var t=clampf(1.0-h.wait/h.flight,0,1)
 			var base=h.launch.lerp(h.p,t)

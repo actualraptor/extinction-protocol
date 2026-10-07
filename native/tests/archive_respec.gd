@@ -31,7 +31,7 @@ func _initialize():
  for id in R.D.ENTRIES:
   if R.D.ENTRIES[id].cost==0:check(id in p.unlocks,"Free unlock retained / "+id)
  check(R.buy_discovery(p,"mara") and p.amber==initial-180,"Refunded discovery immediately repurchasable")
- check(I.get_icon("map_frost","discovery").region!=I.get_icon("map_observatory","discovery").region,"Maps have distinct painted icons")
+ check(I.get_icon("map_frost","discovery").resource_path!=I.get_icon("map_observatory","discovery").resource_path,"Maps have distinct painted icons")
  var legacy=S.migrate(S.defaults());legacy.research={"vitality":3};legacy.unlocks=["mara","map_frost"];legacy.discoveries=legacy.unlocks.duplicate()
  check(R.refund_research(legacy)==70+115+190,"Legacy research uses accumulated catalog prices")
  check(R.refund_discoveries(legacy)==180 and legacy.unlocks==["map_frost"],"Legacy paid unlock refunded and free map preserved")

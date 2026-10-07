@@ -149,7 +149,9 @@ static func melee(g,id,p,aim,s):
 	else: g.effect.emit("blast_club",p,Color(g.C.WEAPONS[id].color),s.radius)
 	for e in g.nearby(p,s.radius):
 		var delta = e.p-p
-		if delta.length()>s.radius+e.size: continue
+		if e.boss and g.boss_stage<3:
+			if preload("res://scripts/dinosaur_attacks.gd").body_distance(e,p)>s.radius:continue
+		elif delta.length()>s.radius+e.size: continue
 		if s.arc<TAU and absf(aim.angle_to(delta))>s.arc*0.5: continue
 		g.hit(e,s.power,id)
 		if not e.boss and not e.anchor and not g.rooted(e): e.p = g.terrain.move(e.p,delta.normalized()*45)
