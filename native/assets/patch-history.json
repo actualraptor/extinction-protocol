@@ -1,5 +1,35 @@
 [
   {
+    "version": "0.14.0",
+    "title": "A World Reborn",
+    "entries": [
+      {
+        "icon": "spear",
+        "category": "weapon",
+        "title": "A PREHISTORIC WORLD",
+        "body": "Individually rebuilt dinosaur and boss artwork brings cleaner silhouettes, corrected anatomy and clearer creatures across all three maps. The opening story now matches the prehistoric roster."
+      },
+      {
+        "icon": "compass",
+        "category": "weapon",
+        "title": "SURVIVE THE STAMPEDE",
+        "body": "Tightly packed Compy flocks rush across the battlefield, pushing survivors and nearby creatures aside. The first stampede arrives around 45 seconds into a run."
+      },
+      {
+        "icon": "tablet",
+        "category": "weapon",
+        "title": "A NEW HOME FOR DISCOVERIES",
+        "body": "Browse a large discovery grid with categories, unlock states, requirements and a dedicated detail panel. Main-menu buttons, the official logo, moving mist and flickering lights give the menu a fresh look."
+      },
+      {
+        "icon": "clock",
+        "category": "relic",
+        "title": "SOUNDTRACK AND A MOMENT TO BREATHE",
+        "body": "New orchestral themes accompany the maps and boss encounters, including a full score for the final countdown. Defeating a boss grants a brief respite from new spawns while the next horde gathers."
+      }
+    ]
+  },
+  {
     "version": "0.13.1",
     "title": "Hollow Harvest: Framed",
     "entries": [
@@ -24,7 +54,7 @@
       {
         "icon": "clock",
         "category": "relic",
-        "title": "FIRST ITERATION \u2014 KEEP THE FEEDBACK COMING",
+        "title": "FIRST ITERATION — KEEP THE FEEDBACK COMING",
         "body": "The new UI remains a first iteration and will have issues. Please report clipped text, scaling problems, awkward spacing or hard-to-read markers. Existing saves and progression are retained. The website now has fresh gameplay screenshots and a short trailer."
       }
     ]
@@ -36,7 +66,7 @@
       {
         "icon": "map",
         "category": "relic",
-        "title": "A NEW HUD \u2014 FIRST ITERATION",
+        "title": "A NEW HUD — FIRST ITERATION",
         "body": "The bottom HUD has a new illustrated layout, character-themed frames, portraits, health and experience displays, and integrated backpack, amber and re-roll panels. This is the first iteration: expect layout, scaling and visual issues while we refine it. The experience bar still needs further polish."
       },
       {
@@ -967,7 +997,7 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "Base target count progresses 3 \u2192 4 \u2192 5, before build bonuses."
+        "body": "Base target count progresses 3 → 4 → 5, before build bonuses."
       },
       {
         "icon": "lightning",
@@ -992,7 +1022,7 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "IRONBRIAR \u2014 NEW WEAPON"
+        "body": "IRONBRIAR — NEW WEAPON"
       },
       {
         "icon": "lightning",
@@ -1042,7 +1072,7 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "HARDENED SPINES \u2014 NEW AUGMENT"
+        "body": "HARDENED SPINES — NEW AUGMENT"
       },
       {
         "icon": "lightning",
@@ -1052,7 +1082,7 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "QUICK RETORT \u2014 NEW AUGMENT"
+        "body": "QUICK RETORT — NEW AUGMENT"
       },
       {
         "icon": "lightning",
@@ -1102,37 +1132,37 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "Ingredients \u2014 Union"
+        "body": "Ingredients — Union"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Stormbinder + Winterglass \u2014 WHITEOUT"
+        "body": "Stormbinder + Winterglass — WHITEOUT"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Cinder Gospel + Extinction Mortar \u2014 SUPERNOVA"
+        "body": "Cinder Gospel + Extinction Mortar — SUPERNOVA"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Graveshot + Bone Rattler \u2014 THE LAST WORD"
+        "body": "Graveshot + Bone Rattler — THE LAST WORD"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Ancestor's Wrath + Epoch Lance \u2014 EARTHSHAKER"
+        "body": "Ancestor's Wrath + Epoch Lance — EARTHSHAKER"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Rift Blades + Prism Aegis \u2014 RIFT BASTION"
+        "body": "Rift Blades + Prism Aegis — RIFT BASTION"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Ironbriar + Ancestor's Wrath \u2014 IRONBRIAR KING"
+        "body": "Ironbriar + Ancestor's Wrath — IRONBRIAR KING"
       },
       {
         "icon": "lightning",
@@ -1172,7 +1202,7 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "Damage multiplier: 1 + 0.9 \u00d7 critical tier. Single/double/triple crits deal 1.9\u00d7 / 2.8\u00d7 / 3.7\u00d7 damage."
+        "body": "Damage multiplier: 1 + 0.9 × critical tier. Single/double/triple crits deal 1.9× / 2.8× / 3.7× damage."
       },
       {
         "icon": "lightning",
@@ -1187,7 +1217,7 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "Critical passive maximum increased 5 \u2192 60 ranks for extreme builds."
+        "body": "Critical passive maximum increased 5 → 60 ranks for extreme builds."
       },
       {
         "icon": "lightning",
@@ -1247,7 +1277,7 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "Spawn pressure increases up to 6\u00d7; new enemy movement increases up to 2\u00d7. Population safety limits remain."
+        "body": "Spawn pressure increases up to 6×; new enemy movement increases up to 2×. Population safety limits remain."
       },
       {
         "icon": "lightning",
@@ -1257,7 +1287,7 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "At 2 minutes after the boss: new enemies have 16\u00d7 HP and incoming damage is 5\u00d7."
+        "body": "At 2 minutes after the boss: new enemies have 16× HP and incoming damage is 5×."
       },
       {
         "icon": "lightning",
@@ -1272,7 +1302,7 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "EXTINCTION ENGINE \u2014 TIMED DEFEAT"
+        "body": "EXTINCTION ENGINE — TIMED DEFEAT"
       },
       {
         "icon": "lightning",
@@ -1292,27 +1322,27 @@
       {
         "icon": "lightning",
         "title": "BREAKABLES",
-        "body": "Drop \u2014 Chance"
+        "body": "Drop — Chance"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Amber cache (+8 amber) \u2014 70%"
+        "body": "Amber cache (+8 amber) — 70%"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Health pickup \u2014 20%"
+        "body": "Health pickup — 20%"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "XP magnet \u2014 5%"
+        "body": "XP magnet — 5%"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Freeze / frenzy / surge / nuke \u2014 1.25% each"
+        "body": "Freeze / frenzy / surge / nuke — 1.25% each"
       },
       {
         "icon": "lightning",
@@ -1337,82 +1367,82 @@
       {
         "icon": "lightning",
         "title": "THE ARCHIVE",
-        "body": "Expanded permanent research from 3 \u2192 14 tracks. Costs below are first-rank prices; subsequent prices scale by 1.65\u00d7 per rank."
+        "body": "Expanded permanent research from 3 → 14 tracks. Costs below are first-rank prices; subsequent prices scale by 1.65× per rank."
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Research \u2014 Bonus per rank \u2014 Max ranks \u2014 Starting amber"
+        "body": "Research — Bonus per rank — Max ranks — Starting amber"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Hunter's Eye \u2014 +2 raw crit points \u2014 10 \u2014 200"
+        "body": "Hunter's Eye — +2 raw crit points — 10 — 200"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Survivor's Blood \u2014 +10 health \u2014 5 \u2014 70"
+        "body": "Survivor's Blood — +10 health — 5 — 70"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Forbidden Knowledge \u2014 +3% damage \u2014 5 \u2014 100"
+        "body": "Forbidden Knowledge — +3% damage — 5 — 100"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Scavenger's Legacy \u2014 +5% amber and luck \u2014 5 \u2014 80"
+        "body": "Scavenger's Legacy — +5% amber and luck — 5 — 80"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Second Thoughts \u2014 +1 starting reroll \u2014 5 \u2014 180"
+        "body": "Second Thoughts — +1 starting reroll — 5 — 180"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Lucky Fossil \u2014 +1% luck \u2014 10 \u2014 120"
+        "body": "Lucky Fossil — +1% luck — 10 — 120"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Full Magazine \u2014 +1 projectile \u2014 2 \u2014 1,800"
+        "body": "Full Magazine — +1 projectile — 2 — 1,800"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Storm Memory \u2014 +1 chain target \u2014 2 \u2014 2,000"
+        "body": "Storm Memory — +1 chain target — 2 — 2,000"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Refuse Extinction \u2014 One revival at 50% HP, 3s immunity \u2014 1 \u2014 3,000"
+        "body": "Refuse Extinction — One revival at 50% HP, 3s immunity — 1 — 3,000"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Amber Prospector \u2014 +5% amber \u2014 8 \u2014 100"
+        "body": "Amber Prospector — +5% amber — 8 — 100"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Ancient Insight \u2014 +3% XP \u2014 8 \u2014 120"
+        "body": "Ancient Insight — +3% XP — 8 — 120"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Gathering Instinct \u2014 +12 pickup radius \u2014 8 \u2014 90"
+        "body": "Gathering Instinct — +12 pickup radius — 8 — 90"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Fossil Plating \u2014 +1 armor \u2014 3 \u2014 220"
+        "body": "Fossil Plating — +1 armor — 3 — 220"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Living History \u2014 +0.15 HP/s regeneration \u2014 4 \u2014 240"
+        "body": "Living History — +0.15 HP/s regeneration — 4 — 240"
       },
       {
         "icon": "lightning",
@@ -1437,7 +1467,7 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "Levels 2\u20135 automatically grant the remaining weapons."
+        "body": "Levels 2–5 automatically grant the remaining weapons."
       },
       {
         "icon": "lightning",
@@ -1578,47 +1608,47 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "Reward \u2014 Requirement"
+        "body": "Reward — Requirement"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Mara \u2014 100 cumulative kills, or the existing discovery/purchase route"
+        "body": "Mara — 100 cumulative kills, or the existing discovery/purchase route"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Lost Ballistics \u2014 500 cumulative kills, or discovery/purchase"
+        "body": "Lost Ballistics — 500 cumulative kills, or discovery/purchase"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Kael \u2014 700 cumulative kills, or discovery/purchase"
+        "body": "Kael — 700 cumulative kills, or discovery/purchase"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Riftcraft \u2014 1,200 cumulative kills, or discovery/purchase"
+        "body": "Riftcraft — 1,200 cumulative kills, or discovery/purchase"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Iona + Fossil Harpoon \u2014 Find Iona's camp in Frostbreak's first biome"
+        "body": "Iona + Fossil Harpoon — Find Iona's camp in Frostbreak's first biome"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Orin + Hollow Lantern \u2014 Find Orin's camp in the Observatory's first biome"
+        "body": "Orin + Hollow Lantern — Find Orin's camp in the Observatory's first biome"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Glacier Wheel \u2014 1,000 Frostbreak kills, or find its second-biome signal"
+        "body": "Glacier Wheel — 1,000 Frostbreak kills, or find its second-biome signal"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Helios Repeater \u2014 1,500 Observatory kills, or find its second-biome signal"
+        "body": "Helios Repeater — 1,500 Observatory kills, or find its second-biome signal"
       },
       {
         "icon": "lightning",
@@ -1928,32 +1958,32 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "Ingredients \u2014 Union \u2014 Behavior"
+        "body": "Ingredients — Union — Behavior"
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Stormbinder + Winterglass \u2014 WHITEOUT \u2014 Frost lightning arcs through enemies, freezes them, and detonates already-frozen prey. Detonations have a shared cooldown and cannot recursively detonate."
+        "body": "Stormbinder + Winterglass — WHITEOUT — Frost lightning arcs through enemies, freezes them, and detonates already-frozen prey. Detonations have a shared cooldown and cannot recursively detonate."
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Cinder Gospel + Extinction Mortar \u2014 SUPERNOVA \u2014 Solar bombardments leave burning fields with a final eruption."
+        "body": "Cinder Gospel + Extinction Mortar — SUPERNOVA — Solar bombardments leave burning fields with a final eruption."
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Graveshot + Bone Rattler \u2014 THE LAST WORD \u2014 Rapid, long-range fans of piercing execution rounds."
+        "body": "Graveshot + Bone Rattler — THE LAST WORD — Rapid, long-range fans of piercing execution rounds."
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Ancestor's Wrath + Epoch Lance \u2014 EARTHSHAKER \u2014 Wide full-circle cleaves, echoes and piercing shockwaves."
+        "body": "Ancestor's Wrath + Epoch Lance — EARTHSHAKER — Wide full-circle cleaves, echoes and piercing shockwaves."
       },
       {
         "icon": "lightning",
         "title": "",
-        "body": "Rift Blades + Prism Aegis \u2014 RIFT BASTION \u2014 Heavy orbiting blades with a periodically recharging barrier."
+        "body": "Rift Blades + Prism Aegis — RIFT BASTION — Heavy orbiting blades with a periodically recharging barrier."
       },
       {
         "icon": "lightning",
@@ -2059,7 +2089,7 @@
       {
         "icon": "lightning",
         "title": "Audio",
-        "body": "Original 116 BPM D-minor chiptune/adventure score, \u201cAgainst the Falling Sky\u201d: 32 bars, melodic variations, triangle bass, pulse lead, bell arpeggios, pads and percussion. A synchronized additional rhythm layer rises with danger. Music has independent players so weapon spam cannot steal its voices. The loop is 66.21 seconds."
+        "body": "Original 116 BPM D-minor chiptune/adventure score, “Against the Falling Sky”: 32 bars, melodic variations, triangle bass, pulse lead, bell arpeggios, pads and percussion. A synchronized additional rhythm layer rises with danger. Music has independent players so weapon spam cannot steal its voices. The loop is 66.21 seconds."
       },
       {
         "icon": "lightning",
@@ -2089,7 +2119,7 @@
       {
         "icon": "lightning",
         "title": "",
-        "body": "Basalt Behemoth health is 90,000 (previously 360,000). It now uses obsidian-colossus art, alternates four crossing lanes with two brief impacts, and pauses 4.7\u20135.5 seconds between patterns. Half-health armor transition remains. The final Extinction Engine retains its extreme six-million-health build check."
+        "body": "Basalt Behemoth health is 90,000 (previously 360,000). It now uses obsidian-colossus art, alternates four crossing lanes with two brief impacts, and pauses 4.7–5.5 seconds between patterns. Half-health armor transition remains. The final Extinction Engine retains its extreme six-million-health build check."
       },
       {
         "icon": "lightning",
