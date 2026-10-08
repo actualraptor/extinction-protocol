@@ -4,6 +4,13 @@
   "policy": "Done means accepted by the developer. A private preview is not a shipped feature. No release dates are promised.",
   "cards": [
     {
+      "id": "meteor-encounter",
+      "title": "Meteor encounter redesign",
+      "status": "in-progress",
+      "summary": "Refine animation, environmental effects and encounter readability to match the new boss presentation.",
+      "next": "Continue private gameplay and visual reviews. Full-fight balance, sound and developer acceptance remain open."
+    },
+    {
       "id": "boss-animation",
       "title": "Dinosaur boss animation",
       "status": "in-progress",

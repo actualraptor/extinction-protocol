@@ -4,6 +4,12 @@
 
 ## 2026-10-08 — Three bosses, reviewed in the game engine
 
+### Encounter presentation review
+
+Work continues on environmental effects and the relationship between visible danger and gameplay. Runtime review exposed a mismatch between the new presentation and terrain clearance; that mismatch has been corrected in the private prototype.
+
+Focused checks provide useful evidence, but do not establish full-fight balance or finished art. Continuous motion, ordinary builds, sound and visual polish still need review. These prototypes are not in the public release.
+
 The current pass focuses on T-rex, Triceratops and Meteor. Other bosses wait. Meteor artwork now has an editable reconstruction and a private shell-motion study rendered in Godot. One coordinated opening-and-reforming clip survives export with sixteen transform tracks.
 
 This establishes portability, not finished art. The fracture surfaces still need refinement; a cavity experiment produced broken geometry and was rejected after visual review. Combat clips and encounter integration follow, with the existing fight deadline preserved. Dinosaur pursuit, attack transitions and sound acceptance also remain open.

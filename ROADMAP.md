@@ -14,6 +14,10 @@ Current focus: T-rex, Triceratops and Meteor. Dinosaur tracking and combat remai
 
 Review planted strides, head tracking, attack weight, sound and gameplay interactions in actual play.
 
+### Meteor encounter redesign
+
+Refine animation, environmental effects and encounter readability to match the new boss presentation. Private gameplay and visual reviews continue; full-fight balance, sound and developer acceptance remain open.
+
 ## Needs improvement
 
 ### T-rex final play review
