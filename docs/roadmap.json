@@ -7,7 +7,7 @@
       "id": "boss-animation",
       "title": "Dinosaur boss animation",
       "status": "in-progress",
-      "summary": "T-rex motion and combat review is ready. Triceratops now has a first exported quadruped gait under review; the remaining dinosaur bosses follow.",
+      "summary": "Current focus: T-rex, Triceratops and Meteor. Dinosaur tracking and combat remain under review; Meteor has an original-art 3D reconstruction and a private shell-motion study. Other bosses wait.",
       "next": "Review planted strides, head tracking, attack weight, sound and gameplay interactions in actual play."
     },
     {
@@ -117,6 +117,18 @@
     }
   ],
   "devlog": [
+    {
+      "date": "2026-10-08",
+      "id": "boss-scope-runtime-review",
+      "title": "Three bosses, reviewed in the game engine",
+      "stage": "Prototype and refinement",
+      "card": "boss-animation",
+      "body": "The current boss pass focuses on T-rex, Triceratops and Meteor. Other bosses wait while these encounters receive animation, interaction and presentation reviews.",
+      "changed": "Meteor artwork now has an editable 3D reconstruction. A private rigid-shell motion study has been exported and rendered in Godot; it is not a public gameplay replacement.",
+      "testing": "The engine imports one coordinated opening-and-reforming clip with sixteen transform tracks. Runtime renders checked closed and opened states. This verifies portability, not finished art or combat quality.",
+      "learned": "Exported motion can work while fracture surfaces still look wrong. A cavity experiment produced broken geometry and was rejected after visual review.",
+      "next": "Refine the shell topology, build the combat clips and review the actual encounter. The existing fight deadline remains unchanged. Dinosaur pursuit, attack transitions and sound acceptance remain open."
+    },
     {
       "date": "2026-10-08",
       "title": "Triceratops takes its first steps",

@@ -2,6 +2,12 @@
 
 [Read the devblog on the website](https://actualraptor.github.io/extinction-protocol/devblog.html) · [Development roadmap](ROADMAP.md)
 
+## 2026-10-08 — Three bosses, reviewed in the game engine
+
+The current pass focuses on T-rex, Triceratops and Meteor. Other bosses wait. Meteor artwork now has an editable reconstruction and a private shell-motion study rendered in Godot. One coordinated opening-and-reforming clip survives export with sixteen transform tracks.
+
+This establishes portability, not finished art. The fracture surfaces still need refinement; a cavity experiment produced broken geometry and was rejected after visual review. Combat clips and encounter integration follow, with the existing fight deadline preserved. Dinosaur pursuit, attack transitions and sound acceptance also remain open.
+
 ## 2026-10-08 — Triceratops takes its first steps
 
 **Prototype and testing**

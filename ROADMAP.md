@@ -10,7 +10,7 @@ Done means accepted by the developer. A private preview is not a shipped feature
 
 ### Dinosaur boss animation
 
-T-rex motion and combat review is ready. Triceratops now has a first exported quadruped gait under review; the remaining dinosaur bosses follow.
+Current focus: T-rex, Triceratops and Meteor. Dinosaur tracking and combat remain under review; Meteor has an original-art 3D reconstruction and a private shell-motion study. Other bosses wait.
 
 Review planted strides, head tracking, attack weight, sound and gameplay interactions in actual play.
 
