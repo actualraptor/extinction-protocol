@@ -46,3 +46,5 @@ Use the repository's Issues tab. Include version, character, mode, map, time int
 ## Development status
 
 Before starting or resuming a feature, update its card in `docs/roadmap.json`. Use `in-progress` for active work, `improve` for unfinished work requiring review or polish, `planned` for queued/paused work, and `done` only after developer acceptance. Add a dated devlog entry for meaningful changes. Keep `ROADMAP.md` consistent and publish the board with the work. Do not expose undiscovered content in public descriptions. A preview or passing technical check is not developer acceptance.
+
+Devblog entries in `docs/roadmap.json` should cover what changed, actual testing, what was learned and the next step. Add entries for meaningful milestones or changes of direction, not every command or routine check. Keep dates factual and distinguish prototype, review and released work. Mirror entries in `DEVBLOG.md`.

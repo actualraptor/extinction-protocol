@@ -15,7 +15,7 @@ Public hobby playtest **0.14.1 · A World Reborn**. Free to download and try.
 
 ## Development roadmap
 
-[**Status cards and devlog**](https://actualraptor.github.io/extinction-protocol/roadmap.html) · [Roadmap on GitHub](ROADMAP.md)
+[**Status cards and devlog**](https://actualraptor.github.io/extinction-protocol/roadmap.html) · [Roadmap on GitHub](ROADMAP.md) · [Devblog](https://actualraptor.github.io/extinction-protocol/devblog.html)
 
 See what is in progress, needs improvement, is planned, or has been completed.
 
