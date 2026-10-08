@@ -2,6 +2,12 @@
 
 [Read the devblog on the website](https://actualraptor.github.io/extinction-protocol/devblog.html) · [Development roadmap](ROADMAP.md)
 
+## 2026-10-08 — Contact and surface refinement
+
+The private three-boss pass continues with contact, deformation and presentation fixes. Dinosaur summons now use the turning torso for contact and melee reach. Triceratops frill weighting and Meteor fracture surfaces received another refinement pass.
+
+Actual summon swings and exported attack transitions were checked in Godot. Automated encounter reviews also exposed poor dodge planning; correcting the diagnostic changed the survival results, without changing fight difficulty. These checks do not establish finished motion, sound or full-fight balance. Visual and ordinary-build reviews remain open before developer acceptance.
+
 ## 2026-10-08 — Three bosses, reviewed in the game engine
 
 ### Encounter presentation review

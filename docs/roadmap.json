@@ -126,6 +126,18 @@
   "devlog": [
     {
       "date": "2026-10-08",
+      "id": "boss-contact-and-surface-review",
+      "title": "Contact and surface refinement",
+      "stage": "Private runtime review",
+      "card": "boss-animation",
+      "body": "The three-boss pass continues with contact, deformation and presentation fixes. These remain private prototypes.",
+      "changed": "Dinosaur summon contact now follows the turning torso. Triceratops frill weighting and Meteor fracture surfaces received another refinement pass.",
+      "testing": "Actual summon attacks, directional contact and exported attack transitions have been checked in Godot. Encounter reviews also exposed shortcomings in automated dodge planning, which was corrected before drawing balance conclusions.",
+      "learned": "Passing geometry and timing checks does not establish finished motion, sound or full-fight balance.",
+      "next": "Continue visual and ordinary-build combat reviews, including sound and natural movement, before developer acceptance."
+    },
+    {
+      "date": "2026-10-08",
       "id": "boss-scope-runtime-review",
       "title": "Three bosses, reviewed in the game engine",
       "stage": "Prototype and refinement",
