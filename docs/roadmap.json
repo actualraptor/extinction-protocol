@@ -127,7 +127,12 @@
       "changed": "The original painted reconstruction now has four independent limb chains, a weighted torso and a rigid skull and frill. A slow four-beat walk and a faster diagonal gait are the first motion studies.",
       "testing": "Exported clips were rendered in Godot from four angles. A separate measurement sampled deformed sole vertices through every authored frame; grounded feet stayed at floor height in the current source clips. This does not yet prove turning or runtime contact quality.",
       "learned": "Each creature needs its own anatomy and stance. Reusing the T-rex joint layout would not give a convincing quadruped.",
-      "next": "Review skin deformation and moving contact, then build the horn charge, horn sweep and stomp around clear anticipation, impact and recovery."
+      "next": "Review skin deformation and moving contact, then build the horn charge, horn sweep and stomp around clear anticipation, impact and recovery.",
+      "media": {
+        "src": "assets/devblog-triceratops-walk.mp4",
+        "poster": "assets/devblog-triceratops-poster.webp",
+        "caption": "Early Triceratops motion study, rendered in Godot against ground markings. This short silent preview shows two walk cycles; it is not a finished combat animation."
+      }
     },
     {
       "date": "2026-10-08",
@@ -139,7 +144,12 @@
       "changed": "Longer strides, player-directed head tracking, a continuous tail swing, travelling pressure waves and heavier footfalls now give the T-rex more presence. Promotional comparison footage focuses on creature sound, with character speech removed.",
       "testing": "Matched old and new gameplay captures cover chase, turns and all five attacks. Further live runs checked foot contact, attack direction, pause and death interactions.",
       "learned": "A fixed-frame recording missed a small turning lag seen in a fresh live run. Adding modest visual catch-up capacity corrected it without increasing the physical turn cap.",
-      "next": "Complete developer play review before including the rig in a public build. Continue the remaining dinosaur rigs while keeping their progress visible."
+      "next": "Complete developer play review before including the rig in a public build. Continue the remaining dinosaur rigs while keeping their progress visible.",
+      "media": {
+        "src": "assets/devblog-trex-comparison.mp4",
+        "poster": "assets/devblog-trex-poster.webp",
+        "caption": "Development comparison: original sprite fight versus the new T-rex rig. Chase, turns and all five attacks; boss sound without character speech. Final play review is pending."
+      }
     }
   ]
 }

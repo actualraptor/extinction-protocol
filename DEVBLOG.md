@@ -8,6 +8,10 @@
 
 A dedicated four-legged rig now animates the painted Triceratops reconstruction. The first walk and run clips have been exported and inspected in Godot. Ground contact, turning and attack weight remain under review; this is not yet a public gameplay replacement.
 
+[Watch the preview](https://actualraptor.github.io/extinction-protocol/assets/devblog-triceratops-walk.mp4)
+
+Early Triceratops motion study, rendered in Godot against ground markings. This short silent preview shows two walk cycles; it is not a finished combat animation.
+
 ### What changed
 
 The original painted reconstruction now has four independent limb chains, a weighted torso and a rigid skull and frill. A slow four-beat walk and a faster diagonal gait are the first motion studies.
@@ -29,6 +33,10 @@ Review skin deformation and moving contact, then build the horn charge, horn swe
 **Refinement and review**
 
 The T-rex motion pass now covers pursuit, turns, bite, rush, tail gust, roar pressure wave and seismic stomp. It remains a development preview awaiting final play review. The remaining boss animation work follows next. Cinematics are accepted as complete; beam prototypes are paused while bosses take priority.
+
+[Watch the preview](https://actualraptor.github.io/extinction-protocol/assets/devblog-trex-comparison.mp4)
+
+Development comparison: original sprite fight versus the new T-rex rig. Chase, turns and all five attacks; boss sound without character speech. Final play review is pending.
 
 ### What changed
 
