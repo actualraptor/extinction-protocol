@@ -2,6 +2,12 @@
 
 [Read the devblog on the website](https://actualraptor.github.io/extinction-protocol/devblog.html) · [Development roadmap](ROADMAP.md)
 
+## 2026-10-08 — Attacks that respect terrain
+
+The private dinosaur pass now checks the body's turn through an attack, rather than only its chase route. T-rex and Triceratops step into a reachable stance when a nearby obstacle blocks the swing. Forward attacks can still commit in tighter passages.
+
+Runtime review also caught a timing mismatch between the T-rex's body turn and tail animation. They now follow the same strike progress. The wall scenarios pass body clearance and impact alignment checks; continuous movement, sound and broader gameplay acceptance remain under review. These changes are not in the public playtest.
+
 ## 2026-10-08 — Contact and surface refinement
 
 The private three-boss pass continues with contact, deformation and presentation fixes. Dinosaur summons now use the turning torso for contact and melee reach. Triceratops frill weighting and Meteor fracture surfaces received another refinement pass.

@@ -15,7 +15,7 @@
       "title": "Dinosaur boss animation",
       "status": "in-progress",
       "summary": "Current focus: T-rex, Triceratops and Meteor. Dinosaur tracking and combat remain under review; Meteor has an original-art 3D reconstruction and a private shell-motion study. Other bosses wait.",
-      "next": "Review planted strides, head tracking, attack weight, sound and gameplay interactions in actual play."
+      "next": "Attack stance and tail timing fixes pass focused terrain checks. Continue reviewing planted strides, head tracking, attack weight, sound and gameplay interactions in actual play."
     },
     {
       "id": "cinematics",
@@ -124,6 +124,11 @@
     }
   ],
   "devlog": [
+    {
+      "date": "2026-10-08",
+      "title": "Attacks that respect terrain",
+      "body": "Private dinosaur attacks now use reachable turn-clear stances. Forward attacks still fit tighter passages, while body and tail motion share strike timing. Focused wall scenarios pass clearance and impact alignment; continuous motion, sound and broader gameplay acceptance remain open. These changes are not in the public playtest."
+    },
     {
       "date": "2026-10-08",
       "id": "boss-contact-and-surface-review",

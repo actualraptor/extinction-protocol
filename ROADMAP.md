@@ -12,7 +12,7 @@ Done means accepted by the developer. A private preview is not a shipped feature
 
 Current focus: T-rex, Triceratops and Meteor. Dinosaur tracking and combat remain under review; Meteor has an original-art 3D reconstruction and a private shell-motion study. Other bosses wait.
 
-Review planted strides, head tracking, attack weight, sound and gameplay interactions in actual play.
+Attack stance and tail timing fixes pass focused terrain checks. Continue reviewing planted strides, head tracking, attack weight, sound and gameplay interactions in actual play.
 
 ### Meteor encounter redesign
 
