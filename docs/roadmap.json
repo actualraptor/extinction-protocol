@@ -127,6 +127,13 @@
     {
       "date": "2026-10-08",
       "title": "Attacks that respect terrain",
+      "id": "boss-attack-terrain-review",
+      "stage": "Private runtime review",
+      "card": "boss-animation",
+      "changed": "Dinosaur attacks establish reachable stances; T-rex body and tail share strike progress.",
+      "testing": "Actual Godot wall scenarios check body clearance and committed impact alignment. Forward attacks also pass a narrow-corridor check.",
+      "learned": "Safe pursuit did not guarantee a safe attack turn. Both need runtime review.",
+      "next": "Continue continuous-motion, audio and broader gameplay reviews before developer acceptance.",
       "body": "Private dinosaur attacks now use reachable turn-clear stances. Forward attacks still fit tighter passages, while body and tail motion share strike timing. Focused wall scenarios pass clearance and impact alignment; continuous motion, sound and broader gameplay acceptance remain open. These changes are not in the public playtest."
     },
     {
