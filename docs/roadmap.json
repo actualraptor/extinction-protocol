@@ -7,7 +7,7 @@
       "id": "boss-animation",
       "title": "Dinosaur boss animation",
       "status": "in-progress",
-      "summary": "T-rex motion and combat review is ready. Next: Triceratops, then the remaining dinosaur bosses.",
+      "summary": "T-rex motion and combat review is ready. Triceratops now has a first exported quadruped gait under review; the remaining dinosaur bosses follow.",
       "next": "Review planted strides, head tracking, attack weight, sound and gameplay interactions in actual play."
     },
     {
@@ -117,6 +117,11 @@
     }
   ],
   "devlog": [
+    {
+      "date": "2026-10-08",
+      "title": "Triceratops takes its first steps",
+      "body": "A dedicated four-legged rig now animates the painted Triceratops reconstruction. The first walk and run clips have been exported and inspected in Godot. Ground contact, turning and attack weight remain under review; this is not yet a public gameplay replacement."
+    },
     {
       "date": "2026-10-08",
       "title": "A heavier predator, and a clearer development board",

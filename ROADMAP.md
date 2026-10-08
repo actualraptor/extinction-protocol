@@ -10,7 +10,7 @@ Done means accepted by the developer. A private preview is not a shipped feature
 
 ### Dinosaur boss animation
 
-T-rex motion and combat review is ready. Next: Triceratops, then the remaining dinosaur bosses.
+T-rex motion and combat review is ready. Triceratops now has a first exported quadruped gait under review; the remaining dinosaur bosses follow.
 
 Review planted strides, head tracking, attack weight, sound and gameplay interactions in actual play.
 
