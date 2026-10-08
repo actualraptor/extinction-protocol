@@ -42,3 +42,7 @@ Install matching Godot export templates. The checked-in presets refer to the ori
 ## Feedback
 
 Use the repository's Issues tab. Include version, character, mode, map, time into the run and reproduction steps. Add screenshots or a run report when useful. Don't include account credentials or unrelated personal files. Saves and reports are local; the game does not automatically upload them.
+
+## Development status
+
+Before starting or resuming a feature, update its card in `docs/roadmap.json`. Use `in-progress` for active work, `improve` for unfinished work requiring review or polish, `planned` for queued/paused work, and `done` only after developer acceptance. Add a dated devlog entry for meaningful changes. Keep `ROADMAP.md` consistent and publish the board with the work. Do not expose undiscovered content in public descriptions. A preview or passing technical check is not developer acceptance.

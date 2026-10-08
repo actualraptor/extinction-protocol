@@ -1,0 +1,126 @@
+{
+  "updated": "2026-10-08",
+  "release": "0.14.1",
+  "policy": "Done means accepted by the developer. A private preview is not a shipped feature. No release dates are promised.",
+  "cards": [
+    {
+      "id": "boss-animation",
+      "title": "Dinosaur boss animation",
+      "status": "in-progress",
+      "summary": "T-rex motion and combat review is ready. Next: Triceratops, then the remaining dinosaur bosses.",
+      "next": "Review planted strides, head tracking, attack weight, sound and gameplay interactions in actual play."
+    },
+    {
+      "id": "cinematics",
+      "title": "Cinematics and replay gallery",
+      "status": "done",
+      "summary": "Opening and progression cinematics are complete, with unlocked scenes available in the gallery.",
+      "next": "Completed and accepted by the developer."
+    },
+    {
+      "id": "menu",
+      "title": "Main-menu redesign",
+      "status": "done",
+      "summary": "Official logo, new button artwork, ambient mist and flickering lights are in place.",
+      "next": "Shipped in 0.14.1."
+    },
+    {
+      "id": "discoveries",
+      "title": "Discoveries grid",
+      "status": "done",
+      "summary": "Large categorized grid with unlock states and a dedicated detail panel.",
+      "next": "Shipped in 0.14.1."
+    },
+    {
+      "id": "stampedes",
+      "title": "Early Compy stampedes",
+      "status": "done",
+      "summary": "Early stampedes rush through the battlefield and push creatures and survivors.",
+      "next": "Shipped in 0.14.1."
+    },
+    {
+      "id": "respite",
+      "title": "Boss-defeat respite",
+      "status": "done",
+      "summary": "A short pause in new spawns gives the battlefield a moment to breathe.",
+      "next": "Shipped in 0.14.1."
+    },
+    {
+      "id": "trex-review",
+      "title": "T-rex final play review",
+      "status": "improve",
+      "summary": "New rig, pursuit, directional attacks, pressure waves and heavy sound are ready for review.",
+      "next": "Developer acceptance and a final playtest are still required before a public build."
+    },
+    {
+      "id": "music",
+      "title": "Soundtrack polish",
+      "status": "improve",
+      "summary": "Map and boss themes are in game; further production and musical polish remain open.",
+      "next": "Refine balance, orchestration and transitions through in-game listening."
+    },
+    {
+      "id": "ui-polish",
+      "title": "Interface polish",
+      "status": "improve",
+      "summary": "Continue checking readability, button sizing and consistency across screens.",
+      "next": "Keep frames and text clear at supported window sizes."
+    },
+    {
+      "id": "hordes",
+      "title": "Horde difficulty and experience",
+      "status": "improve",
+      "summary": "Tune spawn density so hordes pose a stronger threat and reward more experience.",
+      "next": "Validate early pressure, progression and performance together."
+    },
+    {
+      "id": "level-sound",
+      "title": "Level-up sound",
+      "status": "improve",
+      "summary": "Replace the notification-like cue with a satisfying fantasy level-up sound.",
+      "next": "Needs approval after repeated listening in gameplay."
+    },
+    {
+      "id": "beams",
+      "title": "Flametorch and Rift Conduit",
+      "status": "planned",
+      "summary": "Targeted flowing flame and plasma tether prototypes are on hold during the boss pass.",
+      "next": "Resume fluid animation, sound, upgrade-path cards and balance after bosses."
+    },
+    {
+      "id": "scoreboard",
+      "title": "Scoreboard redesign",
+      "status": "planned",
+      "summary": "Bring run statistics into the current UI style with clear framed sections.",
+      "next": "Define text fitting and support long names, large totals and older records."
+    },
+    {
+      "id": "summon-names",
+      "title": "Companion naming and statistics",
+      "status": "planned",
+      "summary": "Procedural names that persist for an individual companion and appear in run history.",
+      "next": "Use component-based generation and separate display names from internal IDs."
+    },
+    {
+      "id": "research",
+      "title": "Additional permanent research",
+      "status": "planned",
+      "summary": "Expand permanent upgrades with progression-aware presentation.",
+      "next": "Keep undiscovered entries as silhouettes without revealing their details."
+    },
+    {
+      "id": "linux",
+      "title": "Linux compatibility verification",
+      "status": "improve",
+      "summary": "A Linux archive is available; runtime compatibility is not yet verified.",
+      "next": "Test actual Linux gameplay before calling it supported."
+    }
+  ],
+  "devlog": [
+    {
+      "date": "2026-10-08",
+      "title": "A heavier predator, and a clearer development board",
+      "body": "The T-rex motion pass now covers pursuit, turns, bite, rush, tail gust, roar pressure wave and seismic stomp. It remains a development preview awaiting final play review. The remaining boss animation work follows next. Cinematics are accepted as complete; beam prototypes are paused while bosses take priority."
+    }
+  ]
+}
