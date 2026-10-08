@@ -1,5 +1,5 @@
 const element=(tag,text,cls)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(cls)node.className=cls;return node;};
-fetch('roadmap.json').then(response=>{if(!response.ok)throw Error('Unavailable');return response.json();}).then(data=>{
+fetch('roadmap.json', {cache:'no-store'}).then(response=>{if(!response.ok)throw Error('Unavailable');return response.json();}).then(data=>{
  const posts=document.querySelector('#posts');posts.replaceChildren();
  for(const entry of data.devlog){
   const article=element('article',null,'blog-entry');article.id=entry.id;
