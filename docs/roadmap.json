@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-08",
+  "updated": "2026-10-09",
   "release": "0.14.1",
   "policy": "Done means accepted by the developer. A private preview is not a shipped feature. No release dates are promised.",
   "cards": [
@@ -15,7 +15,7 @@
       "title": "Dinosaur boss animation",
       "status": "in-progress",
       "summary": "Current focus: T-rex, Triceratops and Meteor. Dinosaur tracking and combat remain under review; Meteor has an original-art 3D reconstruction and a private shell-motion study. Other bosses wait.",
-      "next": "Attack stance and tail timing fixes pass focused terrain checks. Continue reviewing planted strides, head tracking, attack weight, sound and gameplay interactions in actual play."
+      "next": "Close-range tracking and scenery depth pass focused runtime checks. Continue motion, sound, dense performance and interaction review before acceptance."
     },
     {
       "id": "cinematics",
@@ -124,6 +124,18 @@
     }
   ],
   "devlog": [
+    {
+      "id": "boss-close-defense-depth",
+      "date": "2026-10-09",
+      "title": "Keeping the prey in sight",
+      "stage": "Private runtime review",
+      "card": "boss-animation",
+      "body": "Close-range dinosaur tracking and scenery overlap are being refined in the private boss preview.",
+      "changed": "Triceratops turns more responsively when the player gets inside its usual attack spacing. Nearby creatures, landmarks and the boss now share a local depth pass.",
+      "testing": "Repeated Godot reviews covered turn reversals, both combat phases, attacks, head tracking and corpse handling. A 330-actor stress case passes the current turning check.",
+      "learned": "Heading traces showed a physical turning limit at very close range; changing only the visual turning speed was insufficient. Dense tests still expose frame-time spikes.",
+      "next": "Continue movement and sound review, optimize dense encounters and preserve frozen-creature effects before developer acceptance."
+    },
     {
       "id": "meteor-warning-batching",
       "date": "2026-10-08",

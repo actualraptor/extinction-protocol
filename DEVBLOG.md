@@ -2,6 +2,12 @@
 
 [Read the devblog on the website](https://actualraptor.github.io/extinction-protocol/devblog.html) · [Development roadmap](ROADMAP.md)
 
+## 2026-10-09 — Keeping the prey in sight
+
+Private Triceratops review exposed a close-range turning limit: when the player moved inside the normal attack spacing, the physical body could lag even though the renderer followed correctly. A faster defensive turn addresses that case. Nearby creatures and landmark artwork also share a local depth pass.
+
+Repeated Godot checks covered turning, both combat phases, head tracking and corpse handling, including a 330-actor stress scenario. Dense frame-time spikes, frozen-creature effect parity, continuous motion and sound still need work. These changes remain private and are not accepted as finished.
+
 ## 2026-10-08 — Keeping busy encounters responsive
 
 The private Meteor pass now uses connected rubble for the travelling ground rupture. Profiling also found that each fissure warning drew dozens of separate feathered edges. Combining those into cached meshes preserved the warning shape while reducing draw calls.
