@@ -125,6 +125,18 @@
   ],
   "devlog": [
     {
+      "id": "meteor-warning-batching",
+      "date": "2026-10-08",
+      "title": "Keeping busy encounters responsive",
+      "stage": "Private runtime review",
+      "card": "meteor-encounter",
+      "body": "The Meteor presentation pass now uses a connected rubble asset and batches the feathered ground-warning geometry. The fight remains in private review.",
+      "changed": "Combined dozens of edge draws per warning into one cached mesh while preserving the warning footprint and transparency.",
+      "testing": "In one matched local encounter, median frame interval fell from about 30 ms to 9 ms. All nine phase and attack timing samples passed after the change.",
+      "learned": "The many small ground-warning draws cost more than expected. Removing model or fire layers did not explain the slowdown.",
+      "next": "Review motion, remaining frame spikes, sound and full-fight balance before acceptance."
+    },
+    {
       "date": "2026-10-08",
       "title": "Attacks that respect terrain",
       "id": "boss-attack-terrain-review",

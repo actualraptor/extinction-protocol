@@ -117,3 +117,5 @@ Shipped in 0.14.1.
 ## Maintaining this board
 
 `docs/roadmap.json` is the source of truth. Update the relevant card when work starts, changes priority, reaches review, or receives developer acceptance. Keep unfinished work visible. Add a dated devlog entry for meaningful milestones. Public cards must not reveal undiscovered progression content.
+
+Private Meteor milestone: ground-warning batching reduced median frame interval from approximately 30 ms to 9 ms in a matched local test. Motion, frame spikes, sound and full-fight balance remain in progress.

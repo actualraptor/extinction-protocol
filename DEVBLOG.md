@@ -2,6 +2,12 @@
 
 [Read the devblog on the website](https://actualraptor.github.io/extinction-protocol/devblog.html) · [Development roadmap](ROADMAP.md)
 
+## 2026-10-08 — Keeping busy encounters responsive
+
+The private Meteor pass now uses connected rubble for the travelling ground rupture. Profiling also found that each fissure warning drew dozens of separate feathered edges. Combining those into cached meshes preserved the warning shape while reducing draw calls.
+
+In one matched local encounter, median frame interval fell from about 30 ms to 9 ms. Fresh Godot renders and all nine phase/attack timing samples passed. Frame spikes, motion, sound and full-fight balance still need review. This is development progress, not a public release or final acceptance.
+
 ## 2026-10-08 — Attacks that respect terrain
 
 The private dinosaur pass now checks the body's turn through an attack, rather than only its chase route. T-rex and Triceratops step into a reachable stance when a nearby obstacle blocks the swing. Forward attacks can still commit in tighter passages.
