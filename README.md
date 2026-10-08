@@ -1,5 +1,5 @@
 # Extinction Protocol
-### The end of the world has a health bar.
+### The end of the world has a health bar, and no online requirement. 
 
 ![Extinction Protocol gameplay](docs/assets/voss-hordes-ui.webp)
 
