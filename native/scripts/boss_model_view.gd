@@ -28,9 +28,9 @@ var hunting_posture=0.0
 var gaze_pitch=0.0
 var force_triceratops=false
 func rig_mode():return "--painted-foot-plant" in OS.get_cmdline_user_args() or "--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")
-func painted_mode():return "--painted-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")
+func painted_mode():return "--painted-rig-test" in OS.get_cmdline_user_args() or "--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")
 func _ready():
-	if force_triceratops or "--triceratops-rig-test" in OS.get_cmdline_user_args():source="res://assets/boss-public/triceratops-painted-rig.glb"
+	if force_triceratops:source="res://assets/boss-public/triceratops-painted-rig.glb"
 	elif painted_mode():
 		source="res://assets/boss-public/trex-painted-articulated.glb"
 	viewport=SubViewport.new();viewport.size=Vector2i(1024,1024) if "--pr-boss-capture" in OS.get_cmdline_user_args() or "--boss-detail-review" in OS.get_cmdline_user_args() else Vector2i(512,512)

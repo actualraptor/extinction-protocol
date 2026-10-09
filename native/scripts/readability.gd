@@ -5,6 +5,7 @@ const Hostile = preload("res://scripts/hostile_fx.gd")
 const Icons = preload("res://scripts/atlas_icons.gd")
 var survivor = preload("res://scripts/survivor_animation.gd").new()
 var boss_model
+var boss_model_identity=""
 var meteor_model
 var meteor_fire
 var boss_sim
@@ -43,8 +44,14 @@ func _process(dt):
 	elif meteor_model!=null:meteor_model.viewport.render_target_update_mode=SubViewport.UPDATE_DISABLED
 	var enabled=world.rig_bosses and s!=null and s.boss!=null and s.boss_stage!=3 and (s.boss.get("identity","")=="basalt" or (s.boss.get("identity","")=="thorn" and ("--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework"))))
 	if enabled:
+		var identity=s.boss.get("identity","")
+		if boss_model!=null and boss_model_identity!=identity:
+			remove_child(boss_model)
+			boss_model.queue_free()
+			boss_model=null
 		if boss_model==null:
-			boss_model=(preload("res://scripts/triceratops_model_view.gd").new() if "--triceratops-rig-test" in OS.get_cmdline_user_args() or (OS.has_feature("boss_rework") and s.boss.get("identity","")=="thorn") else preload("res://scripts/boss_model_view.gd").new());boss_model.show_sprite=false;add_child(boss_model)
+			boss_model_identity=identity
+			boss_model=(preload("res://scripts/triceratops_model_view.gd").new() if identity=="thorn" else preload("res://scripts/boss_model_view.gd").new());boss_model.show_sprite=false;add_child(boss_model)
 			boss_model.set_process(false);boss_model.player.callback_mode_process=AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
 		boss_model.viewport.render_target_update_mode=SubViewport.UPDATE_ALWAYS
 		if boss_sim!=s or boss_uid!=s.boss.uid:
@@ -62,7 +69,7 @@ func _process(dt):
 			elif movement_clock>.08:boss_speed=lerpf(boss_speed,0,1-exp(-12*dt))
 			boss_model.present(s.boss,dt,boss_speed,rendered_boss_p,s.pos)
 			if "--painted-foot-plant" in OS.get_cmdline_user_args() or "--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework"):
-				var quadruped="--triceratops-rig-test" in OS.get_cmdline_user_args() or (OS.has_feature("boss_rework") and s.boss.get("identity","")=="thorn")
+				var quadruped=s.boss.get("identity","")=="thorn"
 				var contacts=boss_model.contacts.anchors if quadruped else boss_model.foot_plant.anchors
 				var stable_contacts=boss_model.transition_poses.is_empty()
 				# Contact solvers reseed anchors after a pose blend. Those existing
