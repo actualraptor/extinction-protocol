@@ -1183,15 +1183,15 @@ func meteor_landing_position():
 func spawn_boss(stage):
 	boss_stage = stage
 	boss_time = 0
-	meteor_entry_time = 4.2 if stage==3 and "--meteor-rig-test" in OS.get_cmdline_user_args() else 0.0
+	meteor_entry_time = 4.2 if stage==3 and (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()) else 0.0
 	boss_timer = 3.5
 	boss_pattern = 0
 	phase = 1
 	core_time = 0
 	var p = pos+(Vector2(0,-230) if stage==3 else Vector2(250,95))
-	if stage==3 and "--meteor-rig-test" in OS.get_cmdline_user_args():p=meteor_landing_position()
+	if stage==3 and (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):p=meteor_landing_position()
 	terrain.arena = p
-	terrain.arena_radius=1510.0 if stage==3 and "--meteor-rig-test" in OS.get_cmdline_user_args() else 810.0
+	terrain.arena_radius=1510.0 if stage==3 and (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()) else 810.0
 	terrain.clearance.clear();terrain.flow.clear();terrain.sight.clear()
 	terrain.refresh = 0
 	next_uid += 1
@@ -1223,6 +1223,10 @@ func update_boss(dt):
 	if boss == null: return
 	if boss_stage==3 and meteor_entry_time>0:
 		meteor_entry_time=maxf(0.0,meteor_entry_time-dt)
+		if meteor_entry_time<=0:
+			sound.emit("meteor_crash")
+			boss_timer=2.0
+		return
 	if boss.get("immovable",false):boss.p=boss.anchor_p
 	boss_time += dt
 	if buffs.get("freeze",0)>0 or buffs.get("slow",0)>0: dt *= 0.7
@@ -1240,13 +1244,13 @@ func update_boss(dt):
 			if core_time <= 0:
 				make_anchors()
 				banner.emit("THE CRUST REFORMS","Destroy the anchors for another damage window")
-		var fire_encounter="--meteor-rig-test" in OS.get_cmdline_user_args()
+		var fire_encounter=(OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args())
 		if boss_time >= 210 and not fire_encounter:
 			extinction_timeout = true
 			death_reason = "Extinction completed. The core outlasted your build."
 			finish(false)
 			return
-		var outside=preload("res://scripts/meteor_fire_front.gd").burning(pos,boss.p,boss_time) if "--meteor-rig-test" in OS.get_cmdline_user_args() else pos.distance_to(boss.p)>720
+		var outside=preload("res://scripts/meteor_fire_front.gd").burning(pos,boss.p,boss_time) if (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()) else pos.distance_to(boss.p)>720
 		if outside and time>=boundary_ready:
 			boundary_ready = time+1.0
 			if fire_encounter:
@@ -1274,17 +1278,17 @@ func update_boss(dt):
 			var safe = boss_pattern*0.71
 			for j in range(8):
 				if j in [0,1]: continue
-				if "--meteor-rig-test" in OS.get_cmdline_user_args():
+				if (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):
 					for step in range(5):
 						var direction=Vector2.from_angle(safe+j*TAU/8)
 						add_hazard("circle",boss.p+direction*(170+step*120),0,48,1.35+step*.17,.35,damage)
 						hazards[-1].meteor_eruption=true
 						hazards[-1].reason="Caught in a Meteor crust eruption"
 				else:add_hazard("line",boss.p,safe+j*TAU/8,35,1.35,0.55,damage)
-			banner.emit("CRUST ERUPTION" if "--meteor-rig-test" in OS.get_cmdline_user_args() else "CORONAL FLARE","READ THE FRACTURES / MOVE INTO THE GAP" if "--meteor-rig-test" in OS.get_cmdline_user_args() else "READ THE LANES / MOVE INTO THE GAP")
+			banner.emit("CRUST ERUPTION" if (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()) else "CORONAL FLARE","READ THE FRACTURES / MOVE INTO THE GAP" if (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()) else "READ THE LANES / MOVE INTO THE GAP")
 		1:
 			for j in range(5+phase*2):
-				var private_meteor="--meteor-rig-test" in OS.get_cmdline_user_args()
+				var private_meteor=(OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args())
 				var p = pos+velocity*0.3 if j==0 else boss.p+Vector2.from_angle(rng.randf()*TAU)*rng.randf_range(100,620)
 				if private_meteor:
 					# One locked player target; remaining debris follows spaced
@@ -1295,7 +1299,7 @@ func update_boss(dt):
 				if private_meteor:hazards[-1].merge({"meteor_fragment":true,"launch_origin":boss.p,"targeted":j==0,"reason":"Struck by falling Meteor debris"})
 			banner.emit("HEAVEN FALLS","LEAVE THE IMPACT MARKERS")
 		2:
-			if "--meteor-rig-test" in OS.get_cmdline_user_args():
+			if (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):
 				# Commit a new sector for the entire volley, independent of
 				# player aim. Consecutive openings do not overlap.
 				var gap=rng.randf()*TAU
@@ -1314,8 +1318,8 @@ func update_boss(dt):
 					wave.merge({"meteor_rupture":true,"volley_wave":j,"arc":TAU-PI*.5,"travel_speed":260.0,"thickness":22.0,"hit_player":false,"push":0.0,"source_uid":boss.uid,"reason":"Caught in a Meteor ground rupture"})
 			else:
 				for j in range(4): add_hazard("ring",boss.p,0,120+j*120,1.0+j*0.4,0.35,damage)
-			banner.emit("SEISMIC COLLAPSE","FOLLOW THE OPENING" if "--meteor-rig-test" in OS.get_cmdline_user_args() else "CROSS BETWEEN THE PULSES")
-	if phase>=2 and not "--meteor-rig-test" in OS.get_cmdline_user_args(): add_hazard("circle",pos-velocity*0.2,0,85,1.4,1.4,damage)
+			banner.emit("SEISMIC COLLAPSE","FOLLOW THE OPENING" if (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()) else "CROSS BETWEEN THE PULSES")
+	if phase>=2 and not (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()): add_hazard("circle",pos-velocity*0.2,0,85,1.4,1.4,damage)
 	for index in range(first_hazard,hazards.size()):
 		hazards[index].impact_cue=["meteor_flare","meteor_skyfall","meteor_collapse"][boss_pattern%3]
 	boss_pattern += 1

@@ -36,7 +36,7 @@ var selected = 0
 var vignette = null
 
 func _ready():
-	if "--meteor-fresh-study" in OS.get_cmdline_user_args():
+	if (OS.has_feature("meteor_rework") or "--meteor-fresh-study" in OS.get_cmdline_user_args()):
 		var meteor_ground=preload("res://scripts/meteor_ground_view.gd").new()
 		meteor_ground.world=self;meteor_ground.z_index=-1;add_child(meteor_ground)
 	var beams_layer=preload("res://scripts/beam_renderer.gd").new();beams_layer.world=self;beams_layer.z_index=2;add_child(beams_layer)
@@ -138,7 +138,7 @@ func fx(kind,p,color,size):
 		if numbers.size()<MAX_DAMAGE_NUMBERS:
 			var duration=.75 if tier>1 else .65
 			var number_position=p
-			if "--meteor-rig-test" in OS.get_cmdline_user_args() and sim!=null and sim.boss!=null and sim.boss_stage==3 and p.distance_squared_to(sim.boss.p)<1:
+			if (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()) and sim!=null and sim.boss!=null and sim.boss_stage==3 and p.distance_squared_to(sim.boss.p)<1:
 				# Keep damage feedback above the shell rather than stacking over
 				# the recessed eyes. Anchor and ordinary enemy feedback stay local.
 				number_position+=Vector2(0,-240*(1+(sim.phase-1)*.12))
@@ -327,7 +327,7 @@ func _draw():
 			continue
 		if e.anchor:
 			glow(p,65,Color("f48cff"))
-			if not "--meteor-rig-test" in OS.get_cmdline_user_args():draw_arc(p,43,clock,clock+TAU,24,Color("c487fa"),2,true)
+			if not (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):draw_arc(p,43,clock,clock+TAU,24,Color("c487fa"),2,true)
 			prop(2,p,115)
 		else:
 			var size = e.size*3.0
@@ -369,16 +369,16 @@ func draw_meteor(e,p):
 	var arriving = clampf(sim.boss_time/3,0,1)
 	p.y -= (1-arriving)*450
 	var scale_value = 1+(sim.phase-1)*0.12
-	if not "--meteor-fresh-study" in OS.get_cmdline_user_args():glow(p,250,Color("ff784d"))
-	if not "--meteor-rig-test" in OS.get_cmdline_user_args():
+	if not (OS.has_feature("meteor_rework") or "--meteor-fresh-study" in OS.get_cmdline_user_args()):glow(p,250,Color("ff784d"))
+	if not (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):
 		sprite(8,p,310*scale_value,false,Color(1.35,1.1,1.0) if e.flash>0 else Color.WHITE,sin(clock*0.5)*0.08)
 	if not sim.anchors.is_empty():
-		if not "--meteor-rig-test" in OS.get_cmdline_user_args():
+		if not (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):
 			draw_arc(p,150,-clock*0.3,TAU-clock*0.3,80,Color(0.65,0.52,1,0.4),3,true)
 			for a in sim.anchors: draw_line(p,screen(a.p),Color(0.66,0.45,1,0.22),3,true)
 	else:
-		if not "--meteor-fresh-study" in OS.get_cmdline_user_args():glow(p+Vector2(14,-10),90,Color("ffe28c"))
-		if not "--meteor-rig-test" in OS.get_cmdline_user_args():draw_arc(p,140,0,TAU*maxf(0,sim.core_time)/12,64,Color("ffe19a"),4,true)
+		if not (OS.has_feature("meteor_rework") or "--meteor-fresh-study" in OS.get_cmdline_user_args()):glow(p+Vector2(14,-10),90,Color("ffe28c"))
+		if not (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):draw_arc(p,140,0,TAU*maxf(0,sim.core_time)/12,64,Color("ffe19a"),4,true)
 
 func draw_hazard(h,target = null):
 	if target==null: target = self
@@ -422,7 +422,7 @@ func draw_dinosaur_deaths(canvas):
 			canvas.draw_set_transform(Vector2.ZERO)
 
 func landmark_actor_depth():
-	if sim!=null and sim.boss!=null and sim.boss_stage==3 and "--meteor-rig-test" in OS.get_cmdline_user_args():return true
+	if sim!=null and sim.boss!=null and sim.boss_stage==3 and (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):return true
 	return rig_bosses and sim!=null and sim.boss!=null and sim.boss_stage!=3 and (sim.boss.identity=="basalt" or (sim.boss.identity=="thorn" and ("--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework"))))
 
 func landmark_depth_enemy(e):

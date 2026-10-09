@@ -1,13 +1,13 @@
 extends RefCounted
 ## Player-facing changes only; unrevealed content stays out of public notes.
-const VERSION="0.14.3"
-const TITLE="Boss Build Fixes"
+const VERSION="0.14.4"
+const TITLE="Meteor Rework"
 const ENTRIES=[
   {
     "icon": "mortar",
     "category": "weapon",
-    "title": "BOSS BUILD FIXES",
-    "body": "Boss attack artwork is now bundled inside the game, missing runtime dependencies are restored, and experimental beam audio is kept out of ordinary gameplay."
+    "title": "METEOR REWORK",
+    "body": "Meteor now uses its reconstructed molten core, animated shell and orbiting stone debris. Its burning flyby leads into a ground impact, randomized rupture volleys and advancing fire."
   },
   {
     "icon": "thorns",

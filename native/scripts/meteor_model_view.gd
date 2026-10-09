@@ -1,5 +1,5 @@
 extends Node2D
-## Private external-art prototype. Never enabled in an ordinary release run.
+## Packaged articulated Meteor renderer, shared by public gameplay and reviews.
 var viewport: SubViewport
 var player: AnimationPlayer
 var opening := 0.0
@@ -35,27 +35,21 @@ func apply_heat_material(mesh:MeshInstance3D,energy:float)->void:
         mesh.set_surface_override_material(surface,material)
 
 func _ready() -> void:
-    fresh_study="--meteor-fresh-study" in OS.get_cmdline_user_args()
+    fresh_study=OS.has_feature("meteor_rework") or "--meteor-fresh-study" in OS.get_cmdline_user_args()
     preload("res://scripts/hostile_fx.gd").prewarm_meteor()
-    var debris_image=Image.load_from_file(preload("res://scripts/private_review_assets.gd").resolve("res://build/boss-animation-review/meteor/debris/tumbling-rock.png"))
+    var debris_image=(load("res://assets/boss-public/effects/game-camera.png") as Texture2D).get_image()
     if debris_image!=null and not debris_image.is_empty():debris_texture=ImageTexture.create_from_image(debris_image)
     viewport = SubViewport.new()
     viewport.size = Vector2i(512, 512)
     if fresh_study and "--meteor-low-res-review" not in OS.get_cmdline_user_args():
-        viewport.size=Vector2i(1024,1024)
-        viewport.msaa_3d=Viewport.MSAA_4X
+        viewport.size=Vector2i(640,640)
+        viewport.msaa_3d=Viewport.MSAA_2X
     viewport.transparent_bg = true
     viewport.own_world_3d = true
     add_child(viewport)
-    var document := GLTFDocument.new()
-    var state := GLTFState.new()
-    var path="res://../art-source/bosses/meteor/meteor-concept-combat-study.glb" if "--meteor-concept-study" in OS.get_cmdline_user_args() else "res://../art-source/bosses/meteor/meteor-fracture-combat-study.glb" if "--meteor-fracture-study" in OS.get_cmdline_user_args() else "res://../art-source/bosses/meteor/meteor-combat-study.glb"
-    if "--meteor-fresh-study" in OS.get_cmdline_user_args():path="res://../art-source/bosses/meteor/meteor-fresh-combat-study.glb"
-    var error := document.append_from_file(preload("res://scripts/private_review_assets.gd").resolve(path), state)
-    if error != OK:
-        push_error("Private Meteor model unavailable")
-        return
-    var model := document.generate_scene(state)
+    var packed=load("res://assets/boss-public/meteor/meteor.glb") as PackedScene
+    assert(packed!=null,"Packaged Meteor scene is missing")
+    var model=packed.instantiate()
     model_root=model
     viewport.add_child(model)
     if fresh_study:
@@ -93,7 +87,7 @@ func _ready() -> void:
                 viewport.add_child(debris);debris_nodes.append(debris)
         heat_light=OmniLight3D.new();heat_light.light_color=Color("ff641c")
         heat_light.light_energy=1.15;heat_light.omni_range=4.5
-        heat_light.shadow_enabled=not "--meteor-no-heat-shadow-review" in OS.get_cmdline_user_args();viewport.add_child(heat_light)
+        heat_light.shadow_enabled=false;viewport.add_child(heat_light)
     player = model.find_child("AnimationPlayer", true, false) as AnimationPlayer
     player.callback_mode_process = AnimationMixer.ANIMATION_CALLBACK_MODE_PROCESS_MANUAL
     player.play("shell_open_reform")
@@ -120,7 +114,7 @@ func _ready() -> void:
     var camera := Camera3D.new()
     viewport.add_child(camera)
     camera.projection = Camera3D.PROJECTION_ORTHOGONAL
-    camera.size = 7.4 if fresh_study else 6.5
+    camera.size = 10.5 if fresh_study else 6.5
     camera.look_at_from_position(Vector3(5, 4.5, 8), Vector3.ZERO)
     camera.current = true
 
@@ -216,7 +210,7 @@ func draw_ground_shadow(canvas:CanvasItem,at:Vector2,phase:int,landing:float)->v
 
 func draw_body(canvas: CanvasItem, at: Vector2, phase: int) -> void:
     if player == null:return
-    var size := 400.0 * (1.0 + (phase - 1) * .12)
+    var size := 520.0 * (1.0 + (phase - 1) * .12)
     draw_debris(canvas,at,false)
     canvas.draw_texture_rect(viewport.get_texture(), Rect2(at - Vector2.ONE * size / 2, Vector2.ONE * size), false)
 

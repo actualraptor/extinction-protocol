@@ -793,7 +793,7 @@ func _process(dt):
 			if sim.boss.get("reform",0)>0: boss_label.text += " / CARAPACE BREAK"
 		if sim.boss_stage==3:
 			boss_label.text += "\n"+("%s ANCHORS / ARMORED"%sim.anchors.size() if not sim.anchors.is_empty() else "CORE EXPOSED / %.1fs"%sim.core_time)
-			if not "--meteor-rig-test" in OS.get_cmdline_user_args():boss_label.text+="   ·   EXTINCTION IN %ss"%maxi(0,int(210-sim.boss_time))
+			if not (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):boss_label.text+="   ·   EXTINCTION IN %ss"%maxi(0,int(210-sim.boss_time))
 	objective_label.text = ""
 	if sim.portal!=null:
 		objective_label.text = "RIFT / %sm · %ss · ENEMY HP ×%.1f / DMG ×%.1f"%[int(sim.pos.distance_to(sim.portal)/10),int(sim.linger),sim.linger_health(),sim.linger_damage()]
@@ -1321,7 +1321,7 @@ func manual():
 	label(v,"Five weapons. Eight passive/augment types. Eight relic types, ten copies each.\nRepeat relics add strength. Rarity controls their power. XP bonuses add together.\nTwo compatible rank-10 weapons + chest merge, freeing one slot.\nLuck improves chest tiers. Rocks block; mud slows; lava burns.",21,"b4c6c9")
 	label(v,"THE DESCENT",18,"d6b27e")
 	var descent="Bosses arrive at 5, 10 and 15 minutes. The first two open harder biomes.\nThe meteor is an endgame build check: destroy three anchors to expose its core.\nYou have 12 seconds per opening. Phase transitions restore its armor.\nIt enrages at 150 seconds and completes extinction at 210. Read the ground warnings."
-	if "--meteor-rig-test" in OS.get_cmdline_user_args():
+	if (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):
 		descent="Bosses arrive at 5, 10 and 15 minutes. The first two open harder biomes.\nDestroy three anchors to expose the meteor's core. Each opening is brief;\nphase transitions restore its armor. Read the fractures and falling debris.\nThe world burns inward. Stay ahead of the fire and finish before it consumes all ground."
 	label(v,descent,21,"b4c6c9")
 	label(v,"Explore map signals, then spend amber on discoveries in the archive.\nFull slots: improve equipped buffs. Maxed builds receive amber and healing.\nDeath banks amber. Daily rolls each reward automatically; trial uses prepared gear. Records are local.",18,"adc1bd")

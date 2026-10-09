@@ -68,13 +68,14 @@ func _ready():
 	bank.meteor_flare=bank.impact_fire
 	bank.meteor_skyfall=bank.mortar
 	bank.meteor_collapse=bank.thunder_hit
-	if "--meteor-sound-study" in OS.get_cmdline_user_args() and "--meteor-rig-test" in OS.get_cmdline_user_args():
+	bank.meteor_crash=bank.dino_basalt_step
+	if OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args():
 		for cue in ["flare","skyfall","collapse"]:
 			var id="meteor_"+cue
 			starter_variants[id]=[]
 			for variant in range(3):
-				var path=preload("res://scripts/private_review_assets.gd").resolve("res://build/boss-animation-review/meteor/audio-study/%s_%d.wav"%[id,variant])
-				var stream=AudioStreamWAV.load_from_file(path)
+				var path="res://assets/audio/meteor/%s_%d.wav"%[id,variant]
+				var stream=load(path) as AudioStreamWAV
 				if stream!=null:starter_variants[id].append(stream)
 			if not starter_variants[id].is_empty():bank[id]=starter_variants[id][0]
 			else:starter_variants.erase(id)
@@ -134,6 +135,7 @@ func play(id,volume = -12.0,pitch = 1.0,_music = false):
 	if protected_foley:next_boss_foley=(next_boss_foley+1)%boss_foley_voices.size()
 	else:next_voice = (next_voice+1)%voices.size()
 	voice.stream = sound_stream(id)
+	if id=="meteor_crash":volume=-3.0
 	voice.volume_db = volume-5 if id.begins_with("impact_") else volume-4 if id in ["pyre","winter","miasma","dread","orbital"] else volume
 	if id.begins_with("unit_"):voice.volume_db=volume-3 if id!="unit_heavy" else volume
 	if protected_foley and id.begins_with("meteor_"):voice.volume_db+=4.0

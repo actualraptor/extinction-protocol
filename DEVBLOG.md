@@ -1,5 +1,11 @@
 # Extinction Protocol devblog
 
+## 2026-10-10 — Meteor reaches the public build
+
+0.14.4 includes the reconstructed core, articulated shell and orbiting debris. A burning flyby returns for impact; the encounter begins after landing. Three-wave volleys keep one safe sector and change it between casts. Advancing fire communicates the 210-second limit.
+
+The actual Windows export activated the model without private flags and passed rendering, volley and deadline checks. At 1080p with 400 enemies and late-fight fire, average frame time was 10.2 ms and the 95th percentile was 13.6 ms on an RTX 5070 Ti. Player feedback and balance iteration continue.
+
 
 
 [Read the devblog on the website](https://actualraptor.github.io/extinction-protocol/devblog.html) · [Development roadmap](ROADMAP.md)

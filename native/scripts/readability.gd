@@ -30,7 +30,7 @@ func _process(dt):
 	var review_started=Time.get_ticks_usec()
 	if world.sim != null: survivor.update(world.sim)
 	var s=world.sim
-	if s!=null and s.boss!=null and s.boss_stage==3 and "--meteor-rig-test" in OS.get_cmdline_user_args():
+	if s!=null and s.boss!=null and s.boss_stage==3 and (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):
 		if meteor_fire==null:
 			meteor_fire=preload("res://scripts/meteor_fire_view.gd").new();meteor_fire.world=world;add_child(meteor_fire)
 		if meteor_model==null:
@@ -98,7 +98,7 @@ func _draw():
 	world.draw_dinosaur_deaths(self)
 	# Boss silhouette and hostile casts stay above every friendly spell layer.
 	if s.boss!=null and s.boss_stage==3:
-		if meteor_model!=null and "--meteor-rig-test" in OS.get_cmdline_user_args():meteor_model.draw_ground_shadow(self,world.screen(s.boss.p),s.phase,clampf(s.boss_time/3,0,1))
+		if meteor_model!=null and (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):meteor_model.draw_ground_shadow(self,world.screen(s.boss.p),s.phase,clampf(s.boss_time/3,0,1))
 		else:world.sprite(8,world.screen(s.boss.p),310*(1+(s.phase-1)*0.12),false,Color.WHITE,sin(world.clock*0.5)*0.08,self)
 	elif s.boss!=null:
 		var e=s.boss
@@ -171,7 +171,7 @@ func _draw():
 		if impact.kind=="dino_earth_impact":
 			Hostile.travelling_ground_fx(self,{"kind":"circle","radius":impact.size,"life":impact.life,"max_life":impact.max,"wave":0},world.screen(impact.p))
 	var rig_active=world.rig_bosses and s.boss!=null and s.boss_stage!=3 and (s.boss.identity=="basalt" or (s.boss.identity=="thorn" and ("--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")))) and boss_model!=null
-	var meteor_active=meteor_model!=null and s.boss!=null and s.boss_stage==3 and "--meteor-rig-test" in OS.get_cmdline_user_args()
+	var meteor_active=meteor_model!=null and s.boss!=null and s.boss_stage==3 and (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args())
 	var actor_layers=[{"y":s.pos.y,"kind":"player"}]
 	if rig_active or meteor_active:
 		actor_layers.append({"y":s.boss.p.y if meteor_active else rendered_boss_p.y,"kind":"meteor" if meteor_active else "boss"})
@@ -195,20 +195,18 @@ func _draw():
 				var flight=clampf(entry_progress/.64,0,1)
 				var return_progress=clampf((entry_progress-.64)/.36,0,1)
 				var screen=world.visible_rect().size
-				# Keep the full 400px renderable body inside the camera. The old
-				# +/-520 path intentionally crossed the canvas edge and clipped it.
-				var edge=220.0
-				var flight_at=Vector2(screen.x-edge,screen.y*.18).lerp(Vector2(edge,screen.y*.32),flight)
-				# Keep the setup off-screen, then bring the full 400px texture
-				# beyond its half-width before the visible return arc.
-				var arc_a=Vector2(edge,screen.y*.32)
-				var arc_b=Vector2(screen.x*.18,screen.y*.10)
-				var arc_c=world.screen(s.boss.p)+Vector2(0,-120)
-				var arc_t=arc_a.lerp(arc_b,clampf(return_progress*2,0,1)).lerp(arc_b.lerp(arc_c,clampf(return_progress*2-1,0,1)),clampf(return_progress*2,0,1))
-				# Only use a brief edge transition. Once the return begins, the
-				# full body must be inside the frame instead of lingering clipped.
-				var edge_return=clampf(return_progress/.08,0,1)
-				meteor_at=flight_at.lerp(arc_a,edge_return) if return_progress<.08 else arc_t
+				var edge=260.0
+				var rect=world.visible_rect()
+				var start_at=rect.position+Vector2(screen.x+edge,screen.y*.20)
+				var exit_at=rect.position+Vector2(-edge,screen.y*.34)
+				var landing_at=world.screen(s.boss.p)
+				if return_progress<=0:
+					meteor_at=start_at.lerp(exit_at,flight)
+				else:
+					var t=return_progress
+					var control_a=exit_at+Vector2(-screen.x*.12,-screen.y*.48)
+					var control_b=landing_at+Vector2(screen.x*.16,-screen.y*.48)
+					meteor_at=pow(1-t,3)*exit_at+3*pow(1-t,2)*t*control_a+3*(1-t)*t*t*control_b+t*t*t*landing_at
 				draw_meteor_entry_fx(self,meteor_at,flight,return_progress,entry_progress,screen)
 			meteor_model.draw_body(self,meteor_at,s.phase)
 		else:
@@ -218,7 +216,7 @@ func _draw():
 	if not enemy_batch.is_empty():draw_depth_enemies(enemy_batch,s)
 	draw_crit_feedback()
 	if s.boss!=null and s.boss_stage==3:
-		if not "--meteor-rig-test" in OS.get_cmdline_user_args():draw_arc(world.screen(s.boss.p),720,0,TAU,100,Color(1,0.3,0.2,0.5),5,true)
+		if not (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):draw_arc(world.screen(s.boss.p),720,0,TAU,100,Color(1,0.3,0.2,0.5),5,true)
 	review_draw_ms=(Time.get_ticks_usec()-review_started)/1000.0
 
 func draw_meteor_entry_fx(canvas:CanvasItem,at:Vector2,flight:float,return_progress:float,progress:float,screen:Vector2)->void:
@@ -230,12 +228,17 @@ func draw_meteor_entry_fx(canvas:CanvasItem,at:Vector2,flight:float,return_progr
 	var trail=620.0 if not returning else 420.0
 	var flicker=.82+.18*sin(world.clock*37.0)
 	for band in range(5):
-		var width=52.0-band*8.0
-		var offset=sin(world.clock*9.0+band*1.7)*10.0
-		var trail_start=at-direction*(trail+band*32)+direction.orthogonal()*offset
-		var trail_end=at-direction*(24+band*8)+direction.orthogonal()*offset*.2
-		canvas.draw_line(trail_start,trail_end,Color(1.0,.10,.015,(.10-band*.014)*flicker),width,true)
-		canvas.draw_line(trail_start,trail_end,Color(1.0,.62,.12,(.35-band*.045)*flicker),maxf(3,width*.16),true)
+		var points=PackedVector2Array()
+		var colors=PackedColorArray()
+		for side in [1,-1]:
+			for sample in range(33):
+				var t=float(sample if side==1 else 32-sample)/32.0
+				var noise=sin(t*19-world.clock*13+band)*7+sin(t*41+world.clock*17)*4
+				var width=(45-band*7+noise)*pow(1-t,.8)
+				var center=at-direction*(24+t*trail)+direction.orthogonal()*sin(t*11-world.clock*7)*22*t
+				points.append(center+direction.orthogonal()*width*side)
+				colors.append(Color(1.0,.12+band*.10,.015+band*.02,(.18+band*.025)*pow(1-t,1.3)*flicker))
+		canvas.draw_polygon(points,colors)
 	for ember in range(24):
 		var seed=float(ember*31)
 		var t=fposmod(world.clock*(1.4+ember*.03)+seed*.17,1.0)

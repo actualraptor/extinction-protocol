@@ -242,7 +242,7 @@ func _draw():
 		if h.wait>0 and h.wait<0.7 and h.kind in ["friendly","circle"]:
 			var p = world.screen(h.p)+Vector2(-100,-400)*h.wait/0.7
 			piece(6,p,Vector2(160,85),1.32,clampf((0.7-h.wait)*4,0,0.85))
-	if s.boss!=null and s.boss_stage==3 and "--meteor-rig-test" not in OS.get_cmdline_user_args():
+	if s.boss!=null and s.boss_stage==3 and (not OS.has_feature("meteor_rework") and "--meteor-rig-test" not in OS.get_cmdline_user_args()):
 		var center = world.screen(s.boss.p)
 		for i in range(7):
 			var angle = world.clock*0.4+i*TAU/7

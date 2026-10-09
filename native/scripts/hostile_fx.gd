@@ -196,12 +196,12 @@ static func hazard(canvas,h,p,clock):
 				for chip in range(5):
 					canvas.draw_circle(at+Vector2.from_angle(chip*TAU/5)*7,4+chip%3,Color(.19,.14,.08))
 		else:
-			if "--meteor-fresh-study" in OS.get_cmdline_user_args() and textured_meteor_burst(canvas,h,p):return
+			if (OS.has_feature("meteor_rework") or "--meteor-fresh-study" in OS.get_cmdline_user_args()) and textured_meteor_burst(canvas,h,p):return
 			canvas.draw_circle(p,h.radius,Color(.16,.07,.025,.5))
 			piece(canvas,1,p,Vector2.ONE*h.radius*2.1,0,.9)
 		return
 	if h.get("meteor_rupture",false):
-		if h.wait<=0 and "--meteor-fresh-study" in OS.get_cmdline_user_args() and textured_meteor_ridge(canvas,h,p):return
+		if h.wait<=0 and (OS.has_feature("meteor_rework") or "--meteor-fresh-study" in OS.get_cmdline_user_args()) and textured_meteor_ridge(canvas,h,p):return
 		var start=h.angle-h.arc*.5
 		var end=start+h.arc
 		var charging=h.wait>0
@@ -256,7 +256,7 @@ static func hazard(canvas,h,p,clock):
 				# own ground shadow instead of reading as a painted bead.
 				canvas.draw_circle(at-direction*(5+grain*8),size*2,Color(.28,.22,.15,.08))
 				var raised=at-Vector2(0,lift)
-				if "--meteor-fresh-study" in OS.get_cmdline_user_args() and load_meteor_rocks():
+				if (OS.has_feature("meteor_rework") or "--meteor-fresh-study" in OS.get_cmdline_user_args()) and load_meteor_rocks():
 					var dimensions=Vector2(size*4,size*3.5)
 					canvas.draw_set_transform(raised,sin(index*3.2)*.5)
 					canvas.draw_texture_rect(meteor_rock_views[index%6],Rect2(-dimensions*.5,dimensions),false,Color(1,1,1,.85))
@@ -272,7 +272,7 @@ static func hazard(canvas,h,p,clock):
 		if h.wait>0:
 			terrain_warning(canvas,h,p)
 		else:
-			if "--meteor-fresh-study" in OS.get_cmdline_user_args() and textured_meteor_burst(canvas,h,p):return
+			if (OS.has_feature("meteor_rework") or "--meteor-fresh-study" in OS.get_cmdline_user_args()) and textured_meteor_burst(canvas,h,p):return
 			canvas.draw_circle(p,h.radius,Color(.18,.045,.012,.6))
 			piece(canvas,1,p,Vector2.ONE*h.radius*2.2,0,.95)
 			for index in range(7):
@@ -325,7 +325,7 @@ static func meteor_ground_front(canvas,p,radius,start,end,color,width,roughness)
 static func terrain_warning(canvas,h,p):
 	var progress=clampf(1-h.wait/maxf(.01,h.warning),0,1)
 	if h.get("meteor_fragment",false) or h.get("meteor_eruption",false):
-		if "--meteor-fresh-study" in OS.get_cmdline_user_args() and textured_meteor_warning(canvas,h,p,progress):return
+		if (OS.has_feature("meteor_rework") or "--meteor-fresh-study" in OS.get_cmdline_user_args()) and textured_meteor_warning(canvas,h,p,progress):return
 		# Heat opens uneven fissures in the actual strike footprint. The
 		# perimeter remains readable without a UI ring or straight spokes.
 		for index in range(17):

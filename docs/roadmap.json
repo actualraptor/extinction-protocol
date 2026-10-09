@@ -1,14 +1,14 @@
 {
-  "updated": "2026-10-09",
-  "release": "0.14.2",
+  "updated": "2026-10-10",
+  "release": "0.14.4",
   "policy": "Done means accepted by the developer. A private preview is not a shipped feature. No release dates are promised.",
   "cards": [
     {
       "id": "meteor-encounter",
       "title": "Meteor encounter redesign",
       "status": "in-progress",
-      "summary": "Meteor is on its first reconstructed presentation pass; entrance motion, shell animation, fire pressure and randomized wave patterns are still being refined.",
-      "next": "Continue animation, impact, readability and full-fight balance updates."
+      "summary": "Reconstructed Meteor model and redesigned encounter shipped in 0.14.4: animated shell, orbiting debris, burning flyby, randomized safe sectors and advancing fire.",
+      "next": "Continue player feedback, presentation polish and full-fight balance."
     },
     {
       "id": "boss-animation",
@@ -124,6 +124,17 @@
     }
   ],
   "devlog": [
+    {
+      "id": "meteor-public-0144",
+      "date": "2026-10-10",
+      "title": "Meteor reaches the public build",
+      "stage": "Public update",
+      "body": "The reconstructed core and animated shell are now packaged in the ordinary Windows release, alongside the rebuilt dinosaur bosses.",
+      "changed": "The entrance crosses the screen before returning for impact. Rubble volleys change their safe direction between casts; encroaching fire communicates the encounter deadline.",
+      "testing": "Reviewed the exported executable without private Meteor flags, checked render bounds and volley rules, and measured late-fight fire with 400 enemies at 1080p. Average frame time was 10.2 ms on an RTX 5070 Ti; 95th percentile was 13.6 ms.",
+      "next": "Collect player feedback and continue presentation and encounter balance refinements.",
+      "card": "meteor-encounter"
+    },
     {
       "id": "boss-rework-ships",
       "date": "2026-10-09",
