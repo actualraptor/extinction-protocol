@@ -1,8 +1,20 @@
 extends RefCounted
 ## Player-facing changes only; unrevealed content stays out of public notes.
-const VERSION="0.14.1"
-const TITLE="A World Reborn"
+const VERSION="0.14.2"
+const TITLE="Dinosaur Boss Rework"
 const ENTRIES=[
+  {
+    "icon": "thorns",
+    "category": "weapon",
+    "title": "THE DINOSAUR BOSS REWORK",
+    "body": "T-rex and Triceratops are finished in the public build, with rebuilt models, grounded pursuit, directional attacks, clearer spacing and creature sound."
+  },
+  {
+    "icon": "mortar",
+    "category": "weapon",
+    "title": "METEOR: FIRST PASS",
+    "body": "Meteor has entered its first reconstructed presentation pass. Entrance motion, shell animation, fire pressure and randomized waves will continue to receive updates."
+  },
   {
     "icon": "spear",
     "category": "weapon",

@@ -60,6 +60,7 @@ var pickups = []
 var pickup_cooldown = 0.0
 var shield = 0.0
 var echoes = []
+var beams = []
 var volleys = []
 var zones = []
 var relic_state = {}
@@ -125,6 +126,7 @@ var boss_stage = 0
 var boss_time = 0.0
 var boss_pattern = 0
 var boss_timer = 0.0
+var meteor_entry_time := 0.0
 var core_time = 0.0
 var phase = 1
 var anchors = []
@@ -326,6 +328,8 @@ func tick(dt, direction):
 	if not resting:director.update(self,dt)
 	var spawn_rate = 2.4+time/18.0 if time<120 else 3+time/14.0+depth*5
 	spawn_rate *= lerpf(0.65,1.0,clampf(time/120.0,0.0,1.0))
+	# More bodies and XP opportunities, with a gentler increase at the opening.
+	spawn_rate *= lerpf(1.35,1.65,clampf(time/120.0,0.0,1.0))
 	spawn_rate *= stage.modifiers.get("density",1.0)*(1+minf(5,linger_pressure()/12.0))
 	spawn_budget = 0.0 if resting else minf(12,spawn_budget+dt*spawn_rate*(0.4 if boss != null else 1.0))
 	while spawn_budget >= 1:
@@ -359,7 +363,7 @@ func tick(dt, direction):
 		companions.collision.build(companions.units)
 		for enemy in enemies:
 			if not enemy.dead and not enemy.anchor and not enemy.get("breakable",false):
-				enemy.p=companions.collision.block_enemy(enemy,enemy.p,enemy.p)
+				enemy.p=companions.collision.block_enemy(enemy,enemy.p,enemy.p,terrain)
 	update_gems(dt)
 	update_objectives(dt)
 	peak_enemies = maxi(peak_enemies,enemies.size())
@@ -510,14 +514,63 @@ func update_enemies(dt):
 						e.spit_dir = (pos-e.p).normalized()
 					else: add_hazard("circle",pos if role!="slam" else e.p,0,42 if role!="slam" else 85,1.65,0.3,12+depth*5)
 		if e.boss and boss_stage<3 and e.get("action","recover")=="recover" and e.get("reform",0)<=0:
+			if e.has("attack_stance"):
+				var old=e.p
+				var travel=(e.attack_stance-e.p).limit_length(150*step)
+				var facing=e.get("rig_heading",e.aim.angle())
+				var grounded=preload("res://scripts/dinosaur_attacks.gd").move_ground_body(terrain,e.p,travel,facing,facing,70 if e.identity=="thorn" else 90)
+				e.p=grounded.p;e.motion=(e.p-old).normalized()
+				if companions!=null:e.p=companions.collision.block_enemy(e,old,e.p,terrain)
+				if preload("res://scripts/dinosaur_attacks.gd").body_contains(e,pos):hurt(16+depth*8,"Overwhelmed by the horde")
+				continue
 			# Recovery is a mobile pursuit, while committed tells stay anchored.
 			var speeds={"thorn":76.0,"basalt":58.0,"hunt":112.0,"aurora":88.0,"warden":66.0,"bloom":52.0}
-			if delta.length()>e.size+45:
+			if e.get("identity","")=="basalt" and ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")):speeds.basalt=300.0
+			var quadruped=e.get("identity","")=="thorn" and ("--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework"))
+			if quadruped:speeds.thorn=125.0
+			var spacing={"thorn":140.0,"basalt":180.0,"hunt":120.0,"aurora":150.0,"warden":155.0,"bloom":180.0}.get(e.get("identity","thorn"),140.0)
+			# Moving prey can consume the small margin beyond the quadruped's
+			# 128px body-contact envelope before recovery reverses direction.
+			if quadruped:spacing=155.0
+			if delta.length()>.01:
+				var old_heading=e.get("rig_heading",e.aim.angle())
 				var chase=terrain.direction(e.p,pos,e.uid)
+				# Recover into attack range instead of occupying the player's
+				# ground position. A stable orbit side avoids frame-to-frame
+				# reversals; committed charges and lunges keep their own movement.
+				if delta.length()<spacing+35:
+					var radial=delta.normalized()
+					var side=1.0 if e.uid%2==0 else -1.0
+					var approach=clampf((delta.length()-spacing)/45.0,-.8,.8)
+					chase=radial*approach+radial.orthogonal()*side*.32
+					if quadruped or (e.get("identity","")=="basalt" and ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework"))):
+						# Tactical side steps keep the body watching its prey.
+						# Simulation owns yaw so rendering cannot cancel wall turns.
+						var facing=e.get("rig_heading",e.aim.angle())
+						var error=wrapf(radial.angle()-facing,-PI,PI)
+						var close_defense=quadruped and delta.length()<spacing*.7
+						var trex_defense=e.get("identity","")=="basalt" and ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework"))
+						var turn_limit=4.2 if close_defense else 2.8 if quadruped else 1.8 if trex_defense else 1.2
+						var wanted_turn=clampf(error*(12.0 if close_defense else 7.5 if quadruped else 4.0 if trex_defense else 2.5),-turn_limit,turn_limit)
+						e.rig_turn_velocity=move_toward(e.get("rig_turn_velocity",0.0),wanted_turn,(16.0 if close_defense else 8.0 if quadruped else 4.5 if trex_defense else 3.0)*step)
+						e.rig_heading=facing+e.rig_turn_velocity*step
+				if delta.length()>=spacing+35 and (quadruped or (e.get("identity","")=="basalt" and ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")))):
+					var facing=e.get("rig_heading",e.aim.angle())
+					var error=wrapf(chase.angle()-facing,-PI,PI)
+					var turn_limit=2.8 if quadruped else 2.2
+					var wanted_turn=clampf(error*(7.5 if quadruped else 8.0),-turn_limit,turn_limit)
+					e.rig_turn_velocity=move_toward(e.get("rig_turn_velocity",0.0),wanted_turn,8.0*step)
+					facing+=e.rig_turn_velocity*step;e.rig_heading=facing
+					# Turn through a curve; do not translate backward across planted feet.
+					chase=Vector2.from_angle(facing)*maxf(0,cos(error))*minf(1,chase.length())
 				var start=e.p
-				e.p=terrain.move(e.p,chase*speeds.get(e.get("identity","thorn"),76.0)*(1.12 if phase==2 else 1.0)*step,32)
-				if companions!=null:e.p=companions.collision.block_enemy(e,start,e.p)
-				e.aim=chase;e.motion=chase
+				var travel=chase*speeds.get(e.get("identity","thorn"),76.0)*(1.12 if phase==2 else 1.0)*step
+				if quadruped or (e.get("identity","")=="basalt" and ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework"))):
+					var grounded=preload("res://scripts/dinosaur_attacks.gd").move_ground_body(terrain,e.p,travel,old_heading,e.get("rig_heading",old_heading),70.0 if quadruped else 90.0)
+					e.p=grounded.p;e.rig_heading=grounded.heading
+				else:e.p=terrain.move(e.p,travel,32)
+				if companions!=null:e.p=companions.collision.block_enemy(e,start,e.p,terrain)
+				e.aim=chase.normalized();e.motion=(e.p-start).normalized()
 			delta=pos-e.p
 		# Boss contact hurts the player, but never shoves the boss.
 		if (preload("res://scripts/dinosaur_attacks.gd").body_contains(e,pos) if e.boss and boss_stage<3 else (pos-e.p).length()<e.size+15) and not (e.boss and e.get("action","")=="intro"):
@@ -897,6 +950,7 @@ func kill(e):
 
 func enter_portal():
 	if not active or choosing or portal==null or boss!=null: return
+	beams.clear()
 	preload("res://scripts/remnant_system.gd").clear(self)
 	if mode=="daily" and boss_stage==3:
 		daily_loop+=1;boss_stage=0;depth=0
@@ -1067,6 +1121,7 @@ func hazard_contains(h,p):
 			var rotated = d.rotated(-h.angle)
 			return rotated.x>0 and rotated.x<h.get("length",1000.0) and absf(rotated.y)<h.radius
 		"cone": return d.length()<h.radius and absf(Vector2.from_angle(h.angle).angle_to(d))<h.get("arc",1.25)*0.5
+		"gust":return absf(d.length()-h.radius)<h.get("thickness",42.0) and (h.arc>=TAU-.001 or absf(Vector2.from_angle(h.angle).angle_to(d))<h.arc*.5)
 		"ring": return absf(d.length()-h.radius)<20
 		_: return d.length()<h.radius
 
@@ -1079,28 +1134,65 @@ func update_hazards(dt):
 		if h.has("source_uid") and not enemies.any(func(e):return e.uid==h.source_uid and not e.dead): continue
 		h.wait -= dt
 		if h.wait<=0:
+			# Only the portion after the warning belongs to the active attack.
+			# A slow frame crossing the warning must not consume its entire
+			# duration or make a travelling wave jump before it has appeared.
+			var active_dt=minf(dt,maxf(0,-h.wait))
 			if not h.fired:
 				h.fired = true
-				effect.emit("blast_frost" if h.get("theme","") in ["hunt","aurora"] else "blast_miasma" if h.get("theme","")=="bloom" else "blast_orbital" if h.get("theme","")=="warden" else "blast_club" if h.get("theme","")=="thorn" else "impact",h.p,Color(BossEncounters.COLORS.get(h.get("theme",""),"ff9b68")),h.radius)
+				if h.kind!="gust" and not h.get("seismic",false) and not h.get("marker_only",false):
+					effect.emit("blast_frost" if h.get("theme","") in ["hunt","aurora"] else "blast_miasma" if h.get("theme","")=="bloom" else "blast_orbital" if h.get("theme","")=="warden" else "blast_club" if h.get("theme","")=="thorn" else "impact",h.p,Color(BossEncounters.COLORS.get(h.get("theme",""),"ff9b68")),h.radius)
 				if h.kind == "friendly":
 					blast(h.p,h.radius,h.damage,h.id)
 					sound.emit("impact_fire")
+				elif h.has("impact_cue"):sound.emit(h.impact_cue)
 				elif not h.get("marker_only",false): sound.emit("impact_frost" if h.get("theme","") in ["hunt","aurora"] else "miasma" if h.get("theme","")=="bloom" else "lightning" if h.get("theme","")=="warden" else "club")
-			h.life -= dt
-			if h.kind != "friendly" and not h.get("marker_only",false) and hazard_contains(h,pos): hurt(h.damage,h.get("reason","Caught in an extinction strike"))
+			if h.kind=="gust":
+				var previous_radius=h.radius
+				h.radius+=h.travel_speed*minf(active_dt,maxf(0,h.life))
+				var delta=pos-h.p
+				var crossed=delta.length()>=previous_radius-h.get("thickness",42.0) and delta.length()<=h.radius+h.get("thickness",42.0)
+				var inside_arc=h.arc>=TAU-.001 or absf(Vector2.from_angle(h.angle).angle_to(delta))<h.arc*.5
+				if not h.hit_player and crossed and inside_arc:
+					h.hit_player=true;hurt(h.damage,h.reason+("" if h.get("meteor_rupture",false) else " / Roar pressure wave" if h.get("soundwave",false) else " / Tail gust"))
+					pos=terrain.move(pos,(pos-h.p).normalized()*h.get("push",110.0),15)
+			h.life -= active_dt
+			if h.kind not in ["friendly","gust"] and not h.get("marker_only",false) and hazard_contains(h,pos): hurt(h.damage,h.get("reason","Caught in an extinction strike"))
 		# A killing impact may finish the encounter and clear its attacks.
 		if not active or epoch!=encounter_epoch: return
 		if h.life>0: hazards.append(h)
 
+func meteor_landing_position():
+	var preferred=pos+Vector2(0,-230)
+	var best=preferred;var best_clearance=-INF
+	var fallback=Vector2.INF
+	for distance in [230.0,330.0,430.0,530.0]:
+		for index in range(32):
+			var candidate=pos+Vector2.from_angle(-PI/2+index*TAU/32)*distance
+			if not terrain.bounds.grow(-300).has_point(candidate):continue
+			var clearance=10000.0
+			for landmark in terrain.stage.get("landmarks",[]):
+				clearance=minf(clearance,candidate.distance_to(landmark.p)-float(landmark.get("scale",220.0))*.65-190)
+			if clearance>=0:
+				# Prefer upper/side positions over hiding the shell behind HUD.
+				if candidate.y<=pos.y+60:return candidate
+				if fallback==Vector2.INF:fallback=candidate
+			if clearance>best_clearance:best_clearance=clearance;best=candidate
+	return fallback if fallback!=Vector2.INF else best
+
 func spawn_boss(stage):
 	boss_stage = stage
 	boss_time = 0
+	meteor_entry_time = 4.2 if stage==3 and "--meteor-rig-test" in OS.get_cmdline_user_args() else 0.0
 	boss_timer = 3.5
 	boss_pattern = 0
 	phase = 1
 	core_time = 0
 	var p = pos+(Vector2(0,-230) if stage==3 else Vector2(250,95))
+	if stage==3 and "--meteor-rig-test" in OS.get_cmdline_user_args():p=meteor_landing_position()
 	terrain.arena = p
+	terrain.arena_radius=1510.0 if stage==3 and "--meteor-rig-test" in OS.get_cmdline_user_args() else 810.0
+	terrain.clearance.clear();terrain.flow.clear();terrain.sight.clear()
 	terrain.refresh = 0
 	next_uid += 1
 	var health = [90000.0,900000.0,20000000.0][stage-1]*pow(2.0,minf(daily_loop,25))
@@ -1129,6 +1221,8 @@ func make_anchors():
 
 func update_boss(dt):
 	if boss == null: return
+	if boss_stage==3 and meteor_entry_time>0:
+		meteor_entry_time=maxf(0.0,meteor_entry_time-dt)
 	if boss.get("immovable",false):boss.p=boss.anchor_p
 	boss_time += dt
 	if buffs.get("freeze",0)>0 or buffs.get("slow",0)>0: dt *= 0.7
@@ -1138,7 +1232,7 @@ func update_boss(dt):
 		var origin=boss.p
 		BossEncounters.update(self,dt)
 		if companions!=null and boss!=null and boss.get("lift",0)<10:
-			boss.p=companions.collision.block_enemy(boss,origin,boss.p)
+			boss.p=companions.collision.block_enemy(boss,origin,boss.p,terrain)
 		return
 	else:
 		if anchors.is_empty():
@@ -1146,37 +1240,84 @@ func update_boss(dt):
 			if core_time <= 0:
 				make_anchors()
 				banner.emit("THE CRUST REFORMS","Destroy the anchors for another damage window")
-		if boss_time >= 210:
+		var fire_encounter="--meteor-rig-test" in OS.get_cmdline_user_args()
+		if boss_time >= 210 and not fire_encounter:
 			extinction_timeout = true
 			death_reason = "Extinction completed. The core outlasted your build."
 			finish(false)
 			return
-		if pos.distance_to(boss.p)>720 and time>=boundary_ready:
+		var outside=preload("res://scripts/meteor_fire_front.gd").burning(pos,boss.p,boss_time) if "--meteor-rig-test" in OS.get_cmdline_user_args() else pos.distance_to(boss.p)>720
+		if outside and time>=boundary_ready:
 			boundary_ready = time+1.0
-			hurt(max_hp*0.18+10,"Outside the collapsing arena",true)
-			banner.emit("RETURN TO THE ARENA","THE COLLAPSE BYPASSES ARMOR")
-		if boss_time-dt<150 and boss_time>=150: banner.emit("EXTINCTION IMMINENT","60 SECONDS / THE SKY IS COLLAPSING")
+			if fire_encounter:
+				# The ending flag must describe a defeat, not merely entering
+				# overtime: a final clutch core kill can still win.
+				extinction_timeout=boss_time>=210
+				hurt(max_hp*preload("res://scripts/meteor_fire_front.gd").damage_fraction(boss_time),"Consumed by the world's fire",true)
+				if active:extinction_timeout=false
+			else:
+				hurt(max_hp*0.18+10,"Outside the collapsing arena",true)
+				banner.emit("RETURN TO THE ARENA","THE COLLAPSE BYPASSES ARMOR")
+		if boss_time-dt<150 and boss_time>=150: banner.emit("EXTINCTION IMMINENT","THE FIRE IS CLOSING IN" if fire_encounter else "60 SECONDS / THE SKY IS COLLAPSING")
 	boss_timer -= dt
 	if boss_timer>0 or (boss.reform>0 and boss_stage==3): return
 	boss_timer = (3.3 if phase==1 else 2.65 if phase==2 else 2.15)*(0.68 if boss_time>150 else 1.0)
 	var damage = 28+boss_stage*14+phase*6
 	var aim = (pos-boss.p).angle()
+	var first_hazard=hazards.size()
+	boss.meteor_cast={"pattern":boss_pattern%3,"started":time,"warning":[1.35,1.1,1.0][boss_pattern%3]}
+	var recent_casts:Array=boss.get("meteor_casts",[]).filter(func(cast):return time-cast.started<maxf(4.0,float(cast.warning)+3.4))
+	recent_casts.append(boss.meteor_cast)
+	boss.meteor_casts=recent_casts
 	match boss_pattern%3:
 		0:
 			var safe = boss_pattern*0.71
 			for j in range(8):
 				if j in [0,1]: continue
-				add_hazard("line",boss.p,safe+j*TAU/8,35,1.35,0.55,damage)
-			banner.emit("CORONAL FLARE","READ THE LANES / MOVE INTO THE GAP")
+				if "--meteor-rig-test" in OS.get_cmdline_user_args():
+					for step in range(5):
+						var direction=Vector2.from_angle(safe+j*TAU/8)
+						add_hazard("circle",boss.p+direction*(170+step*120),0,48,1.35+step*.17,.35,damage)
+						hazards[-1].meteor_eruption=true
+						hazards[-1].reason="Caught in a Meteor crust eruption"
+				else:add_hazard("line",boss.p,safe+j*TAU/8,35,1.35,0.55,damage)
+			banner.emit("CRUST ERUPTION" if "--meteor-rig-test" in OS.get_cmdline_user_args() else "CORONAL FLARE","READ THE FRACTURES / MOVE INTO THE GAP" if "--meteor-rig-test" in OS.get_cmdline_user_args() else "READ THE LANES / MOVE INTO THE GAP")
 		1:
 			for j in range(5+phase*2):
+				var private_meteor="--meteor-rig-test" in OS.get_cmdline_user_args()
 				var p = pos+velocity*0.3 if j==0 else boss.p+Vector2.from_angle(rng.randf()*TAU)*rng.randf_range(100,620)
+				if private_meteor:
+					# One locked player target; remaining debris follows spaced
+					# inner/outer arcs instead of arbitrary overlapping markers.
+					p=pos+velocity.limit_length(200)*.25 if j==0 else boss.p+Vector2.from_angle(aim+PI/2+j*TAU/(5+phase*2))*(270 if j%2 else 510)
+					if j>0 and p.distance_to(pos+velocity.limit_length(200)*.25)<(62+phase*6)*2+20:continue
 				add_hazard("circle",p,0,62+phase*6,1.1+j*0.08,0.5,damage)
+				if private_meteor:hazards[-1].merge({"meteor_fragment":true,"launch_origin":boss.p,"targeted":j==0,"reason":"Struck by falling Meteor debris"})
 			banner.emit("HEAVEN FALLS","LEAVE THE IMPACT MARKERS")
 		2:
-			for j in range(4): add_hazard("ring",boss.p,0,120+j*120,1.0+j*0.4,0.35,damage)
-			banner.emit("SEISMIC COLLAPSE","CROSS BETWEEN THE PULSES")
-	if phase>=2: add_hazard("circle",pos-velocity*0.2,0,85,1.4,1.4,damage)
+			if "--meteor-rig-test" in OS.get_cmdline_user_args():
+				# Commit a new sector for the entire volley, independent of
+				# player aim. Consecutive openings do not overlap.
+				var gap=rng.randf()*TAU
+				if boss.has("meteor_last_gap"):
+					gap=fposmod(float(boss.meteor_last_gap)+rng.randf_range(PI*.55,PI*1.45),TAU)
+				boss.meteor_last_gap=gap
+				var travel_angle=maxf(0.0,absf(wrapf(gap-aim,-PI,PI))-PI*.25+.10)
+				var warning=maxf(1.2,travel_angle*pos.distance_to(boss.p)/231.0+.65)
+				boss.meteor_cast.warning=warning
+				# Give an ordinary-speed player time to reach a distant gap,
+				# and finish the committed volley before starting another cast.
+				boss_timer=maxf(boss_timer,warning+1.1+.8)
+				for j in range(3):
+					add_hazard("gust",boss.p,gap+PI,100,warning+j*.55,2.3,damage*(1-j*.15))
+					var wave=hazards[-1]
+					wave.merge({"meteor_rupture":true,"volley_wave":j,"arc":TAU-PI*.5,"travel_speed":260.0,"thickness":22.0,"hit_player":false,"push":0.0,"source_uid":boss.uid,"reason":"Caught in a Meteor ground rupture"})
+			else:
+				for j in range(4): add_hazard("ring",boss.p,0,120+j*120,1.0+j*0.4,0.35,damage)
+			banner.emit("SEISMIC COLLAPSE","FOLLOW THE OPENING" if "--meteor-rig-test" in OS.get_cmdline_user_args() else "CROSS BETWEEN THE PULSES")
+	if phase>=2 and not "--meteor-rig-test" in OS.get_cmdline_user_args(): add_hazard("circle",pos-velocity*0.2,0,85,1.4,1.4,damage)
+	for index in range(first_hazard,hazards.size()):
+		hazards[index].impact_cue=["meteor_flare","meteor_skyfall","meteor_collapse"][boss_pattern%3]
 	boss_pattern += 1
 	log_event("boss-pattern",{"stage":boss_stage,"pattern":boss_pattern})
 
@@ -1295,6 +1436,7 @@ func open_choices(relic):
 	choice_requested.emit(options,relic)
 
 func reroll_choices():
+	if not options.is_empty() and options[0].type=="beam_path":return
 	if mode=="daily" or not choosing or option_is_relic or rerolls<=0: return false
 	rerolls -= 1
 	reroll_exclude = options.duplicate(true)
@@ -1317,6 +1459,8 @@ func choose(index):
 	if not choosing or index<0 or index>=options.size(): return
 	var o = options[index]
 	match o.type:
+		"beam_path":
+			if not preload("res://scripts/beam_prototype.gd").choose(o.id,weapons[o.id],o.milestone,o.branch):return
 		"fusion":
 			for part in Evolutions.UNIONS[o.id].parts:
 				ledger.retired[part] = time
@@ -1367,8 +1511,25 @@ func choose(index):
 	for e in nearby(pos,180):
 		if not e.boss and not e.anchor and not e.get("boss_prop",false) and not rooted(e): e.p = terrain.move(e.p,(e.p-pos).normalized()*80)
 
+	request_beam_path()
+
+func request_beam_path():
+	for id in weapons:
+		var milestone=preload("res://scripts/beam_prototype.gd").pending(id,weapons[id])
+		if milestone==0:continue
+		options=[]
+		for choice in preload("res://scripts/beam_prototype.gd").CHOICES[id][milestone]:
+			options.append({"type":"beam_path","id":id,"milestone":milestone,"branch":choice.id,"name":choice.name,"desc":choice.desc})
+		choosing=true;option_is_relic=false
+		choice_requested.emit(options,false)
+		return true
+	return false
+
 func finish(victory):
 	if not active: return
+	hazards.clear()
+	hostile_shots.clear()
+	beams.clear()
 	kael_attack.clear()
 	starter_attack.clear()
 	active = false

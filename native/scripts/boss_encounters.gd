@@ -31,12 +31,32 @@ static func impact(g):
  var b=g.boss
  var s=Attacks.shape(b.move)
  b.contact_done=true
+ if b.move=="CRUSHING BITE" and ("--painted-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")):g.sound.emit("trex_bite")
  if Attacks.hits(b,g.pos):
   g.hurt(s.damage,g.Maps.boss_name(g.map_id,g.boss_stage)+" / "+b.move)
   g.pos=g.terrain.move(g.pos,(g.pos-b.p).normalized()*70,15)
- g.effect.emit("blast_club",b.p,Color(COLORS[b.identity]),s.radius*.7);cue(g,"impact")
+ if b.identity=="thorn" and ("--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")):
+  var contact=b.p if b.move=="EARTH STOMP" else b.p+Vector2.from_angle(b.attack_angle)*95
+  g.effect.emit("dino_earth_impact",contact,Color("a08e68"),s.radius if b.move=="EARTH STOMP" else 65.0)
+ elif b.identity=="basalt" and ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")):
+  # Physical jaws and tail strikes should not flash like a magical club.
+  # Roar and stomp already have their own travelling pressure/ground effects.
+  if b.move in ["CRUSHING BITE","TAIL SWEEP"]:
+   var contact=b.p+Vector2.from_angle(b.attack_angle)*(100.0 if b.move=="CRUSHING BITE" else 125.0)
+   g.effect.emit("dino_earth_impact",contact,Color("a08e68"),45.0 if b.move=="CRUSHING BITE" else 70.0)
+ elif b.move!="SEISMIC STOMP":g.effect.emit("blast_club",b.p,Color(COLORS[b.identity]),s.radius*.7)
+ cue(g,"impact")
+ if ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")) and b.identity=="basalt":
+  if b.move=="TAIL SWEEP":
+   hazard(g,"gust",b.p,b.attack_angle,210.0,0.0,1.15,14.0,"basalt",{"physical":true,"arc":2.7,"travel_speed":380.0,"thickness":42.0,"max_life":1.15,"hit_player":false,"source_uid":b.uid})
+  elif b.move=="APEX ROAR":
+   hazard(g,"gust",b.p,0.0,100.0,0.0,1.65,22.0,"basalt",{"physical":true,"arc":TAU,"travel_speed":340.0,"thickness":36.0,"max_life":1.65,"hit_player":false,"soundwave":true,"push":45.0,"source_uid":b.uid})
+  elif b.move=="SEISMIC STOMP":
+   g.sound.emit("dino_basalt_step");g.effect.emit("dino_step",b.p,Color.WHITE,70)
+   for i in range(3):
+    hazard(g,"circle",b.p+b.aim*(180+i*140),b.attack_angle,85-i*13,.18+i*.27,.48,[28,20,12][i],"basalt",{"physical":true,"seismic":true,"wave":i,"max_life":.48,"source_uid":b.uid})
  if b.move in ["APEX ROAR","PACK CALL"]:
-  cue(g,"roar")
+  if not (b.move=="APEX ROAR" and ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework"))):cue(g,"roar")
   for e in g.enemies:
    if e.dead or e.boss or e.anchor or e.p.distance_squared_to(b.p)>420*420:continue
    if b.identity=="aurora":e.enraged_until=g.time+5.0
@@ -62,7 +82,9 @@ static func update(g,dt):
     if e.boss or e.anchor or e.dead or e.p.distance_squared_to(b.p)>300*300:continue
     e.p=g.terrain.move(e.p,(e.p-b.p).normalized()*100*dt,10)
    if progress>.65 and not b.intro_roared:
-    b.intro_roared=true;cue(g,"roar");g.effect.emit("blast_club",b.p,Color(COLORS[b.identity]),150)
+    b.intro_roared=true;cue(g,"roar")
+    var physical_intro=(b.identity=="basalt" and ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework"))) or (b.identity=="thorn" and ("--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")))
+    g.effect.emit("dino_earth_impact" if physical_intro else "blast_club",b.p,Color("a08e68") if physical_intro else Color(COLORS[b.identity]),150)
    if b.action_left<=0:begin(g,"recover",.8)
   "windup":
    b.pose=sin(progress*PI)*.055;b.lift=-progress*4
@@ -70,9 +92,24 @@ static func update(g,dt):
   "charge","pounce":
    var old=b.p
    b.p=b.origin.lerp(b.target,smoothstep(0,1,progress));b.motion=b.aim
+   if b.action=="charge" and b.identity in ["thorn","basalt"]:
+    var authored=b.p
+    var prior=clampf(progress-dt/maxf(.01,b.action_length),0,1)
+    var travel=authored-b.origin.lerp(b.target,smoothstep(0,1,prior))
+    var half=70.0 if b.identity=="thorn" else 90.0
+    var steps=maxi(1,ceili(travel.length()/12.0))
+    b.p=old
+    for step_index in range(steps):
+     var next=g.terrain.move(b.p,travel/steps,43)
+     if not g.terrain.walkable(next+b.aim*half,43) or not g.terrain.walkable(next-b.aim*half,43):break
+     b.p=next
+    if travel.length()>1 and b.p.distance_to(old)<travel.length()*.5:
+     # A blocked charge spends its momentum instead of teleporting through
+     # terrain or accumulating a larger displacement on the next frame.
+     b.action_left=0
    b.lift=sin(progress*PI)*65 if b.action=="pounce" else 0
    if b.action=="charge" and not b.contact_done:
-    if Geometry2D.get_closest_point_to_segment(g.pos,old,b.p).distance_to(g.pos)<Attacks.shape(b.move).radius+15:
+    if Attacks.segment_hits(b,g.pos+(b.p-old),g.pos,15):
      b.contact_done=true;g.hurt(Attacks.shape(b.move).damage,g.Maps.boss_name(g.map_id,g.boss_stage)+" / "+b.move)
      g.pos=g.terrain.move(g.pos,b.aim*95,15);cue(g,"impact")
    if b.identity=="hunt" and progress>.3 and b.get("trail_clock",0)<=0:
@@ -80,7 +117,10 @@ static func update(g,dt):
    b.trail_clock=maxf(0,b.get("trail_clock",0)-dt)
    if b.action_left<=0:
     if b.action=="pounce":impact(g)
-    else:cue(g,"impact");g.effect.emit("blast_club",b.p,Color(COLORS[b.identity]),90)
+    else:
+     cue(g,"impact")
+     if b.identity=="thorn" and ("--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")):g.effect.emit("dino_earth_impact",b.p+b.aim*95,Color("a08e68"),65)
+     else:g.effect.emit("blast_club",b.p,Color(COLORS[b.identity]),90)
     begin(g,"recover",1.3 if g.phase==2 else 1.9)
   "strike":
    b.pose=sin(progress*TAU)*.08
@@ -94,20 +134,46 @@ static func update(g,dt):
     b.trail_clock=maxf(0,b.get("trail_clock",0)-dt)
    if b.action_left<=0:begin(g,"recover",1.2 if g.phase==2 else 2.0)
   "recover":
-   b.motion=Vector2.ZERO if b.p.distance_to(g.pos)<b.size+45 else b.aim
+   # Tactical movement owns spacing, including backing away from overlap.
+   # Do not hide those retreat steps just because the player is close.
+   b.motion=b.aim
    if b.action_left<=0:prepare(g)
- if b.action in ["intro","charge","recover"] and b.motion.length_squared()>.01:
+ var animated_contacts=(b.identity=="basalt" and ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework"))) or (b.identity=="thorn" and ("--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")))
+ if b.action in ["intro","charge","recover"] and b.motion.length_squared()>.01 and not animated_contacts:
   b.step_clock-=dt
   if b.step_clock<=0:
    b.step_clock=.52 if b.identity=="basalt" else .7;cue(g,"step")
 static func prepare(g):
  var b=g.boss
+ var moves=Attacks.MOVES[b.identity].duplicate()
+ if b.identity=="basalt" and ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")):moves.append("SEISMIC STOMP")
+ var next_move=moves[b.attack_index%moves.size()]
+ var terrain_rig=(b.identity=="basalt" and ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework"))) or (b.identity=="thorn" and ("--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")))
+ if terrain_rig:
+  var half=70.0 if b.identity=="thorn" else 90.0
+  var heading=b.get("rig_heading",b.aim.angle())
+  if not Attacks.attack_turn_clear(g.terrain,b.p,half,heading,g.pos,next_move):
+   var stance=Attacks.attack_stance(g.terrain,b.p,heading,half,g.pos,next_move)
+   begin(g,"recover",.25)
+   if stance.distance_to(b.p)>1:b.attack_stance=stance
+   else:b.erase("attack_stance")
+   return
+  b.erase("attack_stance")
  b.attack_index+=1
- var moves=Attacks.MOVES[b.identity]
  b.move=moves[(b.attack_index-1)%moves.size()]
- begin(g,"windup",(1.1 if b.identity in ["thorn","hunt"] else 1.35)*(.82 if g.phase==2 else 1.0))
+ var windup=(1.1 if b.identity in ["thorn","hunt"] else 1.35)*(.82 if g.phase==2 else 1.0)
+ var targeted_rig=(b.identity=="basalt" and ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework"))) or (b.identity=="thorn" and ("--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")))
+ var desired=(g.pos-b.p).normalized()
+ if desired.length_squared()<.01:desired=Vector2.RIGHT
+ if targeted_rig:
+  var turn=absf(wrapf(desired.angle()-b.get("rig_heading",desired.angle()),-PI,PI))
+  b.rig_turn_time=turn/(1.6 if b.identity=="thorn" else 6.0 if b.move=="TAIL SWEEP" else 1.2)
+  windup+=b.rig_turn_time
+  if b.move=="TAIL SWEEP":windup=.65+ b.rig_turn_time
+ begin(g,"windup",windup)
+ if targeted_rig:b.aim=desired
  b.motion=b.aim;b.attack_angle=b.aim.angle();b.contact_done=false;b.second_contact=false
- if b.move=="TAIL SWEEP":b.attack_angle+=PI
+ if b.move=="TAIL SWEEP" and not targeted_rig:b.attack_angle+=PI
  var s=Attacks.shape(b.move)
  if s.kind=="line":
   var distance=540.0 if b.identity=="thorn" else 320.0
@@ -127,6 +193,8 @@ static func execute(g):
  var s=Attacks.shape(b.move)
  begin(g,"charge" if s.kind=="line" else "pounce" if b.identity=="hunt" else "strike",s.duration)
  b.target=target;b.aim=direction;b.motion=direction;b.attack_angle=angle;b.contact_done=false
+ if b.move=="TAIL SWEEP" and ("--painted-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")):g.sound.emit("trex_tail_swoosh")
+ if b.move=="APEX ROAR" and ("--painted-foot-plant" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")):cue(g,"roar")
  cue(g,"attack")
 static func prop_destroyed(g,e):
  g.effect.emit("blast_club",e.p,Color.WHITE,65);g.sound.emit("breakable");g.add_gem(e.p,8)

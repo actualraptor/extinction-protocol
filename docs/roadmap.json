@@ -1,21 +1,21 @@
 {
   "updated": "2026-10-09",
-  "release": "0.14.1",
+  "release": "0.14.2",
   "policy": "Done means accepted by the developer. A private preview is not a shipped feature. No release dates are promised.",
   "cards": [
     {
       "id": "meteor-encounter",
       "title": "Meteor encounter redesign",
       "status": "in-progress",
-      "summary": "Refine animation, environmental effects and encounter readability to match the new boss presentation.",
-      "next": "Private fire timing now preserves usable ground until the deadline. Continue full-fight balance, continuous visual review, sound and developer acceptance."
+      "summary": "Meteor is on its first reconstructed presentation pass; entrance motion, shell animation, fire pressure and randomized wave patterns are still being refined.",
+      "next": "Continue animation, impact, readability and full-fight balance updates."
     },
     {
       "id": "boss-animation",
       "title": "Dinosaur boss animation",
       "status": "in-progress",
-      "summary": "Current focus: T-rex, Triceratops and Meteor. Dinosaur tracking and combat remain under review; Meteor has an original-art 3D reconstruction and a private shell-motion study. Other bosses wait.",
-      "next": "Assertion-enabled private exports now cover chase, committed attacks, pause, death and corpse handoff. Continue visual and auditory review and full-fight balance before acceptance."
+      "summary": "T-rex and Triceratops are finished in 0.14.2. Meteor is on its first reconstructed pass, with more updates coming. Other bosses wait.",
+      "next": "Keep the finished dinosaur rework in the public build while Meteor moves through its next presentation passes."
     },
     {
       "id": "cinematics",
@@ -53,11 +53,11 @@
       "next": "Shipped in 0.14.1."
     },
     {
-      "id": "trex-review",
-      "title": "T-rex final play review",
-      "status": "improve",
-      "summary": "New rig, pursuit, directional attacks, pressure waves and heavy sound are ready for review.",
-      "next": "Developer acceptance and a final playtest are still required before a public build."
+      "id": "dinosaur-boss-rework",
+      "title": "T-rex and Triceratops boss rework",
+      "status": "done",
+      "summary": "Rebuilt models, grounded pursuit, directional attacks, spacing and creature sound are finished for both dinosaur bosses.",
+      "next": "Shipped and accepted in 0.14.2."
     },
     {
       "id": "music",
@@ -124,6 +124,18 @@
     }
   ],
   "devlog": [
+    {
+      "id": "boss-rework-ships",
+      "date": "2026-10-09",
+      "title": "The dinosaur boss rework ships",
+      "stage": "Public build 0.14.2",
+      "card": "boss-animation",
+      "body": "T-rex and Triceratops are finished in this build. Meteor is on its first reconstructed pass, with more entrance, shell and encounter updates coming.",
+      "changed": "The public build now uses the rebuilt T-rex and Triceratops models for pursuit, grounded movement, directional attacks and creature sound.",
+      "testing": "Public release packaging and runtime script validation pass for the shipped dinosaur rework. Meteor remains separate from the finished dinosaur acceptance.",
+      "learned": "A finished creature pass needs to be shipped as a focused milestone while the larger Meteor encounter keeps evolving.",
+      "next": "Continue Meteor animation, impact and readability work without changing the accepted dinosaur rework."
+    },
     {
       "id": "boss-moving-target-review",
       "date": "2026-10-09",

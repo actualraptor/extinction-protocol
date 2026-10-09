@@ -3,6 +3,7 @@ extends Node2D
 const C = preload("res://scripts/catalog.gd")
 const Seasonal = preload("res://scripts/seasonal_theme.gd")
 var sim = null
+var rig_bosses=OS.has_feature("boss_rig_playtest") or OS.has_feature("boss_rework") or "--boss-rig-test" in OS.get_cmdline_user_args() or "--boss-rig-enabled" in OS.get_cmdline_user_args()
 var atlas = preload("res://assets/characters-v2.png")
 var monster_sheet = preload("res://assets/monsters-04.png")
 var monster_regions = []
@@ -35,6 +36,10 @@ var selected = 0
 var vignette = null
 
 func _ready():
+	if "--meteor-fresh-study" in OS.get_cmdline_user_args():
+		var meteor_ground=preload("res://scripts/meteor_ground_view.gd").new()
+		meteor_ground.world=self;meteor_ground.z_index=-1;add_child(meteor_ground)
+	var beams_layer=preload("res://scripts/beam_renderer.gd").new();beams_layer.world=self;beams_layer.z_index=2;add_child(beams_layer)
 	var ground_layer = preload("res://scripts/continuous_ground.gd").new()
 	ground_layer.world = self
 	ground_layer.z_index = -2
@@ -132,7 +137,12 @@ func fx(kind,p,color,size):
 		var tier=int(kind.get_slice("_",2)) if kind.begins_with("crit_number_") else 0
 		if numbers.size()<MAX_DAMAGE_NUMBERS:
 			var duration=.75 if tier>1 else .65
-			numbers.append({"p":p,"color":color,"text":str(int(size)),"tier":tier,"life":duration,"max":duration,"sway":sin(p.x*.071+p.y*.093)})
+			var number_position=p
+			if "--meteor-rig-test" in OS.get_cmdline_user_args() and sim!=null and sim.boss!=null and sim.boss_stage==3 and p.distance_squared_to(sim.boss.p)<1:
+				# Keep damage feedback above the shell rather than stacking over
+				# the recessed eyes. Anchor and ordinary enemy feedback stay local.
+				number_position+=Vector2(0,-240*(1+(sim.phase-1)*.12))
+			numbers.append({"p":number_position,"color":color,"text":str(int(size)),"tier":tier,"life":duration,"max":duration,"sway":sin(p.x*.071+p.y*.093)})
 		return
 	var life = 0.10 if kind in ["muzzle","crit"] else 1.15 if kind in ["level","evolve","victory"] else 0.52
 	if kind.begins_with("dino_death_"):life=1.8;shake=maxf(shake,12)
@@ -173,6 +183,7 @@ func _process(dt):
 			camera_pos = sim.pos
 			camera_run = sim
 		var target=sim.pos
+		if ("--pr-boss-capture" in OS.get_cmdline_user_args() or "--quad-attack-film" in OS.get_cmdline_user_args() or "--meteor-shell-film" in OS.get_cmdline_user_args() or "--meteor-overview-film" in OS.get_cmdline_user_args()) and sim.boss!=null:target=sim.pos.lerp(sim.boss.p,.5)
 		if sim.boss!=null and sim.boss_stage<3 and sim.boss.get("action","")=="intro":
 			target=sim.pos.lerp(sim.boss.p,.3)
 		camera_pos = camera_pos.lerp(target,1-exp(-dt*12))
@@ -271,19 +282,7 @@ func _draw():
 		var size_value = float(landmark.get("scale",220.0))
 		if not visible_rect().grow(size_value).has_point(at): continue
 		glow(at,size_value*0.65,Color("b0ac83"))
-		if landmark.has("landmark_art") and ResourceLoader.exists("res://assets/stage-landmarks-092.png"):
-			if stage_landmark_sheet==null:
-				stage_landmark_sheet = load("res://assets/stage-landmarks-092.png")
-				if FileAccess.file_exists("res://assets/stage-landmarks-092-regions.json"):
-					for r in JSON.parse_string(FileAccess.get_file_as_string("res://assets/stage-landmarks-092-regions.json")): stage_landmark_regions.append(Rect2(r[0],r[1],r[2],r[3]))
-			var index = int(landmark.landmark_art)
-			var cell_size = Vector2(stage_landmark_sheet.get_size())/Vector2(3,2)
-			var region = stage_landmark_regions[index] if index<stage_landmark_regions.size() else Rect2(Vector2(index%3,floori(index/3.0))*cell_size,cell_size)
-			var dimensions = region.size*(size_value/maxf(region.size.x,region.size.y))
-			draw_texture_rect_region(stage_landmark_sheet,Rect2(at-Vector2(dimensions.x*0.5,dimensions.y*0.72),dimensions),region,Color(0.82,0.87,0.86))
-		elif landmark.has("frontier_art"):
-			draw_texture_rect(preload("res://scripts/atlas_icons.gd").frontier(landmark.frontier_art),Rect2(at-Vector2.ONE*size_value*0.5,Vector2.ONE*size_value),false,Color(0.75,0.82,0.8))
-		else: prop(landmark.get("art",6),at,size_value,Color(0.75,0.82,0.8))
+		if not landmark_actor_depth():draw_landmark_art(self,landmark)
 		if landmark.p.distance_to(sim.pos)<500: draw_string(font,at+Vector2(-110,size_value*0.4),landmark.name,HORIZONTAL_ALIGNMENT_CENTER,220,14,Color("99aaa5"))
 		if sim.halloween:
 			Seasonal.draw_prop(self,at+Vector2(95,35),0,55,sim.time)
@@ -328,7 +327,7 @@ func _draw():
 			continue
 		if e.anchor:
 			glow(p,65,Color("f48cff"))
-			draw_arc(p,43,clock,clock+TAU,24,Color("c487fa"),2,true)
+			if not "--meteor-rig-test" in OS.get_cmdline_user_args():draw_arc(p,43,clock,clock+TAU,24,Color("c487fa"),2,true)
 			prop(2,p,115)
 		else:
 			var size = e.size*3.0
@@ -370,14 +369,16 @@ func draw_meteor(e,p):
 	var arriving = clampf(sim.boss_time/3,0,1)
 	p.y -= (1-arriving)*450
 	var scale_value = 1+(sim.phase-1)*0.12
-	glow(p,250,Color("ff784d"))
-	sprite(8,p,310*scale_value,false,Color(1.35,1.1,1.0) if e.flash>0 else Color.WHITE,sin(clock*0.5)*0.08)
+	if not "--meteor-fresh-study" in OS.get_cmdline_user_args():glow(p,250,Color("ff784d"))
+	if not "--meteor-rig-test" in OS.get_cmdline_user_args():
+		sprite(8,p,310*scale_value,false,Color(1.35,1.1,1.0) if e.flash>0 else Color.WHITE,sin(clock*0.5)*0.08)
 	if not sim.anchors.is_empty():
-		draw_arc(p,150,-clock*0.3,TAU-clock*0.3,80,Color(0.65,0.52,1,0.4),3,true)
-		for a in sim.anchors: draw_line(p,screen(a.p),Color(0.66,0.45,1,0.22),3,true)
+		if not "--meteor-rig-test" in OS.get_cmdline_user_args():
+			draw_arc(p,150,-clock*0.3,TAU-clock*0.3,80,Color(0.65,0.52,1,0.4),3,true)
+			for a in sim.anchors: draw_line(p,screen(a.p),Color(0.66,0.45,1,0.22),3,true)
 	else:
-		glow(p+Vector2(14,-10),90,Color("ffe28c"))
-		draw_arc(p,140,0,TAU*maxf(0,sim.core_time)/12,64,Color("ffe19a"),4,true)
+		if not "--meteor-fresh-study" in OS.get_cmdline_user_args():glow(p+Vector2(14,-10),90,Color("ffe28c"))
+		if not "--meteor-rig-test" in OS.get_cmdline_user_args():draw_arc(p,140,0,TAU*maxf(0,sim.core_time)/12,64,Color("ffe19a"),4,true)
 
 func draw_hazard(h,target = null):
 	if target==null: target = self
@@ -419,3 +420,38 @@ func draw_dinosaur_deaths(canvas):
 			var width=death.size*4
 			canvas.draw_texture_rect_region(preload("res://scripts/dinosaur_art.gd").SHEET,Rect2(-width/2,-width*.72,width,width*.75),preload("res://scripts/dinosaur_art.gd").region(kind,5),Color(1,1,1,1-age))
 			canvas.draw_set_transform(Vector2.ZERO)
+
+func landmark_actor_depth():
+	if sim!=null and sim.boss!=null and sim.boss_stage==3 and "--meteor-rig-test" in OS.get_cmdline_user_args():return true
+	return rig_bosses and sim!=null and sim.boss!=null and sim.boss_stage!=3 and (sim.boss.identity=="basalt" or (sim.boss.identity=="thorn" and ("--triceratops-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework"))))
+
+func landmark_depth_enemy(e):
+	if not landmark_actor_depth() or e.dead or e.boss or e.anchor or e.elite or e.kind>=14 or e.get("breakable",false) or e.get("boss_prop",false):return false
+	var at=e.get("render_p",e.p)
+	if not visible_rect().grow(100).has_point(screen(at)):return false
+	for landmark in sim.terrain.stage.get("landmarks",[]):
+		var reach=float(landmark.get("scale",220.0))*.8+e.size*2
+		if at.distance_squared_to(landmark.p)<reach*reach:return true
+	return false
+
+func draw_landmark_art(canvas,landmark):
+	var at=screen(landmark.p)
+	var size_value=float(landmark.get("scale",220.0))
+	if not visible_rect().grow(size_value).has_point(at):return
+	if landmark.has("landmark_art") and ResourceLoader.exists("res://assets/stage-landmarks-092.png"):
+		if stage_landmark_sheet==null:
+			stage_landmark_sheet = load("res://assets/stage-landmarks-092.png")
+			if FileAccess.file_exists("res://assets/stage-landmarks-092-regions.json"):
+				for r in JSON.parse_string(FileAccess.get_file_as_string("res://assets/stage-landmarks-092-regions.json")): stage_landmark_regions.append(Rect2(r[0],r[1],r[2],r[3]))
+		var index = int(landmark.landmark_art)
+		var cell_size = Vector2(stage_landmark_sheet.get_size())/Vector2(3,2)
+		var region = stage_landmark_regions[index] if index<stage_landmark_regions.size() else Rect2(Vector2(index%3,floori(index/3.0))*cell_size,cell_size)
+		var dimensions = region.size*(size_value/maxf(region.size.x,region.size.y))
+		canvas.draw_texture_rect_region(stage_landmark_sheet,Rect2(at-Vector2(dimensions.x*0.5,dimensions.y*0.72),dimensions),region,Color(0.82,0.87,0.86))
+	elif landmark.has("frontier_art"):
+		canvas.draw_texture_rect(preload("res://scripts/atlas_icons.gd").frontier(landmark.frontier_art),Rect2(at-Vector2.ONE*size_value*0.5,Vector2.ONE*size_value),false,Color(0.75,0.82,0.8))
+	else:
+		var cell_size=Vector2(props.get_size())/3.0
+		var index=int(landmark.get("art",6))
+		var source=Rect2(Vector2(index%3,floori(index/3.0))*cell_size,cell_size)
+		canvas.draw_texture_rect_region(props,Rect2(at-Vector2(size_value/2,size_value*.75),Vector2.ONE*size_value),source,Color(.75,.82,.8))

@@ -1,12 +1,12 @@
 const repository = document.documentElement.dataset.repository || 'actualraptor/extinction-protocol';
 const base = `https://github.com/${repository}`;
 // Keep the downloads paired with the screenshots and notes for this release.
-const releaseTag = 'v0.14.1';
+const releaseTag = 'v0.14.2';
 const links = {
  repo:base,
  release:`${base}/releases/tag/${releaseTag}`,
- windows:`${base}/releases/download/${releaseTag}/Extinction-Protocol-Windows-0.14.1.zip`,
- linux:`${base}/releases/download/${releaseTag}/Extinction-Protocol-Linux-0.14.1-UNVERIFIED.tar.gz`,
+ windows:`${base}/releases/download/${releaseTag}/Extinction-Protocol-Windows-0.14.2.zip`,
+ linux:`${base}/releases/download/${releaseTag}/Extinction-Protocol-Linux-0.14.2-UNVERIFIED.tar.gz`,
  feedback:`${base}/issues/new/choose`
 };
 document.querySelectorAll('[data-link]').forEach(link=>{link.href=links[link.dataset.link];});
