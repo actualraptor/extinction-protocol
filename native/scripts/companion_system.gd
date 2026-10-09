@@ -178,19 +178,20 @@ func update(g,dt):
 		if u.role=="wraith":
 			var orbit=g.pos+Vector2.from_angle(g.time*1.8+u.angle)*110
 			destination=target.p if u.attack<.5 and target!=null else orbit
-		if not u.has("swing") and (u.p.distance_squared_to(destination)>range_value*range_value or u.role=="wraith"):
+		var target_distance=Contact.engagement_distance(target,u.p) if target!=null else u.p.distance_to(destination)
+		if not u.has("swing") and (target_distance>range_value or u.role=="wraith"):
 			u.p=g.terrain.move(u.p,(destination-u.p).normalized()*speed*dt)
 		var wanted=u.p;u.p=old_position
 		u.p=Contact.move_minion(g,u,wanted)
 		u.moving=u.p.distance_squared_to(old_position)>.01
 		u.walk_phase=fmod(u.get("walk_phase",0.0)+u.p.distance_to(old_position)/24.0,4.0)
 		var banner=relic(g,3) if u.p.distance_squared_to(g.pos)<300*300 else 0.0
-		if target!=null and u.p.distance_squared_to(target.p)<pow(Contact.radius(u)+Contact.enemy_radius(target)+10,2) and g.time>=u.get("hurt_at",0):
+		if target!=null and Contact.engagement_distance(target,u.p)<Contact.radius(u)+Contact.enemy_radius(target)+10 and g.time>=u.get("hurt_at",0):
 			u.hp-=maxf(2,9+g.depth*4-(5 if u.champion else 0)-banner*3)
 			u.hurt_at=g.time+.8;u.flash=.15
 		animate_attack(g,u,dt)
 		u.attack-=dt
-		if target==null or u.attack>0 or u.has("swing") or u.p.distance_squared_to(target.p)>range_value*range_value: continue
+		if target==null or u.attack>0 or u.has("swing") or Contact.engagement_distance(target,u.p)>range_value: continue
 		var s=stats(g,u.source)
 		var haste=1+rank(g,6)*.2+banner*.15+(empowerment if g.time<empowerment_until else 0)
 		var cadence=1.25 if u.get("boss_form",false) and u.identity=="hunt" else 1.6 if u.get("boss_form",false) else 1.7 if u.role=="colossus" else .95
@@ -235,7 +236,7 @@ func animate_attack(g,u,dt):
 					var origin=u.p+Vector2(24*u.get("draw_facing",1.0),-34)
 					var projectile=g.shoot(u.source,origin,(victim.p-origin).normalized().rotated((j-(swing.stats.count-1)*.5)*.08),swing.power,600,1.2,2)
 					if projectile!=null:projectile.companion=u
-			elif u.p.distance_to(victim.p)<=100+victim.size:
+			elif Contact.engagement_distance(victim,u.p)<=100+victim.size:
 				attack_sound(g,u)
 				var cleave=u.champion or u.role in ["wraith","colossus"] or g.weapons.get(u.source,{}).get("level",1)>=3
 				if cleave:

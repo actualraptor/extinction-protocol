@@ -24,6 +24,9 @@ static func _clean(name):
 	return cache[path]
 
 static func _icon_name(id,category="weapon",halloween=false):
+	if id=="flametorch":return "weapons-pyre"
+	if id in ["plasma_tether"]:return "weapons-orbital"
+	if id=="beam_fuel":return "upgrades-eternity"
 	if category in ["fusion","evolution"]: category="weapon"
 	if category=="supplies":
 		if id in ["supplies","lens"]: return "relics-lens"

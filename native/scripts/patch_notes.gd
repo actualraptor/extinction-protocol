@@ -1,8 +1,14 @@
 extends RefCounted
 ## Player-facing changes only; unrevealed content stays out of public notes.
-const VERSION="0.14.2"
-const TITLE="Dinosaur Boss Rework"
+const VERSION="0.14.3"
+const TITLE="Boss Build Fixes"
 const ENTRIES=[
+  {
+    "icon": "mortar",
+    "category": "weapon",
+    "title": "BOSS BUILD FIXES",
+    "body": "Boss attack artwork is now bundled inside the game, missing runtime dependencies are restored, and experimental beam audio is kept out of ordinary gameplay."
+  },
   {
     "icon": "thorns",
     "category": "weapon",

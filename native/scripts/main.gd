@@ -8,6 +8,7 @@ const Discoveries = preload("res://scripts/discoveries.gd")
 const Maps = preload("res://scripts/expedition_maps.gd")
 const Campaign = preload("res://scripts/campaign.gd")
 var selected_map = "cradle"
+var review_tick_ms=0.0
 var campaign_last_kills = 0
 var campaign_last_bosses = 0
 var campaign_clock = 0.0
@@ -65,6 +66,12 @@ var normal_profile_path="user://progress.json"
 var progress_path = "user://progress.json"
 
 func _ready():
+	if OS.has_feature("boss_rig_playtest") or "--boss-rig-test" in OS.get_cmdline_user_args():
+		get_window().title="Extinction Protocol / PRIVATE T-REX PLAYTEST"
+		progress_path=OS.get_executable_path().get_base_dir().path_join("boss-rig-test-profile.json")
+	if "--beam-test" in OS.get_cmdline_user_args():
+		get_window().title="Extinction Protocol / BEAM PLAYTEST"
+		progress_path=OS.get_executable_path().get_base_dir().path_join("beam-test-profile.json")
 	if "--soundtrack-test" in OS.get_cmdline_user_args():
 		get_window().title="Extinction Protocol / SOUNDTRACK PLAY TEST V16"
 		progress_path=OS.get_executable_path().get_base_dir().path_join("soundtrack-test-profile.json")
@@ -132,19 +139,31 @@ func _ready():
 		if item is Control and not item is ColorRect and item != xp_bar and item.get_script()!=preload("res://scripts/player_health.gd") and item.get_script()!=preload("res://scripts/navigation.gd"):
 			hud_layout.append({"node":item,"position":item.position})
 	main_menu()
-	if "--soundtrack-test" not in OS.get_cmdline_user_args() and preload("res://scripts/opening_story.gd").available() and preload("res://scripts/opening_story.gd").first_play(save_data,OS.get_cmdline_user_args()):
+	if "--boss-rig-test" not in OS.get_cmdline_user_args() and "--beam-test" not in OS.get_cmdline_user_args() and "--soundtrack-test" not in OS.get_cmdline_user_args() and preload("res://scripts/opening_story.gd").available() and preload("res://scripts/opening_story.gd").first_play(save_data,OS.get_cmdline_user_args()):
 		play_opening()
+	if "--beam-test" in OS.get_cmdline_user_args():
+		var beam_lab=preload("res://scripts/beam_lab.gd").new();beam_lab.game=self;add_child(beam_lab)
+	if "--boss-rig-test" in OS.get_cmdline_user_args():
+		var rig_lab=preload("res://scripts/boss_rig_lab.gd").new();rig_lab.game=self;add_child(rig_lab)
 	if "--soundtrack-test" in OS.get_cmdline_user_args():
 		var lab=preload("res://scripts/soundtrack_lab.gd").new();lab.game=self;add_child(lab)
 	if "--meteor-test" in OS.get_cmdline_user_args():
 		selected=1;chosen_mode="expedition";selected_map="cradle"
 		start_run()
-		sim.base_damage=10000000.0
-		sim.max_hp=1000000.0;sim.hp=sim.max_hp
-		sim.weapons={"earthshaker":{"level":10,"evolved":true,"timer":0.0,"casts":0}}
-		sim.passives.area=15;sim.passives.haste=8
+		if "--meteor-balance-test" in OS.get_cmdline_user_args():
+			preload("res://scripts/meteor_review_loadout.gd").apply(sim,"EPIC" if "--meteor-epic-build" in OS.get_cmdline_user_args() else "RARE")
+		else:
+			sim.base_damage=10000000.0
+			sim.max_hp=1000000.0;sim.hp=sim.max_hp
+			sim.weapons={"earthshaker":{"level":10,"evolved":true,"timer":0.0,"casts":0}}
+			sim.passives.area=15;sim.passives.haste=8
 		sim.enemies.clear();sim.spawn_boss(3);sim.build_grid()
-		show_toast("METEOR CINEMATIC TEST","SUPER KAEL / BREAK ANCHORS, THEN THE CORE / ISOLATED SAVE")
+		if "--meteor-balance-test" in OS.get_cmdline_user_args():
+			show_toast("METEOR ENCOUNTER PLAYTEST","DECLARED LATE-GAME BUILD / NORMAL HEALTH / ISOLATED SAVE")
+			print("METEOR BALANCE PLAYTEST / hp=",sim.hp," maxhp=",sim.max_hp," base_damage=",sim.base_damage," weapons=",sim.weapons.size()," no automatic invulnerability")
+		else:show_toast("METEOR CINEMATIC TEST","SUPER KAEL / BREAK ANCHORS, THEN THE CORE / ISOLATED SAVE")
+		if "--meteor-review" in OS.get_cmdline_user_args():
+			var meteor_lab=preload("res://scripts/meteor_review_lab.gd").new();meteor_lab.game=self;add_child(meteor_lab)
 	if "--remnant-test" in OS.get_cmdline_user_args():
 		var lab=preload("res://scripts/remnant_lab.gd").new();lab.game=self;add_child(lab)
 		if "--verify-first-kill" in OS.get_cmdline_user_args():
@@ -630,7 +649,9 @@ func _physics_process(dt):
 	for step in range(10 if turbo_test else 1):
 		if sim==null or paused or not sim.active or sim.choosing:break
 		var direction=(sim.portal-sim.pos).normalized() if turbo_test and sim.portal!=null else d
+		var tick_started=Time.get_ticks_usec() if "--scenery-dense-review" in OS.get_cmdline_user_args() else 0
 		sim.tick(dt,direction)
+		if tick_started>0:review_tick_ms=(Time.get_ticks_usec()-tick_started)/1000.0
 
 func update_hud_scale():
 	var viewport = get_viewport_rect().size
@@ -657,6 +678,20 @@ func update_hud_scale():
 	boss_bar.position = Vector2(viewport.x/2-330*factor,(boss_y+5)*factor)
 	boss_label.position = Vector2(viewport.x/2-420*factor,boss_y*factor)
 	boss_label.size = Vector2(840,65)
+	boss_label.add_theme_font_size_override("font_size",19)
+	boss_label.autowrap_mode=TextServer.AUTOWRAP_OFF
+	var boss_gap_left=timer_plate.position.x+540*status_factor+10
+	var boss_gap_width=score_plate.position.x-10-boss_gap_left
+	if sim!=null and sim.boss!=null and (sim.boss_stage==3 or (world.rig_bosses and sim.boss.get("identity","")=="basalt")) and boss_gap_width>=320:
+		var boss_factor=minf(factor*.70,boss_gap_width/660.0)
+		var boss_center=boss_gap_left+boss_gap_width*.5
+		boss_bar.scale=Vector2.ONE*boss_factor
+		boss_bar.position=Vector2(boss_center-330*boss_factor,45*status_factor)
+		boss_label.scale=Vector2.ONE
+		boss_label.position=Vector2(boss_gap_left,6*status_factor)
+		boss_label.size=Vector2(boss_gap_width,65*status_factor)
+		boss_label.add_theme_font_size_override("font_size",maxi(11,roundi(13*status_factor)))
+		boss_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	weapons_hud.scale = Vector2.ONE*factor
 	weapons_hud.position = Vector2(56*factor,viewport.y-116*factor)
 	weapons_hud.size=Vector2(250,62)
@@ -671,7 +706,7 @@ func update_hud_scale():
 	xp_bar.position = Vector2(24*factor,viewport.y-130*factor)
 	xp_bar.size = Vector2(viewport.x/factor-48,106)
 	var dock_visible=sim!=null and not sim.choosing and page!="upgrade"
-	if sim!=null:hud_root.visible=page not in ["upgrade","summary","map"]
+	if sim!=null:hud_root.visible=page not in ["upgrade","summary","map"] and "--pr-boss-capture" not in OS.get_cmdline_user_args() and "--quad-attack-film" not in OS.get_cmdline_user_args() and "--boss-detail-review" not in OS.get_cmdline_user_args() and "--meteor-moving-film" not in OS.get_cmdline_user_args() and "--meteor-shell-film" not in OS.get_cmdline_user_args()
 	xp_bar.visible=false
 	hero_dock.visible=dock_visible
 	toast_panel.position.y=viewport.y-300*factor
@@ -757,14 +792,16 @@ func _process(dt):
 			boss_label.text += " / %s%%"%ceili(sim.boss.hp/sim.boss.max_hp*100)
 			if sim.boss.get("reform",0)>0: boss_label.text += " / CARAPACE BREAK"
 		if sim.boss_stage==3:
-			boss_label.text += "\n"+("%s ANCHORS / ARMORED"%sim.anchors.size() if not sim.anchors.is_empty() else "CORE EXPOSED / %.1fs"%sim.core_time)+"   ·   EXTINCTION IN %ss"%maxi(0,int(210-sim.boss_time))
+			boss_label.text += "\n"+("%s ANCHORS / ARMORED"%sim.anchors.size() if not sim.anchors.is_empty() else "CORE EXPOSED / %.1fs"%sim.core_time)
+			if not "--meteor-rig-test" in OS.get_cmdline_user_args():boss_label.text+="   ·   EXTINCTION IN %ss"%maxi(0,int(210-sim.boss_time))
 	objective_label.text = ""
 	if sim.portal!=null:
 		objective_label.text = "RIFT / %sm · %ss · ENEMY HP ×%.1f / DMG ×%.1f"%[int(sim.pos.distance_to(sim.portal)/10),int(sim.linger),sim.linger_health(),sim.linger_damage()]
 	elif sim.shrine_progress>0 and not sim.shrine_done:
 		objective_label.text = "HOLD THE RIFT: %s / %s"%[int(sim.shrine_progress),int(sim.RIFT_CHARGE_SECONDS)]
 	audio.tension = clampf(sim.time/1000+(0.3 if sim.boss!=null else 0),0,1)
-	audio.set_encounter("meteor" if sim.boss!=null and sim.boss_stage==3 else str(sim.boss.get("identity","")) if sim.boss!=null else "",sim.boss_time,paused or sim.choosing or not sim.active)
+	var boss_motion_scale=.7 if sim.buffs.get("freeze",0)>0 or sim.buffs.get("slow",0)>0 else 1.0
+	audio.set_encounter("meteor" if sim.boss!=null and sim.boss_stage==3 else str(sim.boss.get("identity","")) if sim.boss!=null else "",sim.boss_time,paused or sim.choosing or not sim.active,boss_motion_scale)
 	audio.biome = sim.depth
 	audio.map_index = Maps.DATA[sim.map_id].music
 	audio.halloween = sim.halloween
@@ -832,6 +869,13 @@ func daily_reel_data(o):
 	return data
 
 func present_upgrade(opts,relic):
+	if opts[0].type=="beam_path":
+		if sim.mode=="daily":
+			var run=sim
+			call_deferred("auto_beam_path",run)
+			return
+		upgrade_menu(opts,false)
+		return
 	if not relic and opts.size()==1 and opts[0].type not in ["evolution","fusion"]:
 		var only=opts[0]
 		var current=sim
@@ -918,7 +962,7 @@ func upgrade_menu(opts,relic):
 	clear_menu()
 	shade(0.82)
 	var head = column(menu_root,Vector2(95,65),Vector2(1250,110))
-	var caption="WEAPON UNION" if opts[0].type=="fusion" else "WEAPON EVOLUTION" if opts[0].type=="evolution" else "RELIC RECOVERED" if relic else "LEVEL %s / CHOOSE YOUR POWER"%sim.level
+	var caption="CHOOSE YOUR PATH / RANK %s"%opts[0].milestone if opts[0].type=="beam_path" else "WEAPON UNION" if opts[0].type=="fusion" else "WEAPON EVOLUTION" if opts[0].type=="evolution" else "RELIC RECOVERED" if relic else "LEVEL %s / CHOOSE YOUR POWER"%sim.level
 	var tier=label(head,caption,17,"c7a76b")
 	tier.add_theme_font_override("font",UIArt.heading_font())
 	label(head,"Take something dangerous" if relic else "Become their extinction",32,"d9bd83")
@@ -930,13 +974,14 @@ func upgrade_menu(opts,relic):
 	row.add_theme_constant_override("separation",22)
 	menu_root.add_child(row)
 	for i in range(opts.size()):
-		var panel=preload("res://scripts/reward_card.gd").build(sim,opts[i],i,func():pick_upgrade(i),relic)
+		var panel=preload("res://scripts/beam_card.gd").build(sim,opts[i],i,func():pick_upgrade(i)) if opts[i].type=="beam_path" else preload("res://scripts/reward_card.gd").build(sim,opts[i],i,func():pick_upgrade(i),relic)
 		row.add_child(panel)
 		panel.modulate.a=0
 		var tween=create_tween()
 		tween.tween_interval(i*.09)
 		tween.tween_property(panel,"modulate:a",1.0,.2)
 	label(menu_root,"1 / 2 / 3 to choose. Buff types %s / 8. One offensive aura."%sim.buff_slots_used(),18,"95aeae").position=Vector2(95,800)
+	if opts[0].type=="beam_path":return
 	var reroll = preload("res://scripts/ornate_action.gd").new()
 	reroll.text="RE-ROLL  •  %s"%sim.rerolls
 	reroll.tooltip_text="Re-roll choices / R"
@@ -950,6 +995,9 @@ func accept_single_upgrade(current,only):
 	if sim!=current or sim==null or not sim.choosing or sim.options.size()!=1 or sim.options[0]!=only:return
 	finish_upgrade(0)
 
+func auto_beam_path(run):
+	if sim==run and sim.choosing and not sim.options.is_empty() and sim.options[0].type=="beam_path":finish_upgrade(sim.daily_reward_rng.randi_range(0,sim.options.size()-1))
+
 func pick_upgrade(index):
 	if sim==null or not sim.choosing or index>=sim.options.size() or page!="upgrade": return
 	finish_upgrade(index)
@@ -959,9 +1007,9 @@ func finish_upgrade(index):
 	if option.type=="fusion" and sim.mode=="expedition" and option.id not in save_data.recipes:
 		save_data.recipes.append(option.id)
 		persist()
-	sim.choose(index)
 	clear_menu()
 	page = "playing"
+	sim.choose(index)
 
 func pause_menu():
 	paused = true
@@ -1272,7 +1320,10 @@ func manual():
 	label(v,"THE BUILD",18,"d6b27e")
 	label(v,"Five weapons. Eight passive/augment types. Eight relic types, ten copies each.\nRepeat relics add strength. Rarity controls their power. XP bonuses add together.\nTwo compatible rank-10 weapons + chest merge, freeing one slot.\nLuck improves chest tiers. Rocks block; mud slows; lava burns.",21,"b4c6c9")
 	label(v,"THE DESCENT",18,"d6b27e")
-	label(v,"Bosses arrive at 5, 10 and 15 minutes. The first two open harder biomes.\nThe meteor is an endgame build check: destroy three anchors to expose its core.\nYou have 12 seconds per opening. Phase transitions restore its armor.\nIt enrages at 150 seconds and completes extinction at 210. Read the ground warnings.",21,"b4c6c9")
+	var descent="Bosses arrive at 5, 10 and 15 minutes. The first two open harder biomes.\nThe meteor is an endgame build check: destroy three anchors to expose its core.\nYou have 12 seconds per opening. Phase transitions restore its armor.\nIt enrages at 150 seconds and completes extinction at 210. Read the ground warnings."
+	if "--meteor-rig-test" in OS.get_cmdline_user_args():
+		descent="Bosses arrive at 5, 10 and 15 minutes. The first two open harder biomes.\nDestroy three anchors to expose the meteor's core. Each opening is brief;\nphase transitions restore its armor. Read the fractures and falling debris.\nThe world burns inward. Stay ahead of the fire and finish before it consumes all ground."
+	label(v,descent,21,"b4c6c9")
 	label(v,"Explore map signals, then spend amber on discoveries in the archive.\nFull slots: improve equipped buffs. Maxed builds receive amber and healing.\nDeath banks amber. Daily rolls each reward automatically; trial uses prepared gear. Records are local.",18,"adc1bd")
 	button(v,"I'LL MAKE HISTORY",main_menu,true)
 

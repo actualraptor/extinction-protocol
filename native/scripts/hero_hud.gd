@@ -258,14 +258,6 @@ func _gui_input(event):
 
 func rebuild_minimap(g,r):
  map_origin=g.pos
- var image=Image.create(128,128,false,Image.FORMAT_RGBA8)
- var world_size=r.size/.025
- for y in range(128):
-  for x in range(128):
-   var p=map_origin+(Vector2(x+.5,y+.5)/128.0-Vector2(.5,.5))*world_size
-   var kind=g.terrain.kind(g.terrain.cell(p))
-   var shade=[Color("40534b"),Color("838078"),Color("2e6775"),Color("a85c37")][clampi(kind,0,3)]
-   if not map_known(p,g):shade=shade.darkened(.68)
-   image.set_pixel(x,y,shade)
+ var image=preload("res://scripts/minimap_raster.gd").render(g,map_origin,r.size/.025)
  if map_texture==null:map_texture=ImageTexture.create_from_image(image)
  else:map_texture.update(image)

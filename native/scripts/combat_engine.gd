@@ -5,6 +5,7 @@ const Starter = preload("res://scripts/starter_attack.gd")
 const Slam = preload("res://scripts/kael_slam.gd")
 
 static func update(g,dt):
+	preload("res://scripts/beam_system.gd").update(g,dt)
 	Slam.update(g)
 	Starter.update(g)
 	var pending = g.volleys
@@ -27,6 +28,15 @@ static func update(g,dt):
 		w.timer -= dt
 		if w.timer>0: continue
 		var d = g.C.WEAPONS[id]
+		if d.delivery=="beam":
+			var beam_stats=Rules.stats(g,id)
+			if w.level==10:beam_stats.power*=1.2
+			if preload("res://scripts/beam_system.gd").cast(g,id,beam_stats):
+				w.timer=beam_stats.duration+beam_stats.cooldown
+				w.casts=w.get("casts",0)+1
+				g.ledger.cast(id,g.time)
+				g.Relics.on_cast(g,d,w.casts,beam_stats)
+			continue
 		if d.delivery=="companion":
 			if g.companions==null:continue
 			var s=Rules.stats(g,id)

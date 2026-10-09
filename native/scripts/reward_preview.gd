@@ -62,6 +62,7 @@ static func rows(g,o):
 		if not pair[0].is_empty():pair[0]=effective(g,source,pair[0],current.level,current.evolved)
 		pair[1]=effective(g,o.id,pair[1],rank,o.type in ["evolution","fusion"] or current.evolved)
 		var keys=["power","cooldown","count","pierce","velocity","lifetime","homing","bounce"]
+		if d.delivery=="beam":keys=["power","cooldown","range","width","duration","count"]
 		if d.delivery=="chain":keys=["power","cooldown","count","range","falloff","fork","rechain"]
 		if d.delivery=="melee":keys=["power","cooldown","radius","arc","repeat"]
 		if d.delivery in ["aura","ground","thorns","orbital"]:keys=["power","cooldown","radius","count","duration"]
@@ -70,6 +71,7 @@ static func rows(g,o):
 		if d.delivery=="companion":
 			keys=["power","cooldown","count"] if d.get("role","") in ["spear","soul"] else ["power","cooldown","radius"] if d.get("role","")=="chill" else ["power"] if d.get("role","")=="corpse" else [] if d.get("role","") in ["banner","reanimate"] else ["power","cooldown"]
 		var names={"power":"Base hit damage" if d.delivery=="companion" else "Hit damage","cooldown":"Summon interval" if d.delivery=="companion" else "Cooldown","count":"Targets" if d.delivery=="chain" else "Projectiles" if d.delivery=="projectile" else "Blades" if d.delivery=="orbital" else "Strikes","radius":"Radius","shield":"Barrier","pierce":"Pierce","velocity":"Shot speed","lifetime":"Shot lifetime","homing":"Tracking","bounce":"Bounces","range":"Chain range","falloff":"Damage retained","fork":"Fork chance","rechain":"Revisit chance","arc":"Sweep angle","repeat":"Echo strikes","duration":"Duration" if d.delivery=="utility" or o.id=="thunderstorm" else "Ground linger"}
+		if d.delivery=="beam":names.merge({"power":"Damage / second","range":"Beam length","width":"Beam width","duration":"Firing duration","count":"Beams","cooldown":"Recharge"},true)
 		if d.delivery=="companion" and d.get("role","") not in ["warrior","guard","archer","wraith","colossus"]:names.cooldown="Cooldown"
 		for key in keys:
 			if pair[0].is_empty() and key in ["velocity","lifetime","falloff","homing","bounce","fork","rechain","arc","repeat"]:continue

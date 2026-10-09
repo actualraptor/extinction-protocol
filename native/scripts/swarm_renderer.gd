@@ -28,6 +28,7 @@ func _apply_seasonal(enabled: bool):
 	seasonal_active=enabled
 
 func _process(dt):
+	material.set_shader_parameter("animation_clock",world.clock)
 	var s = world.sim
 	if s==null:
 		multimesh.visible_instance_count = 0
@@ -43,6 +44,7 @@ func _process(dt):
 		e.render_p = e.get("render_p",e.p).lerp(e.p,1-exp(-dt*35)) if not s.rooted(e) else e.p
 		var p = world.screen(e.render_p)
 		if not world.visible_rect().grow(100).has_point(p): continue
+		if world.landmark_depth_enemy(e):continue
 		if count>=CAPACITY: break
 		var size_value=e.size*4.0*e.get("visual_scale",1.0)
 		var index=e.kind

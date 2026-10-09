@@ -10,6 +10,7 @@ var flow = {}
 var cached = {}
 var goal = Vector2i(99999,99999)
 var arena = Vector2.INF
+var arena_radius = 810.0
 var refresh = 0.0
 var clearance = {}
 var sight = {}
@@ -56,7 +57,7 @@ func on_route(p):
 func kind(c):
 	var p = center(c)
 	if not bounds.has_point(p): return 1
-	if arena!=Vector2.INF and p.distance_squared_to(arena)<810*810: return 0
+	if arena!=Vector2.INF and p.distance_squared_to(arena)<arena_radius*arena_radius: return 0
 	if configured_seed!=seed_value: configure(stage,depth)
 	if cached.has(c): return cached[c]
 	var result = 0
@@ -116,20 +117,20 @@ func open_position(p):
 
 func update(dt,p):
 	refresh -= dt
-	var c = cell(p)
+	var c:Vector2i = cell(p)
 	if c==goal and refresh>0: return
 	goal = c
 	refresh = 0.5
 	flow.clear()
 	sight.clear()
 	flow[c] = Vector2.ZERO
-	var queue = [c]
-	var cursor = 0
+	var queue:Array[Vector2i] = [c]
+	var cursor:int = 0
 	while cursor<queue.size():
-		var at = queue[cursor]
+		var at:Vector2i = queue[cursor]
 		cursor += 1
 		for d in FLOW_DIRS:
-			var next = at+d
+			var next:Vector2i = at+d
 			if absi(next.x-c.x)>20 or absi(next.y-c.y)>20 or flow.has(next) or kind(next)==1: continue
 			if d.x!=0 and d.y!=0 and (kind(at+Vector2i(d.x,0))==1 or kind(at+Vector2i(0,d.y))==1): continue
 			flow[next] = -Vector2(d)

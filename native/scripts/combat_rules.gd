@@ -80,6 +80,10 @@ static func weapon_data(base):
 		if "SPELL" in out[fresh].tags: out[fresh].tags.append("OFFENSIVE")
 		out[fresh].targeting="nearest"
 		out[fresh].evolution_desc="Greater power, faster attacks and additional projectiles with the weapon's signature behavior."
+	for beam_id in preload("res://scripts/beam_prototype.gd").WEAPONS:
+		var beam=preload("res://scripts/beam_prototype.gd").WEAPONS[beam_id].duplicate(true)
+		beam.merge({"delivery":"beam","color":"ff963c" if beam_id=="flametorch" else "71edd4","icon":3 if beam_id=="flametorch" else 4,"requires":"damage","evolution":"","desc":"Pressurized flame jets track nearby prey and roll into turbulent fire." if beam_id=="flametorch" else "Liquid plasma locks onto prey and burns everything crossing its connection." if beam_id=="plasma_tether" else "A surging plasma beam cuts through lines of enemies."})
+		out[beam_id]=beam
 	for id in out:
 		out[id].targeting = out[id].get("targeting","nearest")
 		out[id].projectile_interval = 0.035 if out[id].delivery=="projectile" else 0.0
@@ -96,11 +100,12 @@ static func passive_data(base):
 		out[id].icon = {"damage":4,"haste":4,"area":3,"count":5,"crit":6,"armor":5,"speed":4,"pickup":1,"regen":2,"luck":6}[id]
 	out.area.filter = {"any":["AREA"]}
 	out.area.desc = "+12% attack area."
-	out.count.filter = {"any":["PROJECTILE","CHAIN","ORBITAL","GROUND_EFFECT","SUMMON"]}
+	out.count.filter = {"any":["PROJECTILE","CHAIN","ORBITAL","GROUND_EFFECT","SUMMON","BEAM"]}
 	out.count.desc = "+1 projectile, chain target, blade or bombardment"
 	return out
 
 const AUGMENTS = {
+	"beam_fuel":{"name":"Expanded Reservoir","desc":"+0.35s beam duration.","tags":["PASSIVE","BEAM"],"filter":{"all":["BEAM"]},"stats":{"duration":.35},"max":3},
 	"spines":{"name":"Hardened Spines","desc":"+25% thorn damage. +15% thorn area.","tags":["PASSIVE","RETALIATION"],"filter":{"all":["RETALIATION"]},"stats":{"power":0.25,"radius":0.15},"max":3},
 	"retribution":{"name":"Quick Retort","desc":"Thorn bursts attack 15% faster.","tags":["PASSIVE","RETALIATION"],"filter":{"all":["RETALIATION"]},"stats":{"haste":0.15},"max":3},
 	"velocity":{"name":"Rail Accelerator","desc":"Projectiles travel 30% faster and 20% farther.","tags":["PASSIVE","PROJECTILE"],"filter":{"all":["PROJECTILE"]},"stats":{"velocity":0.3,"lifetime":0.2},"max":3},
@@ -170,9 +175,17 @@ static func stats(g,id):
 	result.range = minf(470,result.range)
 	result.cooldown = maxf(d.cooldown*(.08 if g.hero==1 and id=="club" else .3),result.cooldown)
 	result.duration = minf(5,result.duration)
+	if d.delivery=="beam":
+		var b=preload("res://scripts/beam_prototype.gd").stats(id,w,{"range":m.get("range",0),"duration":m.get("duration",0)})
+		result.range=minf(600,b.range)
+		result.width=d.width*g.area_scale()*(1+m.get("radius",0))
+		result.duration=minf(6,b.duration)
+		result.power*=1.85 if w.get("branches",{}).get("10","")=="power" else 1.0
+		result.count=mini(4,b.count+int(g.BuffRewards.power(g,"count"))+int(relic_mods.get("count",0)))
 	return result
 
 static func rank_text(d,rank):
+	if d.delivery=="beam":return "+30% base damage. Choose a path at ranks 5 and 10." if rank in [5,10] else "+30% base damage and faster recharge."
 	if d.delivery=="companion":return d.desc+"\nStronger army and faster summons."
 	var behavior = d.delivery
 	if behavior=="thorns": return "Stronger thorn bursts. Armor adds +4 base damage per point (up to 25)."

@@ -1,5 +1,6 @@
 shader_type canvas_item;
 render_mode unshaded;
+uniform float animation_clock=0.0;
 varying vec2 frame;
 varying vec4 tint;
 varying float iced;
@@ -7,7 +8,7 @@ void vertex() {
 	frame = INSTANCE_CUSTOM.xy;
 	tint = COLOR;
 	iced = 1.0-INSTANCE_CUSTOM.w;
-	VERTEX.y += sin(TIME*9.0+INSTANCE_CUSTOM.z)*0.025*INSTANCE_CUSTOM.w;
+	VERTEX.y += sin(animation_clock*9.0+INSTANCE_CUSTOM.z)*0.025*INSTANCE_CUSTOM.w;
 }
 void fragment() {
 	// QuadMesh V runs upward in canvas coordinates. Flip inside the cell,

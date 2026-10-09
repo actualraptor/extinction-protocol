@@ -33,7 +33,8 @@ var meteor_started = false
 var sync_check = 0.0
 
 func _ready():
-	var beam_audio=preload("res://scripts/beam_audio.gd").new();beam_audio.sound=self;add_child(beam_audio)
+	if "--beam-test" in OS.get_cmdline_user_args():
+		var beam_audio=preload("res://scripts/beam_audio.gd").new();beam_audio.sound=self;add_child(beam_audio)
 	for dinosaur in ["thorn","basalt","hunt","aurora","warden","bloom"]:
 		for cue in ["step","windup","attack","impact","roar","death"]:
 			var id="dino_"+dinosaur+"_"+cue

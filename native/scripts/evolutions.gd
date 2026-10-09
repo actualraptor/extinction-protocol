@@ -46,6 +46,7 @@ static func ready(g):
 	if not offers.is_empty(): return offers
 	for id in g.weapons:
 		var w = g.weapons[id]
+		if g.C.WEAPONS[id].delivery=="beam":continue
 		if not w.evolved and w.level>=10: offers.append({"type":"evolution","id":id})
 	return offers
 static func consumed(g,id):
