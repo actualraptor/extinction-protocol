@@ -125,6 +125,18 @@
   ],
   "devlog": [
     {
+      "id": "boss-stride-deformation",
+      "date": "2026-10-09",
+      "title": "Keeping the weight in the stride",
+      "stage": "Private runtime review",
+      "card": "boss-animation",
+      "body": "The private T-rex pass now corrects leg reach in the exported source animation, while scenery effects receive a consistency pass.",
+      "changed": "Preserved leg lengths at touchdown and added alternating support steps during the tail turn. Nearby creatures retain their movement and frozen appearance when passing scenery.",
+      "testing": "All twelve exported T-rex clips passed the leg-length check. Fixed-frame attack review and repeated weapon-active combat checks retained foot contacts; freeze and thaw were reviewed in Godot.",
+      "learned": "A source pose placed the ankle beyond the knee solver’s reach. Full-fight diagnostics also need an explicit encounter selection to avoid testing legacy mechanics by mistake.",
+      "next": "Continue continuous motion, sound and dense performance review. Meteor’s redesigned full fight is being evaluated separately from the legacy baseline; developer acceptance remains open."
+    },
+    {
       "id": "boss-close-defense-depth",
       "date": "2026-10-09",
       "title": "Keeping the prey in sight",

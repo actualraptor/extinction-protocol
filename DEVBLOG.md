@@ -2,6 +2,12 @@
 
 [Read the devblog on the website](https://actualraptor.github.io/extinction-protocol/devblog.html) · [Development roadmap](ROADMAP.md)
 
+## 2026-10-09 — Keeping the weight in the stride
+
+The private T-rex pass corrects source leg reach at touchdown and adds alternating support steps during the tail turn. Exported leg-length checks cover all twelve clips; fixed-frame attack and weapon-active combat reviews retained foot contacts. Nearby creatures also retain movement and frozen effects when passing scenery.
+
+Full-fight diagnostics now require an explicit encounter selection, keeping legacy Meteor baselines separate from the redesigned fight. Continuous motion, sound, dense performance and developer acceptance remain open. These assets are still private.
+
 ## 2026-10-09 — Keeping the prey in sight
 
 Private Triceratops review exposed a close-range turning limit: when the player moved inside the normal attack spacing, the physical body could lag even though the renderer followed correctly. A faster defensive turn addresses that case. Nearby creatures and landmark artwork also share a local depth pass.
