@@ -1,258 +1,540 @@
 {
+
   "updated": "2026-10-09",
+
   "release": "0.14.1",
+
   "policy": "Done means accepted by the developer. A private preview is not a shipped feature. No release dates are promised.",
+
   "cards": [
+
     {
+
       "id": "meteor-encounter",
+
       "title": "Meteor encounter redesign",
+
       "status": "in-progress",
+
       "summary": "Refine animation, environmental effects and encounter readability to match the new boss presentation.",
+
       "next": "Private fire timing now preserves usable ground until the deadline. Continue full-fight balance, continuous visual review, sound and developer acceptance."
+
     },
+
     {
+
       "id": "boss-animation",
+
       "title": "Dinosaur boss animation",
+
       "status": "in-progress",
+
       "summary": "Current focus: T-rex, Triceratops and Meteor. Dinosaur tracking and combat remain under review; Meteor has an original-art 3D reconstruction and a private shell-motion study. Other bosses wait.",
+
       "next": "Pursuit, spacing, wall routes and audio interruption checks pass focused reviews. Continue continuous animation, audible mix, dense performance and full-fight interaction review before acceptance."
+
     },
+
     {
+
       "id": "cinematics",
+
       "title": "Cinematics and replay gallery",
+
       "status": "done",
+
       "summary": "Opening and progression cinematics are complete, with unlocked scenes available in the gallery.",
+
       "next": "Completed and accepted by the developer."
+
     },
+
     {
+
       "id": "menu",
+
       "title": "Main-menu redesign",
+
       "status": "done",
+
       "summary": "Official logo, new button artwork, ambient mist and flickering lights are in place.",
+
       "next": "Shipped in 0.14.1."
+
     },
+
     {
+
       "id": "discoveries",
+
       "title": "Discoveries grid",
+
       "status": "done",
+
       "summary": "Large categorized grid with unlock states and a dedicated detail panel.",
+
       "next": "Shipped in 0.14.1."
+
     },
+
     {
+
       "id": "stampedes",
+
       "title": "Early Compy stampedes",
+
       "status": "done",
+
       "summary": "Early stampedes rush through the battlefield and push creatures and survivors.",
+
       "next": "Shipped in 0.14.1."
+
     },
+
     {
+
       "id": "respite",
+
       "title": "Boss-defeat respite",
+
       "status": "done",
+
       "summary": "A short pause in new spawns gives the battlefield a moment to breathe.",
+
       "next": "Shipped in 0.14.1."
+
     },
+
     {
+
       "id": "trex-review",
+
       "title": "T-rex final play review",
+
       "status": "improve",
+
       "summary": "New rig, pursuit, directional attacks, pressure waves and heavy sound are ready for review.",
+
       "next": "Developer acceptance and a final playtest are still required before a public build."
+
     },
+
     {
+
       "id": "music",
+
       "title": "Soundtrack polish",
+
       "status": "improve",
+
       "summary": "Map and boss themes are in game; further production and musical polish remain open.",
+
       "next": "Refine balance, orchestration and transitions through in-game listening."
+
     },
+
     {
+
       "id": "ui-polish",
+
       "title": "Interface polish",
+
       "status": "improve",
+
       "summary": "Continue checking readability, button sizing and consistency across screens.",
+
       "next": "Keep frames and text clear at supported window sizes."
+
     },
+
     {
+
       "id": "hordes",
+
       "title": "Horde difficulty and experience",
+
       "status": "improve",
+
       "summary": "Tune spawn density so hordes pose a stronger threat and reward more experience.",
+
       "next": "Validate early pressure, progression and performance together."
+
     },
+
     {
+
       "id": "level-sound",
+
       "title": "Level-up sound",
+
       "status": "improve",
+
       "summary": "Replace the notification-like cue with a satisfying fantasy level-up sound.",
+
       "next": "Needs approval after repeated listening in gameplay."
+
     },
+
     {
+
       "id": "beams",
+
       "title": "Flametorch and Rift Conduit",
+
       "status": "planned",
+
       "summary": "Targeted flowing flame and plasma tether prototypes are on hold during the boss pass.",
+
       "next": "Resume fluid animation, sound, upgrade-path cards and balance after bosses."
+
     },
+
     {
+
       "id": "scoreboard",
+
       "title": "Scoreboard redesign",
+
       "status": "planned",
+
       "summary": "Bring run statistics into the current UI style with clear framed sections.",
+
       "next": "Define text fitting and support long names, large totals and older records."
+
     },
+
     {
+
       "id": "summon-names",
+
       "title": "Companion naming and statistics",
+
       "status": "planned",
+
       "summary": "Procedural names that persist for an individual companion and appear in run history.",
+
       "next": "Use component-based generation and separate display names from internal IDs."
+
     },
+
     {
+
       "id": "research",
+
       "title": "Additional permanent research",
+
       "status": "planned",
+
       "summary": "Expand permanent upgrades with progression-aware presentation.",
+
       "next": "Keep undiscovered entries as silhouettes without revealing their details."
+
     },
+
     {
+
       "id": "linux",
+
       "title": "Linux compatibility verification",
+
       "status": "improve",
+
       "summary": "A Linux archive is available; runtime compatibility is not yet verified.",
+
       "next": "Test actual Linux gameplay before calling it supported."
+
     }
+
   ],
+
   "devlog": [
+
     {
+
+      "id": "boss-minimap-frame-cost",
+
+      "date": "2026-10-09",
+
+      "title": "Finding the hitch outside the boss",
+
+      "stage": "Private runtime review",
+
+      "card": "boss-animation",
+
+      "body": "Repeated combat frame spikes came from the HUD minimap rebuilding its terrain image.",
+
+      "changed": "Reuse cell samples and assemble pixels in a batch; prepare attack artwork before first use and retain actor depth ordering.",
+
+      "testing": "Eighteen exact pixel comparisons pass. A matched 60 FPS paced test reduced the worst observed frame from 58 ms to 20 ms on the test machine.",
+
+      "learned": "A hidden HUD can still perform expensive work; combat profiling must include the surrounding interface.",
+
+      "next": "Continue continuous motion, audible mix, full-fight balance and developer acceptance. No game assets or builds were released."
+
+    },
+
+    {
+
       "id": "encounter-deadline-ground",
+
       "date": "2026-10-09",
+
       "title": "A deadline with room to fight",
+
       "stage": "Private runtime review",
+
       "card": "meteor-encounter",
+
       "body": "Private encounter review found usable ground disappearing before the intended deadline.",
+
       "changed": "The fire boundary preserves a narrow refuge until the deadline, then ignites it. Rendering and damage share boundary values.",
+
       "testing": "Three-seed clearance, camera stability and damage checks pass. A repeated full-fight diagnostic reached overtime without early fire damage but still lost.",
+
       "learned": "A shrinking boundary must account for the boss's physical footprint, and straight-only dodge forecasts can misrepresent late escape routes.",
+
       "next": "Continue balance, continuous animation, sound and performance review. Developer acceptance remains open; no game assets or builds were released."
+
     },
+
     {
+
       "id": "boss-spacing-and-audio",
+
       "date": "2026-10-09",
+
       "title": "Room to hunt",
+
       "stage": "Private runtime review",
+
       "card": "boss-animation",
+
       "body": "The dinosaur studies now leave more reliable attack space and recover from blocked routes.",
+
       "changed": "Triceratops recovery spacing has been adjusted for moving prey. Grounded movement can escape a wall when forward travel is blocked. Boss footsteps, bites and tail sounds have a separate audio pool.",
+
       "testing": "Both dinosaurs passed stationary and moving-target obstacle checks at normal and slow frame rates. Rendered wall routes retained body clearance; summon melee and audio interruption checks passed. Combined combat review then exposed a rare support-leg failure during stomp windup.",
+
       "learned": "Body overlap needs its own check. An unchanged endpoint could be mistaken for a successful wall slide, and a lateral weight shift can require a second vertical support correction.",
+
       "next": "Recheck the support correction in repeated combat, then continue continuous animation, audible mix, dense performance and full-fight review. Developer acceptance remains open; these studies are private."
+
     },
+
     {
+
       "id": "boss-stride-deformation",
+
       "date": "2026-10-09",
+
       "title": "Keeping the weight in the stride",
+
       "stage": "Private runtime review",
+
       "card": "boss-animation",
+
       "body": "The private T-rex pass now corrects leg reach in the exported source animation, while scenery effects receive a consistency pass.",
+
       "changed": "Preserved leg lengths at touchdown and added alternating support steps during the tail turn. Nearby creatures retain their movement and frozen appearance when passing scenery.",
+
       "testing": "All twelve exported T-rex clips passed the leg-length check. Fixed-frame attack review and repeated weapon-active combat checks retained foot contacts; freeze and thaw were reviewed in Godot.",
+
       "learned": "A source pose placed the ankle beyond the knee solver’s reach. Full-fight diagnostics also need an explicit encounter selection to avoid testing legacy mechanics by mistake.",
+
       "next": "Continue continuous motion, sound and dense performance review. Meteor’s redesigned full fight is being evaluated separately from the legacy baseline; developer acceptance remains open."
+
     },
+
     {
+
       "id": "boss-close-defense-depth",
+
       "date": "2026-10-09",
+
       "title": "Keeping the prey in sight",
+
       "stage": "Private runtime review",
+
       "card": "boss-animation",
+
       "body": "Close-range dinosaur tracking and scenery overlap are being refined in the private boss preview.",
+
       "changed": "Triceratops turns more responsively when the player gets inside its usual attack spacing. Nearby creatures, landmarks and the boss now share a local depth pass.",
+
       "testing": "Repeated Godot reviews covered turn reversals, both combat phases, attacks, head tracking and corpse handling. A 330-actor stress case passes the current turning check.",
+
       "learned": "Heading traces showed a physical turning limit at very close range; changing only the visual turning speed was insufficient. Dense tests still expose frame-time spikes.",
+
       "next": "Continue movement and sound review, optimize dense encounters and preserve frozen-creature effects before developer acceptance."
+
     },
+
     {
+
       "id": "meteor-warning-batching",
+
       "date": "2026-10-08",
+
       "title": "Keeping busy encounters responsive",
+
       "stage": "Private runtime review",
+
       "card": "meteor-encounter",
+
       "body": "The Meteor presentation pass now uses a connected rubble asset and batches the feathered ground-warning geometry. The fight remains in private review.",
+
       "changed": "Combined dozens of edge draws per warning into one cached mesh while preserving the warning footprint and transparency.",
+
       "testing": "In one matched local encounter, median frame interval fell from about 30 ms to 9 ms. All nine phase and attack timing samples passed after the change.",
+
       "learned": "The many small ground-warning draws cost more than expected. Removing model or fire layers did not explain the slowdown.",
+
       "next": "Review motion, remaining frame spikes, sound and full-fight balance before acceptance."
+
     },
+
     {
+
       "date": "2026-10-08",
+
       "title": "Attacks that respect terrain",
+
       "id": "boss-attack-terrain-review",
+
       "stage": "Private runtime review",
+
       "card": "boss-animation",
+
       "changed": "Dinosaur attacks establish reachable stances; T-rex body and tail share strike progress.",
+
       "testing": "Actual Godot wall scenarios check body clearance and committed impact alignment. Forward attacks also pass a narrow-corridor check.",
+
       "learned": "Safe pursuit did not guarantee a safe attack turn. Both need runtime review.",
+
       "next": "Continue continuous-motion, audio and broader gameplay reviews before developer acceptance.",
+
       "body": "Private dinosaur attacks now use reachable turn-clear stances. Forward attacks still fit tighter passages, while body and tail motion share strike timing. Focused wall scenarios pass clearance and impact alignment; continuous motion, sound and broader gameplay acceptance remain open. These changes are not in the public playtest."
+
     },
+
     {
+
       "date": "2026-10-08",
+
       "id": "boss-contact-and-surface-review",
+
       "title": "Contact and surface refinement",
+
       "stage": "Private runtime review",
+
       "card": "boss-animation",
+
       "body": "The three-boss pass continues with contact, deformation and presentation fixes. These remain private prototypes.",
+
       "changed": "Dinosaur summon contact now follows the turning torso. Triceratops frill weighting and Meteor fracture surfaces received another refinement pass.",
+
       "testing": "Actual summon attacks, directional contact and exported attack transitions have been checked in Godot. Encounter reviews also exposed shortcomings in automated dodge planning, which was corrected before drawing balance conclusions.",
+
       "learned": "Passing geometry and timing checks does not establish finished motion, sound or full-fight balance.",
+
       "next": "Continue visual and ordinary-build combat reviews, including sound and natural movement, before developer acceptance."
+
     },
+
     {
+
       "date": "2026-10-08",
+
       "id": "boss-scope-runtime-review",
+
       "title": "Three bosses, reviewed in the game engine",
+
       "stage": "Prototype and refinement",
+
       "card": "boss-animation",
+
       "body": "The current boss pass focuses on T-rex, Triceratops and Meteor. Other bosses wait while these encounters receive animation, interaction and presentation reviews.",
+
       "changed": "Meteor artwork now has an editable 3D reconstruction. A private rigid-shell motion study has been exported and rendered in Godot; it is not a public gameplay replacement.",
+
       "testing": "The engine imports one coordinated opening-and-reforming clip with sixteen transform tracks. Runtime renders checked closed and opened states. This verifies portability, not finished art or combat quality.",
+
       "learned": "Exported motion can work while fracture surfaces still look wrong. A cavity experiment produced broken geometry and was rejected after visual review.",
+
       "next": "Refine the shell topology, build the combat clips and review the actual encounter. The existing fight deadline remains unchanged. Dinosaur pursuit, attack transitions and sound acceptance remain open."
+
     },
+
     {
+
       "date": "2026-10-08",
+
       "title": "Triceratops takes its first steps",
+
       "body": "A dedicated four-legged rig now animates the painted Triceratops reconstruction. The first walk and run clips have been exported and inspected in Godot. Ground contact, turning and attack weight remain under review; this is not yet a public gameplay replacement.",
+
       "id": "triceratops-first-gait",
+
       "stage": "Prototype and testing",
+
       "card": "boss-animation",
+
       "changed": "The original painted reconstruction now has four independent limb chains, a weighted torso and a rigid skull and frill. A slow four-beat walk and a faster diagonal gait are the first motion studies.",
+
       "testing": "Exported clips were rendered in Godot from four angles. A separate measurement sampled deformed sole vertices through every authored frame; grounded feet stayed at floor height in the current source clips. This does not yet prove turning or runtime contact quality.",
+
       "learned": "Each creature needs its own anatomy and stance. Reusing the T-rex joint layout would not give a convincing quadruped.",
+
       "next": "Review skin deformation and moving contact, then build the horn charge, horn sweep and stomp around clear anticipation, impact and recovery.",
+
       "media": {
+
         "src": "assets/devblog-triceratops-walk.mp4",
+
         "poster": "assets/devblog-triceratops-poster.webp",
+
         "caption": "Early Triceratops motion study, rendered in Godot against ground markings. This short silent preview shows two walk cycles; it is not a finished combat animation."
+
       }
+
     },
+
     {
+
       "date": "2026-10-08",
+
       "title": "A heavier predator, and a clearer development board",
+
       "body": "The T-rex motion pass now covers pursuit, turns, bite, rush, tail gust, roar pressure wave and seismic stomp. It remains a development preview awaiting final play review. The remaining boss animation work follows next. Cinematics are accepted as complete; beam prototypes are paused while bosses take priority.",
+
       "id": "trex-motion-review",
+
       "stage": "Refinement and review",
+
       "card": "trex-review",
+
       "changed": "Longer strides, player-directed head tracking, a continuous tail swing, travelling pressure waves and heavier footfalls now give the T-rex more presence. Promotional comparison footage focuses on creature sound, with character speech removed.",
+
       "testing": "Matched old and new gameplay captures cover chase, turns and all five attacks. Further live runs checked foot contact, attack direction, pause and death interactions.",
+
       "learned": "A fixed-frame recording missed a small turning lag seen in a fresh live run. Adding modest visual catch-up capacity corrected it without increasing the physical turn cap.",
+
       "next": "Complete developer play review before including the rig in a public build. Continue the remaining dinosaur rigs while keeping their progress visible.",
+
       "media": {
+
         "src": "assets/devblog-trex-comparison.mp4",
+
         "poster": "assets/devblog-trex-poster.webp",
+
         "caption": "Development comparison: original sprite fight versus the new T-rex rig. Chase, turns and all five attacks; boss sound without character speech. Final play review is pending."
+
       }
+
     }
+
   ]
+
 }
+
