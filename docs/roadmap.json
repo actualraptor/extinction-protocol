@@ -125,6 +125,18 @@
   ],
   "devlog": [
     {
+      "id": "trex-spatial-bite",
+      "date": "2026-10-09",
+      "title": "Aiming from the moving skull",
+      "stage": "Private animation review",
+      "card": "boss-animation",
+      "body": "A bite could retain the correct horizontal attack direction while aiming too far downward.",
+      "changed": "The private T-rex bite now refines aim from the skull position after neck rotation, preserving the committed target and hit geometry.",
+      "testing": "96 normal/slow-frame commitment cases pass. Across24 bite-impact samples, spatial aim stays within8 degrees of the target. A short actual-game capture retains planted feet.",
+      "learned": "Rotating a neck changes the head position; checking horizontal direction alone can conceal a spatial aiming error.",
+      "next": "Review continuous motion and sound, refresh comparison footage and continue the full three-boss acceptance pass. No game assets or builds were released."
+    },
+    {
       "id": "encounter-foley-study",
       "date": "2026-10-09",
       "title": "Giving attacks their own sound",

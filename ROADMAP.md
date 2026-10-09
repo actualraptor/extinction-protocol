@@ -26,7 +26,7 @@ Current focus: T-rex, Triceratops and Meteor. Dinosaur tracking and combat remai
 
 
 
-Pursuit, spacing, wall routes and audio interruption checks pass focused reviews. Minimap pixel equivalence and a paced combat profile verify a targeted frame-cost reduction. Continue reviewing continuous animation, audible mix, dense performance and full-fight gameplay interactions before acceptance.
+Pursuit, spacing, wall routes and audio interruption checks pass focused reviews. Minimap pixel equivalence and a paced combat profile verify a targeted frame-cost reduction. Spatial bite aiming has been corrected and verified in normal/slow-frame commitment cases. Continue reviewing continuous animation, audible mix, dense performance and full-fight gameplay interactions before acceptance.
 
 
 

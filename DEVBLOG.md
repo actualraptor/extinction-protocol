@@ -6,6 +6,12 @@
 
 
 
+## 2026-10-09 — Aiming from the moving skull
+
+A focused bite review found a spatial aiming error that horizontal direction checks had missed. Rotating the neck moves the skull, so the private T-rex now refines its aim from that updated position while preserving the committed target and damage geometry.
+
+96 normal and slow-frame commitment cases pass. Across24 bite-impact samples, spatial aim stays within8 degrees of the target; a short actual-game capture retains planted feet. Continuous motion, sound and full three-boss acceptance remain open. Comparison footage needs refreshing after this correction. No game assets or builds were released.
+
 ## 2026-10-09 — Giving attacks their own sound
 
 The encounter prototype previously reused weapon sounds for its major attacks. A private effects study now separates pressure bursts, falling debris and ground fractures, with three variations per cue. A protected audio pool keeps rapid weapon sounds from cutting those cues off.
