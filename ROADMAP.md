@@ -16,6 +16,8 @@ Pursuit, spacing, wall routes and audio interruption checks pass focused reviews
 
 ### Meteor encounter redesign
 
+Private fire timing preserves usable ground until the deadline. Full-fight balance, continuous visual review, sound and developer acceptance remain open.
+
 Refine animation, environmental effects and encounter readability to match the new boss presentation. Private gameplay and visual reviews continue; full-fight balance, sound and developer acceptance remain open.
 
 ## Needs improvement

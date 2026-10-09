@@ -8,7 +8,7 @@
       "title": "Meteor encounter redesign",
       "status": "in-progress",
       "summary": "Refine animation, environmental effects and encounter readability to match the new boss presentation.",
-      "next": "Continue private gameplay and visual reviews. Full-fight balance, sound and developer acceptance remain open."
+      "next": "Private fire timing now preserves usable ground until the deadline. Continue full-fight balance, continuous visual review, sound and developer acceptance."
     },
     {
       "id": "boss-animation",
@@ -124,6 +124,18 @@
     }
   ],
   "devlog": [
+    {
+      "id": "encounter-deadline-ground",
+      "date": "2026-10-09",
+      "title": "A deadline with room to fight",
+      "stage": "Private runtime review",
+      "card": "meteor-encounter",
+      "body": "Private encounter review found usable ground disappearing before the intended deadline.",
+      "changed": "The fire boundary preserves a narrow refuge until the deadline, then ignites it. Rendering and damage share boundary values.",
+      "testing": "Three-seed clearance, camera stability and damage checks pass. A repeated full-fight diagnostic reached overtime without early fire damage but still lost.",
+      "learned": "A shrinking boundary must account for the boss's physical footprint, and straight-only dodge forecasts can misrepresent late escape routes.",
+      "next": "Continue balance, continuous animation, sound and performance review. Developer acceptance remains open; no game assets or builds were released."
+    },
     {
       "id": "boss-spacing-and-audio",
       "date": "2026-10-09",

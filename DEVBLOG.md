@@ -2,6 +2,12 @@
 
 [Read the devblog on the website](https://actualraptor.github.io/extinction-protocol/devblog.html) · [Development roadmap](ROADMAP.md)
 
+## 2026-10-09 — A deadline with room to fight
+
+Full encounter review exposed a mismatch between the advancing fire and the boss's physical footprint: the last usable ground vanished before the intended deadline. The private prototype now preserves a narrow refuge until the deadline, then ignites that remaining ground. Rendering and damage use the same boundary values.
+
+Ground clearance checks across three encounter seeds, camera stability and fire damage contracts pass. A repeated full-fight diagnostic reached overtime without early fire damage; it still lost. That is useful timing evidence, not proof of balanced difficulty or finished art. Continuous animation, sound, performance and developer acceptance remain open. No game assets or builds have been released with this change.
+
 ## 2026-10-09 — Room to hunt
 
 Moving-target review exposed brief player overlap during Triceratops recovery. More attack space corrects that case. Grounded movement also now escapes a wall when forward travel is blocked, and dinosaur footsteps, bites and tail sounds have a separate audio pool.
