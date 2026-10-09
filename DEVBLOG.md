@@ -6,6 +6,12 @@
 
 
 
+## 2026-10-09 — Following a moving target
+
+The refreshed T-rex comparison includes its corrected chase. Triceratops now has a continuous moving-player review covering charge, horn sweep and stomp in both phases, with the camera keeping both actors visible. Contact checks found no leg overreach in that run.
+
+Meteor core tracking passes four directional checks in the exported model. A declared Epic equipment build completes the encounter across three test seeds, but its predictive bot is stronger than a human player: this establishes possible routes, not final difficulty. Visual, auditory and full-fight acceptance remain open. These are private reviews; the public game build is unchanged.
+
 ## 2026-10-09 — Testing the build we actually ship
 
 Private build checks uncovered two issues that source-folder checks had missed: external artwork paths and a T-rex chase failure hidden by release assertions being compiled out. Packaged artwork now has explicit paths, and the T-rex responds more sharply to a circling target.

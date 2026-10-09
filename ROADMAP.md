@@ -26,7 +26,7 @@ Current focus: T-rex, Triceratops and Meteor. Dinosaur tracking and combat remai
 
 
 
-Pursuit, spacing, wall routes and audio interruption checks pass focused reviews. Assertion-enabled private exports now cover chase, committed attacks, pause, death and corpse handoff; packaged artwork paths have been verified. Minimap pixel equivalence and a paced combat profile verify a targeted frame-cost reduction. Spatial bite aiming has been corrected and verified in normal/slow-frame commitment cases. Continue reviewing continuous animation, audible mix, dense performance and full-fight gameplay interactions before acceptance.
+Pursuit, spacing, wall routes and audio interruption checks pass focused reviews. Assertion-enabled private exports now cover chase, committed attacks, pause, death and corpse handoff; packaged artwork paths have been verified. Minimap pixel equivalence and a paced combat profile verify a targeted frame-cost reduction. Spatial bite aiming has been corrected and verified in normal/slow-frame commitment cases. Updated comparison footage and moving-target Triceratops attack captures are available privately. Meteor core tracking and three-seed Epic-build route checks pass; predictive routes do not establish human difficulty. Continue reviewing continuous animation, audible mix, dense performance and full-fight gameplay interactions before acceptance.
 
 
 

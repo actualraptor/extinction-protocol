@@ -125,6 +125,18 @@
   ],
   "devlog": [
     {
+      "id": "boss-moving-target-review",
+      "date": "2026-10-09",
+      "title": "Following a moving target",
+      "stage": "Private runtime review",
+      "card": "boss-animation",
+      "body": "Updated T-rex comparison and Triceratops moving-player attack reviews cover pursuit and combat transitions. The public game build is unchanged.",
+      "changed": "Comparison footage includes the corrected chase. A dedicated moving-target capture covers all three Triceratops attacks in both phases and keeps boss and player in frame.",
+      "testing": "The moving-target run records no leg overreach. Exported Meteor core tracking passes four directional checks. A declared Epic equipment build completes three encounter seeds with a predictive movement bot.",
+      "learned": "Survivable predictive routes do not establish human difficulty. Camera and HUD obstruction can also hide problems during visual review.",
+      "next": "Continue full-fight and auditory review before developer acceptance. All three bosses remain in progress."
+    },
+    {
       "id": "boss-export-validation",
       "date": "2026-10-09",
       "title": "Testing the build we actually ship",
