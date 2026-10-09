@@ -34,7 +34,7 @@ Pursuit, spacing, wall routes and audio interruption checks pass focused reviews
 
 
 
-Private fire timing preserves usable ground until the deadline. Full-fight balance, continuous visual review, sound and developer acceptance remain open.
+Private fire timing preserves usable ground until the deadline. Distinct attack sound prototypes and protected mixing pass focused runtime checks; auditory review remains open. Continue full-fight balance, continuous visual review and developer acceptance.
 
 
 

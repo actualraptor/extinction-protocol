@@ -6,6 +6,12 @@
 
 
 
+## 2026-10-09 — Giving attacks their own sound
+
+The encounter prototype previously reused weapon sounds for its major attacks. A private effects study now separates pressure bursts, falling debris and ground fractures, with three variations per cue. A protected audio pool keeps rapid weapon sounds from cutting those cues off.
+
+Runtime checks cover variant rotation, competing weapon cues, gain preservation, pause/resume and disabling sound. The recorded mix still needs auditory review; passing signal checks does not establish sound quality. Motion, interactions and full-fight acceptance remain open. No game assets or builds were released.
+
 ## 2026-10-09 — Finding the hitch outside the boss
 
 
