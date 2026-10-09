@@ -2,6 +2,12 @@
 
 [Read the devblog on the website](https://actualraptor.github.io/extinction-protocol/devblog.html) · [Development roadmap](ROADMAP.md)
 
+## 2026-10-09 — Room to hunt
+
+Moving-target review exposed brief player overlap during Triceratops recovery. More attack space corrects that case. Grounded movement also now escapes a wall when forward travel is blocked, and dinosaur footsteps, bites and tail sounds have a separate audio pool.
+
+Both dinosaurs passed stationary and moving-target obstacle checks at normal and slow frame rates. Rendered wall routes retained body clearance; summon melee and audio interruption checks passed. A subsequent combined combat review exposed a rare support-leg failure during stomp windup, prompting another weight-transfer correction. Repeated combat, continuous animation, audible mix, dense performance and full-fight review remain open. These studies are private and await developer acceptance.
+
 ## 2026-10-09 — Keeping the weight in the stride
 
 The private T-rex pass corrects source leg reach at touchdown and adds alternating support steps during the tail turn. Exported leg-length checks cover all twelve clips; fixed-frame attack and weapon-active combat reviews retained foot contacts. Nearby creatures also retain movement and frozen effects when passing scenery.

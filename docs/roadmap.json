@@ -15,7 +15,7 @@
       "title": "Dinosaur boss animation",
       "status": "in-progress",
       "summary": "Current focus: T-rex, Triceratops and Meteor. Dinosaur tracking and combat remain under review; Meteor has an original-art 3D reconstruction and a private shell-motion study. Other bosses wait.",
-      "next": "Close-range tracking and scenery depth pass focused runtime checks. Continue motion, sound, dense performance and interaction review before acceptance."
+      "next": "Pursuit, spacing, wall routes and audio interruption checks pass focused reviews. Continue continuous animation, audible mix, dense performance and full-fight interaction review before acceptance."
     },
     {
       "id": "cinematics",
@@ -124,6 +124,18 @@
     }
   ],
   "devlog": [
+    {
+      "id": "boss-spacing-and-audio",
+      "date": "2026-10-09",
+      "title": "Room to hunt",
+      "stage": "Private runtime review",
+      "card": "boss-animation",
+      "body": "The dinosaur studies now leave more reliable attack space and recover from blocked routes.",
+      "changed": "Triceratops recovery spacing has been adjusted for moving prey. Grounded movement can escape a wall when forward travel is blocked. Boss footsteps, bites and tail sounds have a separate audio pool.",
+      "testing": "Both dinosaurs passed stationary and moving-target obstacle checks at normal and slow frame rates. Rendered wall routes retained body clearance; summon melee and audio interruption checks passed. Combined combat review then exposed a rare support-leg failure during stomp windup.",
+      "learned": "Body overlap needs its own check. An unchanged endpoint could be mistaken for a successful wall slide, and a lateral weight shift can require a second vertical support correction.",
+      "next": "Recheck the support correction in repeated combat, then continue continuous animation, audible mix, dense performance and full-fight review. Developer acceptance remains open; these studies are private."
+    },
     {
       "id": "boss-stride-deformation",
       "date": "2026-10-09",
