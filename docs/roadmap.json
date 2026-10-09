@@ -15,7 +15,7 @@
       "title": "Dinosaur boss animation",
       "status": "in-progress",
       "summary": "Current focus: T-rex, Triceratops and Meteor. Dinosaur tracking and combat remain under review; Meteor has an original-art 3D reconstruction and a private shell-motion study. Other bosses wait.",
-      "next": "Pursuit, spacing, wall routes and audio interruption checks pass focused reviews. Continue continuous animation, audible mix, dense performance and full-fight interaction review before acceptance."
+      "next": "Assertion-enabled private exports now cover chase, committed attacks, pause, death and corpse handoff. Continue visual and auditory review and full-fight balance before acceptance."
     },
     {
       "id": "cinematics",
@@ -124,6 +124,18 @@
     }
   ],
   "devlog": [
+    {
+      "id": "boss-export-validation",
+      "date": "2026-10-09",
+      "title": "Testing the build we actually ship",
+      "stage": "Private build validation",
+      "card": "boss-animation",
+      "body": "Source-folder tests can miss packaged asset paths, and release exports omit development assertions.",
+      "changed": "Private runtime artwork now has explicit packaged paths. A fast-circle pursuit failure led to a sharper T-rex turning response; exported chase checks now fail explicitly.",
+      "testing": "Assertion-enabled private exports pass dinosaur chase, committed attacks, pause, death and corpse handoff. Both Meteor phase transitions and victory pass with overlapping casts.",
+      "learned": "A printed PASS from a release build is insufficient when its assertions are compiled out.",
+      "next": "Continue visual and auditory review and ordinary-build encounter balance. These candidates remain private; no public game build was changed."
+    },
     {
       "id": "trex-spatial-bite",
       "date": "2026-10-09",

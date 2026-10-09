@@ -6,6 +6,12 @@
 
 
 
+## 2026-10-09 — Testing the build we actually ship
+
+Private build checks uncovered two issues that source-folder checks had missed: external artwork paths and a T-rex chase failure hidden by release assertions being compiled out. Packaged artwork now has explicit paths, and the T-rex responds more sharply to a circling target.
+
+Assertion-enabled exports pass focused dinosaur chase, attacks, pause, death and corpse handoff checks. Meteor phase transitions and victory also pass with overlapping attacks. Visual quality, perceived sound and ordinary-build encounter balance remain under review. No public game build was changed.
+
 ## 2026-10-09 — Aiming from the moving skull
 
 A focused bite review found a spatial aiming error that horizontal direction checks had missed. Rotating the neck moves the skull, so the private T-rex now refines its aim from that updated position while preserving the committed target and damage geometry.
