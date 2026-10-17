@@ -1,7 +1,7 @@
 const statuses={'in-progress':['In progress','#d8b76e'],improve:['Needs improvement','#c89771'],planned:['Planned','#9daccc'],done:['Done','#87b99a']};
 const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
-fetch('roadmap.json').then(r=>{if(!r.ok)throw Error('Board unavailable');return r.json();}).then(data=>{
- document.querySelector('#board-meta').textContent=`Updated ${data.updated} · Public playtest ${data.release}`;
+fetch('roadmap.json', {cache:'no-store'}).then(r=>{if(!r.ok)throw Error('Board unavailable');return r.json();}).then(data=>{
+ document.querySelector('#board-meta').textContent=`Updated ${data.updated} · Early Access ${data.release}`;
  document.querySelector('#board-policy').textContent=data.policy;
  const board=document.querySelector('#board');board.replaceChildren();
  for(const [status,[label,color]] of Object.entries(statuses)){

@@ -1,6 +1,6 @@
 {
   "updated": "17 October 2026",
-  "release": "0.14.4",
+  "release": "0.15.0",
   "policy": "Done means accepted by the developer. A private preview is not a shipped feature. No release dates are promised.",
   "cards": [
     {
@@ -125,9 +125,9 @@
     {
       "id": "scoreboard",
       "title": "Scoreboard redesign",
-      "status": "in-progress",
-      "summary": "The concept screen now fills ultrawide viewports with resizable gold panels and buttons. Live text no longer overlaps header ornaments. Ordinary survivors have independent damage and weapon-kill leaders; the army survivor retains individual leaders. Source reviews cover standard, small and ultrawide windows plus resizing; private R7 renders populated results at 3440x1392. Developer requested equal metric clarity with the concept. Private R8 now uses larger serif numerals, brighter contrast and spaced thousands; matched-data source captures and native ultrawide output were inspected. R10 repeats the populated ultrawide native check; typography equality is not yet accepted.",
-      "next": "The numeral weight is closer to the concept in inspected renders; exact visual equality still needs acceptance. R23 is a local scoreboard-only review with sound-enabled launcher, no archive/upload/publication. Finish broader interface quality and remaining gameplay/art/performance backlog."
+      "status": "improve",
+      "summary": "The ornate run scoreboard ships in 0.15.0, with ultrawide scaling, clearer metric numerals, ability icons and separate damage and kill leaders. The army survivor retains individual leaders.",
+      "next": "Continue visual comparison with the accepted concept; exact typography equality and final developer playtest acceptance remain open."
     },
     {
       "id": "summon-names",
@@ -195,26 +195,38 @@
     {
       "id": "weapon-milestones",
       "title": "Level 5 and 10 upgrades for every weapon",
-      "status": "in-progress",
-      "summary": "Two behaviour-changing choices at ranks5and10 cover all59runtime weapons.236cards and118real keyboard claims pass; combat, summon/ritual, save and refund regressions pass.",
-      "next": "Implementation and local verification complete in Windows test build6. Await developer playtest acceptance before marking this roadmap card done."
+      "status": "improve",
+      "summary": "Rank-5 and rank-10 weapon choices are included in 0.15.0, including the new divine arsenal. Existing save, reward and combat checks pass.",
+      "next": "Keep refining behaviour and balance from ordinary play while preserving progression gates, ritual APIs and saved choices."
     },
     {
       "id": "weapon-combinations",
       "title": "Weapon combinations",
-      "status": "in-progress",
-      "summary": "Seven additional combinations, including beams, have distinct combined attacks. Matched encounters exposed and corrected area/flight weaknesses. Source and final Windows build6 verify real merges, damage, milestones and persisted recipes.",
-      "next": "Implementation and local verification complete. Both rendered normal-health five-slot loadouts survive the pressure sample with bounded queues. Full-campaign balance is a separate continuing review; await developer acceptance before marking done."
+      "status": "improve",
+      "summary": "The current discoverable weapon combinations are included in 0.15.0, with combined attacks and saved recipes.",
+      "next": "Continue full-run balance and clarity feedback. Undiscovered recipes stay unnamed in public updates."
     },
     {
       "id": "rarity-jackpot",
       "title": "Rarity reveal celebration",
-      "status": "in-progress",
-      "summary": "Epic, Legendary and Artifact use tiered reveals, including held Artifact names, original cues and reduced-effects controls. Source and Windows build6 verify small/UW layouts, real claims and saved settings. Live decoded cue-plus-music mixes retain headroom; SFX mute works.",
-      "next": "Implementation and local verification complete. Automated tests remain silent; subjective listening/taste remains for playtest. Await developer acceptance before marking this roadmap card done."
+      "status": "improve",
+      "summary": "Tiered Epic, Legendary and Artifact celebrations are included in 0.15.0, with distinct cues and reduced-effects controls.",
+      "next": "Continue human listening, readability and controller playfeel checks; shipping this EA update does not mark polish accepted."
     }
   ],
   "devlog": [
+    {
+      "id": "torr-0150-release-20261017",
+      "date": "2026-10-17",
+      "title": "Torr Stormbuk joins Early Access",
+      "stage": "0.15.0 released",
+      "card": "norse-survivor",
+      "body": "The 0.15.0 Windows update is live. Discover Torr in the expedition and wield eight divine weapons, with returning ricochets or a permanent hammer ring. Existing saves are retained.",
+      "changed": "Independent painted walking, throwing and catching poses, recorded battle lines, a replayable illustrated lesson with a useful reward, and an optional world encounter join the current weapon-path, combination, rarity and scoreboard updates.",
+      "testing": "Source regressions and packaged gameplay checks pass, including the real story reward/replay and saved unlock. Three rendered Meteor damage-budget fights finish before the deadline; owner immunity isolates attack output and does not establish human survivability. The uploaded Windows ZIP checksum matches the verified local package.",
+      "learned": "The divine arsenal needed working melee echoes, accurate boss-body hits and more orbit damage. A dense sustained crowd still produces frame-time spikes, so no stable 60/144 FPS claim accompanies this release.",
+      "next": "Continue human full-run difficulty, foot planting/action transitions, heavy-crowd performance, controller playfeel and audio mix feedback. The broader enemy/minion animation task remains separate."
+    },
     {
       "id": "catalog-milestones-source-20261016",
       "date": "2026-10-16",
