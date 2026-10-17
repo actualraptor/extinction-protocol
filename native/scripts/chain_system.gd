@@ -1,7 +1,7 @@
 extends RefCounted
 ## Bounded work queue shared by weapons and proc effects. Each target is visited
 ## once, or at most twice when rechain triggers. No recursive chain spawning.
-static func cast(g,origin,power,id,count,radius,falloff = 0.85,fork = 0.0,rechain = 0.0,initial_range_origin = Vector2.INF):
+static func cast(g,origin,power,id,count,radius,falloff = 0.85,fork = 0.0,rechain = 0.0,initial_range_origin = Vector2.INF,result = null,first_range = 680.0):
 	var queue = [{"p":origin,"damage":power,"first":true}]
 	var visits = {}
 	var hits = 0
@@ -9,7 +9,7 @@ static func cast(g,origin,power,id,count,radius,falloff = 0.85,fork = 0.0,rechai
 	while not queue.is_empty() and hits<budget:
 		var source = queue.pop_front()
 		var target = null
-		var distance = 680.0 if source.first else radius
+		var distance = first_range if source.first else radius
 		var search_origin=initial_range_origin if source.first and initial_range_origin!=Vector2.INF else source.p
 		var repeat_allowed = g.rng.randf()<rechain
 		for e in g.nearby(search_origin,distance):
@@ -21,8 +21,12 @@ static func cast(g,origin,power,id,count,radius,falloff = 0.85,fork = 0.0,rechai
 				target = e
 		if target==null: continue
 		visits[target.uid] = visits.get(target.uid,0)+1
-		if g.strikes.size()<180: g.strikes.append({"a":source.p,"b":target.p,"life":0.24,"wait":minf(0.3,hits*0.028),"chain":true,"ice":id=="whiteout","color":Color("c9b3ff")})
+		if id.begins_with("tfk_"):
+			preload("res://scripts/tfk_weapon_animation.gd").cue(g,id,source.p,0,target.p)
+			g.sound.emit("tfk_signal")
+		elif g.strikes.size()<180: g.strikes.append({"a":source.p,"b":target.p,"life":0.24,"wait":minf(0.3,hits*0.028),"chain":true,"ice":id=="whiteout","color":Color("c9b3ff")})
 		g.hit(target,source.damage,id)
+		if result!=null:result.last=target
 		hits += 1
 		if hits<count: queue.append({"p":target.p,"damage":source.damage*falloff,"first":false})
 		if g.rng.randf()<fork: queue.append({"p":target.p,"damage":source.damage*falloff*0.8,"first":false})

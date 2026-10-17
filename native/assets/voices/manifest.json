@@ -25,5 +25,18 @@
     "hurt": 2,
     "level_up": 4,
     "low_hp": 3
+  },
+  "torr": {
+    "boss_killed": 4,
+    "boss_spawn": 4,
+    "chosen": 4,
+    "death": 3,
+    "final_evolution": 2,
+    "hurt": 3,
+    "level_up": 4,
+    "low_hp": 3,
+    "orbit_added": 2,
+    "orbit_started": 2,
+    "stormload": 2
   }
 }

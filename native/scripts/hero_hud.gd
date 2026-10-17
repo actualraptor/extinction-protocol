@@ -30,7 +30,7 @@ static func available(save):
 static func selected(save,hero):
  var preference=save.get("settings",{}).get("hud_skin",-1)
  var id=int(preference) if preference is int or preference is float else -1
- return id if id in available(save) else hero
+ return id if id in available(save) else hero if HudSkin.THEMES.has(hero) else 1
 func _ready():
  mouse_filter=Control.MOUSE_FILTER_STOP
  for key in ["left_zone","center","right_zone"]:
@@ -67,11 +67,12 @@ func _process(dt):
   var zone=regions.left_zone if key=="name" else regions.right_zone
   plates[key].position=regions[key].position-zone.position;plates[key].size=regions[key].size
   var value=HudSkin.format_amount(g.amber) if key=="currency" else str(g.rerolls) if key=="reroll" else ""
-  plates[key].configure(active_theme,key,value,g.hero if key=="name" else -1)
+  plates[key].visible=not (key=="name" and (g.C.HEROES[g.hero].get("profile","")=="tfk" or g.C.HEROES[g.hero].get("voice_key","")=="torr"))
+  plates[key].configure(active_theme,key,value,(g.hero if g.hero<6 else 1) if key=="name" else -1)
  var ratio=clampf(g.xp/maxf(1,g.xp_goal),0,1)
  xp_display=ratio if last_level!=g.level else lerpf(xp_display,ratio,1-exp(-dt*10));last_level=g.level
- if not portraits.has(g.hero):portraits[g.hero]=HudSkin.portrait(g.hero)
- portrait_node.texture=portraits[g.hero]
+ if not portraits.has(g.hero):portraits[g.hero]=preload("res://assets/tfk-duo-portrait-v1.png") if g.C.HEROES[g.hero].get("profile","")=="tfk" else HudSkin.portrait(g.hero if g.hero<6 else 1)
+ portrait_node.texture=preload("res://scripts/god_content.gd").portrait() if g.C.HEROES[g.hero].get("voice_key","")=="torr" else portraits[g.hero]
  var aperture=HudSkin.region(active_theme,"portrait",regions.portrait).grow(-2)
  portrait_node.position=aperture.position-regions.left_zone.position;portrait_node.size=aperture.size
  health_node.position=regions.health.position-regions.left_zone.position;health_node.size=regions.health.size
@@ -110,6 +111,9 @@ func _draw():
  if game.save_data.settings.get("hud_minimap",true):
   part("map",regions.map)
   draw_map(g,HudSkin.region(active_theme,"map",regions.map),accent)
+ if g.C.HEROES[g.hero].get("voice_key","")=="torr":
+  draw_style_box(HudSkin.panel(active_theme,true),regions.name)
+  label_in("TORR STORMBUK",regions.name.grow(-8),18,Color("ecd8ad"),true)
  part("portrait",regions.portrait)
  var level_badge=regions.level
  part("level",level_badge)
@@ -136,7 +140,8 @@ func _draw():
  if g.companions!=null:
   var army=g.companions;var census=preload("res://scripts/companion_meter.gd").census(army.units,g.time)
   summary="SOULS %s / %s     •     ARMY %s"%[int(army.remnant_souls if not army.fallen_remnant.is_empty() else army.souls),2000 if not army.fallen_remnant.is_empty() else int(army.next_threshold),census.total]
- if g.companions!=null:label_in(summary,regions.summary,16,accent)
+ if g.C.HEROES[g.hero].get("weapon_set","")=="god":summary=g.trait_text()
+ if summary!="":label_in(summary,regions.summary,16,accent)
  var carried=[]
  for id in g.relics:carried.append({"id":id,"type":"relic","rank":g.Relics.tiers(g,id).size(),"name":g.Relics.inventory_data(g,id).name})
  for category in ["passive","augment"]:
@@ -210,7 +215,9 @@ func draw_map(g,r,accent):
  if map_texture!=null:draw_texture_rect(map_texture,r,false)
  for item in preload("res://scripts/map_markers.gd").collect(g):
   var at=map_point(item.p,g,r)
-  if r.grow(-8).has_point(at):icon_in(Icons.get_icon(item.id,item.category,g.halloween),Rect2(at-Vector2(6,6),Vector2(12,12)))
+  if r.grow(-8).has_point(at):
+   if item.category=="mystery":draw_string(Art.body_font(),at+Vector2(-4,5),"?",HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("e0ce9c"))
+   else:icon_in(Icons.get_icon(item.id,item.category,g.halloween),Rect2(at-Vector2(6,6),Vector2(12,12)))
  for region in g.stage.get("regions",[]):
   var at=map_point(region.p,g,r)
   if r.grow(-10).has_point(at):draw_arc(at,8,0,TAU,24,Color(accent,.25),1,true)

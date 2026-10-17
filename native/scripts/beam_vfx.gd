@@ -6,7 +6,7 @@ func _ready():
  shader_material=ShaderMaterial.new();shader_material.shader=preload("res://shaders/beam_flow.gdshader");material=shader_material
 func refresh():
  var s=beam.stats;var t=beam.age
- var flame=beam.id=="flametorch"
+ var flame=world.sim.C.WEAPONS[beam.id].get("beam_base",beam.id)=="flametorch"
  var points=beam.get("path",PackedVector2Array([world.sim.pos,world.sim.pos+beam.aim])) if flame else PackedVector2Array([world.sim.pos,world.sim.pos+(beam.target.p-world.sim.pos).limit_length(s.range)])
  var vertices=PackedVector3Array();var uvs=PackedVector2Array();var indices=PackedInt32Array()
  position=world.screen(world.sim.pos)+Vector2(0,-30)
@@ -24,5 +24,5 @@ func refresh():
  var strip=ArrayMesh.new();strip.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES,arrays);mesh=strip
  shader_material.set_shader_parameter("age",t)
  shader_material.set_shader_parameter("seed",beam.seed)
- shader_material.set_shader_parameter("mode",0 if flame else 2)
+ shader_material.set_shader_parameter("mode",3 if beam.id=="plague_furnace" else 4 if beam.id=="event_lock" else 0 if flame else 2)
  shader_material.set_shader_parameter("envelope",minf(1,t/.1)*minf(1,(beam.life-t)/.15))

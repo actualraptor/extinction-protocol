@@ -12,7 +12,11 @@ func _exit_tree():
 func _ready():
 	for id in IDS:
 		var player=AudioStreamPlayer.new();player.bus="SFX";player.volume_db=-80
-		var stream=load("res://assets/audio/beams/%s.wav"%("flame_pressure" if id=="flametorch" else "plasma_current")).duplicate()
+		var source=load("res://assets/audio/beams/%s.wav"%("flame_pressure" if id=="flametorch" else "plasma_current")) as AudioStreamWAV
+		if source==null:
+			player.free()
+			continue
+		var stream=source.duplicate()
 		stream.loop_mode=AudioStreamWAV.LOOP_FORWARD;stream.loop_begin=0;stream.loop_end=roundi(stream.get_length()*stream.mix_rate)
 		player.stream=stream;player.pitch_scale=.92 if id=="plasma_tether" else 1.0
 		add_child(player);players[id]=player
@@ -24,8 +28,10 @@ func update_audio(g,muted,dt):
 	if g!=null and g.active and not g.choosing and not muted:
 		for beam in g.beams:
 			var envelope=minf(1,beam.age/.08)*minf(1,(beam.life-beam.age)/.13)
-			active[beam.id]=maxf(active.get(beam.id,0),envelope)
+			var id=g.C.WEAPONS[beam.id].get("beam_base",beam.id)
+			active[id]=maxf(active.get(id,0),envelope)
 	for id in IDS:
+		if not players.has(id):continue
 		var player=players[id];var intensity=active.get(id,0.0)
 		var target=(-15.5 if id=="flametorch" else -20.0)+linear_to_db(maxf(.001,intensity)) if intensity>.001 else -80.0
 		if intensity>.001 and not player.playing:player.play()

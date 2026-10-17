@@ -25,6 +25,7 @@ static func discovery_total(save):
   if id in save.get("unlocks",[]) and D.ENTRIES[id].cost>0:total+=discovery_cost(save,id)
  return total
 static func buy_research(save,id):
+ if C.RESEARCH.get(id,{}).get("profile","")=="07" and not preload("res://scripts/content_extension.gd").visible(save):return false
  if not C.RESEARCH.has(id):return false
  var rank_value=int(save.research.get(id,0));var cost=rank_cost(id,rank_value)
  if rank_value>=C.RESEARCH[id].max or save.amber<cost:return false

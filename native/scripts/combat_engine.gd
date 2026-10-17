@@ -5,9 +5,14 @@ const Starter = preload("res://scripts/starter_attack.gd")
 const Slam = preload("res://scripts/kael_slam.gd")
 
 static func update(g,dt):
+	preload("res://scripts/god_system.gd").update(g,dt)
+	if not g.active:return
 	preload("res://scripts/beam_system.gd").update(g,dt)
+	preload("res://scripts/ancestor_rupture.gd").update(g,dt)
 	Slam.update(g)
+	if not g.active:return
 	Starter.update(g)
+	if not g.active:return
 	var pending = g.volleys
 	g.volleys = []
 	for volley in pending:
@@ -15,7 +20,10 @@ static func update(g,dt):
 		if volley.wait<=0:
 			if g.weapons.has(volley.id):
 				if volley.get("starter",false):Starter.volley(g,volley)
-				else:g.shoot(volley.id,g.pos,volley.dir,volley.power,volley.velocity,volley.life,volley.pierce)
+				else:
+					var shot=g.shoot(volley.id,volley.get("origin",g.pos),volley.dir,volley.power,volley.velocity,volley.life,volley.pierce)
+					if shot!=null and volley.get("union_secondary",false):
+						shot.union_secondary=true;shot.return_after=99;shot.bounce=0
 		else: g.volleys.append(volley)
 	if g.weapons.has("bastion"):
 		g.relic_state.bastion_cd = g.relic_state.get("bastion_cd",0.0)-dt
@@ -24,10 +32,32 @@ static func update(g,dt):
 			g.shield = maxf(g.shield,110+Rules.modifiers(g,"bastion").get("shield",0))
 			g.effect.emit("ring",g.pos,Color("8affdf"),140)
 	for id in g.weapons:
+		if not preload("res://scripts/god_content.gd").allowed(g.C.HEROES[g.hero],g.C.WEAPONS[id]):continue
 		var w = g.weapons[id]
 		w.timer -= dt
 		if w.timer>0: continue
 		var d = g.C.WEAPONS[id]
+		if d.delivery=="god":
+			var god_stats=Rules.stats(g,id)
+			if preload("res://scripts/god_system.gd").cast(g,id,god_stats):
+				w.timer=.58 if d.god_kind=="hammer" and w.get("branches",{}).get("5","")=="orbit" else god_stats.cooldown
+				w.casts=w.get("casts",0)+1
+				g.ledger.cast(id,g.time)
+				g.Relics.on_cast(g,d,w.casts,god_stats)
+			continue
+		if d.delivery=="tfk":
+			var stats=g.Rules.stats(g,id)
+			if w.level==10:stats.power*=1.2
+			g.Relics.on_cast(g,d,w.get("casts",0)+1,stats)
+			stats=preload("res://scripts/tfk_items.gd").prepare(g,stats)
+			if preload("res://scripts/tfk_system.gd").cast(g,id,stats):
+				w.timer=stats.cooldown*(.65 if g.tfk_state.get("empowered",0.0)>0 else 1.0)
+				var branch=w.get("branches",{}).get("5","")
+				if branch in ["tempo","release"]:w.timer*=.75
+				w.casts=w.get("casts",0)+1
+				g.ledger.cast(id,g.time)
+				preload("res://scripts/tfk_items.gd").on_cast(g,id,stats,w.casts)
+			continue
 		if d.delivery=="beam":
 			var beam_stats=Rules.stats(g,id)
 			if w.level==10:beam_stats.power*=1.2
@@ -64,6 +94,8 @@ static func update(g,dt):
 		match d.delivery:
 			"thorns":
 				g.blast(g.pos,s.radius,s.power,id)
+				if not g.active:return
+				if Rules.modifiers(g,id).get("thorn_echo",0)>0 and g.echoes.size()<96:g.echoes.append({"wait":.22,"id":id,"aim":aim,"stats":s.duplicate()})
 			"projectile":
 				var count = s.count
 				for j in range(mini(24,count)):
@@ -79,21 +111,24 @@ static func update(g,dt):
 					continue
 				if w.evolved and "SWEEP" in d.tags: s.arc = TAU
 				melee(g,id,g.pos,aim,s)
+				if not g.active:return
 				for i in range(s.repeat):
 					g.echoes.append({"wait":0.16*(i+1),"id":id,"aim":aim.rotated(PI if i%2==1 and "SWEEP" in d.tags else 0),"stats":s.duplicate()})
 				if w.level>=7:
 					g.shoot(id,g.pos,aim,s.power*0.55,520,0.6,8)
+					for side in int(Rules.modifiers(g,id).get("lance_fan",0)):
+						g.shoot(id,g.pos,aim.rotated(-.3 if side==0 else .3),s.power*.55,520,.6,8)
 			"chain":
 				Chain.cast(g,g.pos,s.power,id,s.count,s.range,s.falloff,s.fork,s.rechain)
 			"orbital":
 				for j in range(s.count):
-					g.blast(g.pos+Vector2.from_angle(g.time*2.3+j*TAU/s.count)*s.radius,40*g.area_scale(),s.power,id)
+					g.blast(g.pos+Vector2.from_angle(g.time*(2.3+Rules.modifiers(g,id).get("orbit_speed",0))+j*TAU/s.count)*s.radius,40*g.area_scale(),s.power,id)
 			"ground":
 				if id=="thunderstorm":
 					for j in range(mini(s.count,4)):
 						if g.zones.size()>=24: break
 						var center = target.p+Vector2.from_angle(j*TAU/mini(s.count,4))*j*s.radius*0.8
-						g.zones.append({"p":center,"radius":s.radius,"id":id,"damage":s.power,"wait":0.2,"life":2.0+s.duration,"duration":2.0+s.duration,"interval":0.25 if w.evolved else 0.5,"age":0.0,"tick":0.0,"pulse":0})
+						g.zones.append({"p":center,"radius":s.radius,"id":id,"damage":s.power,"wait":0.2,"life":2.0+s.duration,"duration":2.0+s.duration,"interval":maxf(.1,(.25 if w.evolved else .5)/(1+Rules.modifiers(g,id).get("field_haste",0))),"age":0.0,"tick":0.0,"pulse":0})
 					continue
 				for j in range(mini(s.count,8)):
 					var p = target.p+Vector2.from_angle(g.rng.randf()*TAU)*j*65
@@ -103,12 +138,37 @@ static func update(g,dt):
 			"aura":
 				var burst = w.level>=7 and w.casts%4==0
 				g.blast(g.pos,s.radius*(1.8 if burst else 1),s.power*(2 if burst else 1),id)
+				if not g.active:return
+				preload("res://scripts/union_system.gd").after_aura(g,id,s,w.casts)
+				var mods=Rules.modifiers(g,id)
+				var satellites=int(mods.get("aura_satellites",0))
+				for j in satellites:
+					g.blast(g.pos+Vector2.from_angle(g.time*.9+j*TAU/satellites)*s.radius*.9,s.radius*.38,s.power*.45,id)
+					if not g.active:return
+				if mods.get("aura_trail",0)>0 and g.zones.size()<24:
+					g.zones.append({"p":g.pos,"radius":s.radius*.7,"id":id,"damage":s.power*.35,"wait":0.0,"milestone_field":true,"life":mods.aura_trail,"duration":mods.aura_trail,"age":0.0,"tick":0.0})
 			"shield":
 				g.shield = maxf(g.shield,s.shield*(1.7 if w.evolved else 1.0))
 				g.effect.emit("ring",g.pos,Color(d.color),100)
+				var mods=Rules.modifiers(g,id)
+				if mods.get("shield_pulse",0)>0:g.blast(g.pos,160*g.area_scale(),(25+w.level*4)*g.damage_scale(id),id)
+				if not g.active:return
+				if mods.get("shield_grace",0)>0:g.buffs.immune=maxf(g.buffs.get("immune",0),mods.shield_grace)
 			"utility":
 				g.buffs["freeze" if w.level>=7 else "slow"] = 2+s.duration+w.level*0.15+(2 if w.evolved else 0)
 				g.effect.emit("level",g.pos,Color(d.color),350)
+				var mods=Rules.modifiers(g,id)
+				if mods.get("utility_pulse",0)>0:g.blast(g.pos,200*g.area_scale(),55*g.damage_scale(id),id)
+				if not g.active:return
+				if mods.get("utility_field",0)>0 and g.zones.size()<24:
+					g.zones.append({"p":g.pos,"radius":170*g.area_scale(),"id":id,"damage":30*g.damage_scale(id),"wait":0.0,"milestone_field":true,"life":mods.utility_field,"duration":mods.utility_field,"age":0.0,"tick":0.0})
+				if mods.get("utility_shatter",0)>0:
+					var count=0
+					for enemy in g.nearby(g.pos,300):
+						if enemy.dead or enemy.get("frozen",0)<=0:continue
+						g.blast(enemy.p,75,60*g.damage_scale(id),id);count+=1
+						if not g.active:return
+						if count>=8:break
 	var pending_echoes=g.echoes
 	g.echoes=[]
 	for echo in pending_echoes:
@@ -122,9 +182,13 @@ static func update(g,dt):
 		var active_step = maxf(0.0,dt-maxf(0.0,zone.wait))
 		zone.wait -= dt
 		if zone.wait>0: continue
-		if zone.id=="thunderstorm":
+		if zone.get("wave",false):
+			preload("res://scripts/union_system.gd").wave(g,zone,active_step)
+			if not g.active:return
+			continue
+		if zone.id=="thunderstorm" or zone.get("storm",false):
 			# Schedule at 0 / .5 / 1 / 1.5 seconds, without an expiry explosion.
-			var active_dt = minf(dt,zone.life)
+			var active_dt = minf(active_step,zone.life)
 			zone.age += active_dt
 			while zone.pulse*zone.interval<zone.age and zone.pulse*zone.interval<zone.duration-0.00001:
 				zone.pulse += 1
@@ -133,7 +197,7 @@ static func update(g,dt):
 				for j in range(3):
 					var landing = zone.p+Vector2.from_angle(zone.pulse*2.4+j*TAU/3)*zone.radius*(0.15 if j==0 else 0.6)
 					if g.strikes.size()<180: g.strikes.append({"a":landing+Vector2(-35,-200),"b":landing,"life":0.24,"wait":j*0.035})
-			zone.life -= dt
+			zone.life -= active_dt
 			continue
 		var active_dt = minf(active_step,zone.life)
 		var duration = zone.get("duration",zone.life+zone.get("age",0.0))

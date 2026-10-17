@@ -150,6 +150,14 @@ func _draw():
 		var at = world.screen(marker.p)
 		if not world.visible_rect().grow(100).has_point(at): continue
 		var discovery=s.Discoveries.ENTRIES.get(marker.id,{})
+		if marker.get("quest_intro",false) or marker.get("mystery",false):
+			var symbol=preload("res://scripts/tfk_icons.gd").DISCOVERIES.get(marker.id,"tfk_phone")
+			var bob=sin(s.time*2.5)*3
+			draw_texture_rect(Icons.get_icon(symbol),Rect2(at+Vector2(-30,-65+bob),Vector2(60,60)),false)
+			draw_arc(at,34,0,TAU,32,Color("c9a3ff"),2,true)
+			draw_string_outline(world.font,at+Vector2(-5,25),"?",HORIZONTAL_ALIGNMENT_LEFT,-1,22,3,Color("15101d"))
+			draw_string(world.font,at+Vector2(-5,25),"?",HORIZONTAL_ALIGNMENT_LEFT,-1,22,Color("f7d797"))
+			continue
 		var art="camp" if discovery.has("hero") else "chronicle" if discovery.has("relics") else "chest"
 		draw_texture_rect(Icons.get_icon(art,"relic"),Rect2(at-Vector2(46,76),Vector2(92,92)),false)
 		draw_arc(at,42,0,TAU,32,Color("f4cf88"),2,true)
@@ -195,19 +203,10 @@ func _draw():
 				var flight=clampf(entry_progress/.64,0,1)
 				var return_progress=clampf((entry_progress-.64)/.36,0,1)
 				var screen=world.visible_rect().size
-				var edge=260.0
 				var rect=world.visible_rect()
-				var start_at=rect.position+Vector2(screen.x+edge,screen.y*.20)
-				var exit_at=rect.position+Vector2(-edge,screen.y*.34)
 				var landing_at=world.screen(s.boss.p)
-				if return_progress<=0:
-					meteor_at=start_at.lerp(exit_at,flight)
-				else:
-					var t=return_progress
-					var control_a=exit_at+Vector2(-screen.x*.12,-screen.y*.48)
-					var control_b=landing_at+Vector2(screen.x*.16,-screen.y*.48)
-					meteor_at=pow(1-t,3)*exit_at+3*pow(1-t,2)*t*control_a+3*(1-t)*t*t*control_b+t*t*t*landing_at
-				draw_meteor_entry_fx(self,meteor_at,flight,return_progress,entry_progress,screen)
+				meteor_at=meteor_entry_position(rect,landing_at,entry_progress)
+				draw_meteor_entry_fx(self,meteor_at,flight,return_progress,entry_progress,screen,world.clock)
 			meteor_model.draw_body(self,meteor_at,s.phase)
 		else:
 			var tint=Color(1.6,1.6,1.6) if s.boss.flash>0 else Color.WHITE
@@ -219,30 +218,40 @@ func _draw():
 		if not (OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args()):draw_arc(world.screen(s.boss.p),720,0,TAU,100,Color(1,0.3,0.2,0.5),5,true)
 	review_draw_ms=(Time.get_ticks_usec()-review_started)/1000.0
 
-func draw_meteor_entry_fx(canvas:CanvasItem,at:Vector2,flight:float,return_progress:float,progress:float,screen:Vector2)->void:
+static func meteor_entry_position(rect:Rect2,landing_at:Vector2,progress:float)->Vector2:
+	var flight=clampf(progress/.64,0,1)
+	var t=clampf((progress-.64)/.36,0,1)
+	var start_at=rect.position+Vector2(rect.size.x+260,rect.size.y*.20)
+	var exit_at=rect.position+Vector2(-260,rect.size.y*.34)
+	if t<=0:return start_at.lerp(exit_at,flight)
+	var control_a=exit_at+Vector2(-rect.size.x*.12,-rect.size.y*.48)
+	var control_b=landing_at+Vector2(rect.size.x*.16,-rect.size.y*.48)
+	return pow(1-t,3)*exit_at+3*pow(1-t,2)*t*control_a+3*(1-t)*t*t*control_b+t*t*t*landing_at
+
+static func draw_meteor_entry_fx(canvas:CanvasItem,at:Vector2,flight:float,return_progress:float,progress:float,screen:Vector2,clock:float)->void:
 	# Full-screen authored entrance language: a hot leading core, long
 	# turbulent trail and an impact bloom. The model remains centered in its
 	# viewport; these effects are drawn in world space and are never cropped.
 	var returning=return_progress>0.0
 	var direction=Vector2(-1,0) if not returning else Vector2(1,-.25).normalized()
 	var trail=620.0 if not returning else 420.0
-	var flicker=.82+.18*sin(world.clock*37.0)
+	var flicker=.82+.18*sin(clock*37.0)
 	for band in range(5):
 		var points=PackedVector2Array()
 		var colors=PackedColorArray()
 		for side in [1,-1]:
 			for sample in range(33):
 				var t=float(sample if side==1 else 32-sample)/32.0
-				var noise=sin(t*19-world.clock*13+band)*7+sin(t*41+world.clock*17)*4
+				var noise=sin(t*19-clock*13+band)*7+sin(t*41+clock*17)*4
 				var width=(45-band*7+noise)*pow(1-t,.8)
-				var center=at-direction*(24+t*trail)+direction.orthogonal()*sin(t*11-world.clock*7)*22*t
+				var center=at-direction*(24+t*trail)+direction.orthogonal()*sin(t*11-clock*7)*22*t
 				points.append(center+direction.orthogonal()*width*side)
 				colors.append(Color(1.0,.12+band*.10,.015+band*.02,(.18+band*.025)*pow(1-t,1.3)*flicker))
 		canvas.draw_polygon(points,colors)
 	for ember in range(24):
 		var seed=float(ember*31)
-		var t=fposmod(world.clock*(1.4+ember*.03)+seed*.17,1.0)
-		var p=at-direction*(35+t*trail)+direction.orthogonal()*sin(seed+world.clock*4.0)*18
+		var t=fposmod(clock*(1.4+ember*.03)+seed*.17,1.0)
+		var p=at-direction*(35+t*trail)+direction.orthogonal()*sin(seed+clock*4.0)*18
 		canvas.draw_circle(p,1.5+(ember%4),Color(1.0,.35,.06,.55*(1-t)))
 	if progress>.84:
 		var impact=clampf((progress-.84)/.16,0,1)

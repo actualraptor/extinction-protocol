@@ -24,25 +24,28 @@ static func prewarm_meteor():
 static func draw_meteor_rubble_strip(canvas,h,p):
 	if "--meteor-legacy-rubble-review" in OS.get_cmdline_user_args():return false
 	if not load_meteor_rubble():return false
+	for section in meteor_rubble_sections(h):
+		var points=PackedVector2Array()
+		for index in section.points.size():points.append(p+section.points[index]-h.p-Vector2(0,section.lifts[index]))
+		canvas.draw_polygon(points,section.colors,section.uv,meteor_rubble_strip)
+	return true
+
+static func meteor_rubble_sections(h)->Array:
 	var start=h.angle-h.arc*.5
-	# Each strip bends with the footprint rather than rotating flat sprites.
-	# Slight overlap joins the naturally ragged transparent ends.
-	var sections=8
-	for section in range(sections):
-		var points=PackedVector2Array();var uv=PackedVector2Array();var colors=PackedColorArray()
+	var sections=[]
+	for section in range(8):
+		var points=PackedVector2Array();var uv=PackedVector2Array();var colors=PackedColorArray();var lifts=PackedFloat32Array()
 		for edge in range(2):
 			for sample in range(9):
 				var u=float(sample)/8 if edge==0 else 1-float(sample)/8
-				var fraction=clampf((section+u*1.06-.03)/sections,0,1)
+				var fraction=clampf((section+u*1.06-.03)/8,0,1)
 				var angle=start+fraction*h.arc
 				var taper=clampf(minf(fraction,1-fraction)*20,0,1)
-				# Add stone mass behind the advancing edge, preserving its reach.
 				var radius=h.radius-12+(30 if edge==0 else -65)*taper
-				points.append(p+Vector2.from_angle(angle)*radius-Vector2(0,14*taper))
-				uv.append(Vector2(u,edge))
-				colors.append(Color(1.07,1.02,.94,.95*taper))
-		canvas.draw_polygon(points,colors,uv,meteor_rubble_strip)
-	return true
+				points.append(h.p+Vector2.from_angle(angle)*radius);lifts.append(14*taper)
+				uv.append(Vector2(u,edge));colors.append(Color(1.07,1.02,.94,.95*taper))
+		sections.append({"points":points,"lifts":lifts,"uv":uv,"colors":colors})
+	return sections
 
 static func load_meteor_rocks():
 	if meteor_rock_views.is_empty():
@@ -61,18 +64,32 @@ static func textured_meteor_burst(canvas,h,p):
 	textured_meteor_warning(canvas,h,p,1-age*.35)
 	# Authored dimensional stone fragments rise and fall over the footprint.
 	# Fixed identities keep the burst continuous rather than flickering noise.
+	for part in meteor_burst_parts(h):
+		var ground=p+part.p-h.p
+		var size=part.size
+		canvas.draw_set_transform(ground,0,Vector2(1,.38))
+		canvas.draw_circle(Vector2.ZERO,size*.30,Color(.025,.020,.015,.2*(1-age*.4)))
+		canvas.draw_set_transform(ground-Vector2(0,part.lift),part.rotation)
+		canvas.draw_texture_rect(meteor_rock_views[part.index],Rect2(-Vector2.ONE*size*.5,Vector2.ONE*size),false,Color(1.15,1.05,.95,part.alpha))
+		canvas.draw_set_transform(Vector2.ZERO)
+	return true
+
+static func meteor_burst_parts(h)->Array:
+	var duration=.35 if h.get("meteor_eruption",false) else .5
+	var age=clampf(1-h.life/duration,0,1)
+	var parts=[]
 	for index in range(9):
 		var angle=index*TAU/9+sin(index*7.1)*.32+h.p.x*.013
 		var direction=Vector2.from_angle(angle)
-		var ground=p+direction*h.radius*(.18+age*.58)
+		var ground=h.p+direction*h.radius*(.18+age*.58)
 		var lift=sin(age*PI)*(18+index%3*9)
 		var size=20+index%4*5
-		canvas.draw_set_transform(ground,0,Vector2(1,.38))
-		canvas.draw_circle(Vector2.ZERO,size*.30,Color(.025,.020,.015,.2*(1-age*.4)))
-		canvas.draw_set_transform(ground-Vector2(0,lift),angle+age*(index%3-1)*1.2)
-		canvas.draw_texture_rect(meteor_rock_views[index%6],Rect2(-Vector2.ONE*size*.5,Vector2.ONE*size),false,Color(1.15,1.05,.95,1-age*.35))
-		canvas.draw_set_transform(Vector2.ZERO)
-	return true
+		parts.append({"p":ground,"lift":lift,"size":size,"rotation":angle+age*(index%3-1)*1.2,"index":index%6,"alpha":1-age*.35})
+	return parts
+
+static func meteor_fragment_flight(h)->Dictionary:
+	var progress=clampf(1-h.wait/.45,0,1)
+	return {"p":h.launch_origin.lerp(h.p,progress),"lift":sin(progress*PI)*110}
 
 static func load_meteor_fissures():
 	if meteor_fissures==null:
@@ -186,9 +203,9 @@ static func hazard(canvas,h,p,clock):
 		if h.wait>0:
 			terrain_warning(canvas,h,p)
 			if h.wait<=.45:
-				var progress=clampf(1-h.wait/.45,0,1)
 				var origin=p+h.launch_origin-h.p
-				var at=origin.lerp(p,progress)+Vector2(0,-sin(progress*PI)*110)
+				var flight=meteor_fragment_flight(h)
+				var at=p+flight.p-h.p+Vector2(0,-flight.lift)
 				var direction=(p-origin).normalized()
 				for ember in range(5):
 					canvas.draw_circle(at-direction*(ember*6),8-ember,Color(1,.28,.025,.5-ember*.08))
@@ -345,6 +362,19 @@ static func terrain_warning(canvas,h,p):
 	var alpha=.46+progress*.28
 	var edge=Color(.70,.62,.46,alpha)
 	var under=Color(.035,.045,.032,.42)
+	var paths=warning_paths(h,p)
+	for points in paths:
+		canvas.draw_polyline(points,Color(edge,.09+progress*.08),8,true)
+		canvas.draw_polyline(points,under,3.5,true)
+		canvas.draw_polyline(points,edge,2.2,true)
+		var middle=points[points.size()/2]
+		var outward=(middle-p).normalized()
+		# Fixed grit and short fissures anchor the tell to the terrain.
+		var grain=sin(middle.x*.23+middle.y*.31)
+		canvas.draw_line(middle,middle+outward*(5+grain*3)+outward.orthogonal()*grain*5,Color(under,.45),1.5,true)
+		canvas.draw_line(middle+outward*3,middle+outward*7,Color(edge,.16+progress*.14),4,true)
+
+static func warning_paths(h,p)->Array:
 	var paths=[]
 	if h.kind=="line":
 		var forward=Vector2.from_angle(h.angle);var side=forward.orthogonal()*h.radius
@@ -366,16 +396,7 @@ static func terrain_warning(canvas,h,p):
 			paths.append(segment)
 		if h.kind=="cone":
 			for angle in [start,start+arc]:paths.append(PackedVector2Array([p,p+Vector2.from_angle(angle)*h.radius]))
-	for points in paths:
-		canvas.draw_polyline(points,Color(edge,.09+progress*.08),8,true)
-		canvas.draw_polyline(points,under,3.5,true)
-		canvas.draw_polyline(points,edge,2.2,true)
-		var middle=points[points.size()/2]
-		var outward=(middle-p).normalized()
-		# Fixed grit and short fissures anchor the tell to the terrain.
-		var grain=sin(middle.x*.23+middle.y*.31)
-		canvas.draw_line(middle,middle+outward*(5+grain*3)+outward.orthogonal()*grain*5,Color(under,.45),1.5,true)
-		canvas.draw_line(middle+outward*3,middle+outward*7,Color(edge,.16+progress*.14),4,true)
+	return paths
 
 static func travelling_ground_fx(canvas,h,p):
 	var age=1-h.life/h.get("max_life",.48)

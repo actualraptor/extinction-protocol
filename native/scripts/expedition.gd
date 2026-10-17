@@ -5,10 +5,13 @@ const Rules = preload("res://scripts/combat_rules.gd")
 const BossEncounters = preload("res://scripts/boss_encounters.gd")
 const BossResistance = preload("res://scripts/boss_resistance.gd")
 const BuffRewards = preload("res://scripts/buff_rewards.gd")
+var god_state = {}
+var goat_trial = {}
 var halloween = false
 var banishes=1
 var banished={}
 signal voice_event(event)
+signal torr_lesson_requested
 signal rite_requested(defeated)
 var rite_pending=false
 const Combat = preload("res://scripts/combat_engine.gd")
@@ -40,6 +43,7 @@ const Breakables = preload("res://scripts/breakables.gd")
 var ledger = preload("res://scripts/combat_ledger.gd").new()
 var content_profile = {}
 var companions = null
+var tfk_state = {}
 const Extension = preload("res://scripts/content_extension.gd")
 var discovered = []
 var landmarks = []
@@ -102,6 +106,7 @@ var weapons = {}
 var passives = {}
 var buff_stacks = {}
 var kael_attack = {}
+var ancestor_ruptures = []
 var starter_attack = {}
 var relics = []
 var relic_stacks = {}
@@ -168,6 +173,11 @@ var death_reason = "The ecosystem won."
 
 func setup(character, run_mode, research = {}, seed_value = 0, selected_map = "cradle"):
 	Extension.install(C)
+	preload("res://scripts/tfk_content.gd").install(C)
+	preload("res://scripts/god_content.gd").install(C)
+	preload("res://scripts/god_system.gd").reset(self)
+	tfk_state={"charge":0.0,"empowered":0.0,"kills":0}
+	ancestor_ruptures.clear()
 	starter_attack.clear()
 	map_id = selected_map if Maps.DATA.has(selected_map) else "cradle"
 	terrain.layout = Maps.DATA[map_id].layout
@@ -203,11 +213,12 @@ func setup(character, run_mode, research = {}, seed_value = 0, selected_map = "c
 	fortune = 1.0+research_ranks.get("fortune",0)*0.05+research_ranks.get("greed",0)*0.05
 	weapons[data.weapon] = {"level":1,"evolved":false,"timer":0.1}
 	log_event("start",{"hero":data.name,"seed":rng.seed,"mode":mode})
+	preload("res://scripts/tfk_dialogue.gd").speak(self,"run_start")
 	if mode == "safari":
 		time = 900
 		depth = 2
 		level = 40
-		for id in (["u00","u01","u02","u03","u09"] if companions!=null else [data.weapon,"fire","lightning","orbital","mortar","frost"]):
+		for id in (["u00","u01","u02","u03","u09"] if companions!=null else ["mjolnir","gungnir","cloudbreaker","ninefold","summer_edge"] if preload("res://scripts/god_content.gd").god_hero(data) else [data.weapon,"fire","lightning","orbital","mortar","frost"]):
 			if weapons.size()>=BACKPACK_SLOTS: break
 			weapons[id] = {"level":10,"evolved":true,"timer":0.1}
 		passives = {"damage":5,"haste":4,"count":2,"area":3,"speed":2,"crit":4,"armor":3}
@@ -227,6 +238,11 @@ func log_event(type, data = {}):
 func rank_of(id): return passives.get(id,0)
 func buff_power(id): return BuffRewards.power(self,id)
 func content_allowed(category,id):
+	if category=="weapons":
+		if not C.WEAPONS.has(id) or not preload("res://scripts/god_content.gd").allowed(C.HEROES[hero],C.WEAPONS[id]):return false
+		var is_tfk=preload("res://scripts/tfk_content.gd").active(self)
+		if C.WEAPONS[id].get("profile","")=="tfk":return is_tfk
+		if is_tfk:return false
 	if not Extension.allowed(self,category,id):return false
 	if companions!=null:return true
 	return mode=="daily" or content_profile.is_empty() or Discoveries.allowed(content_profile,category,id)
@@ -235,6 +251,7 @@ func configure_content(profile):
 	content_profile.hero = hero
 	discovered = profile.get("discoveries",[]).duplicate()
 	landmarks = Discoveries.landmarks(self)
+	preload("res://scripts/goat_rescue.gd").setup(self)
 
 func update_exploration():
 	var cell = Vector2i(floor(pos.x/160),floor(pos.y/160))
@@ -249,14 +266,28 @@ func update_exploration():
 			discovered.append(marker.id)
 			amber += 20
 			Discoveries.field_reward(self,marker.id)
-			banner.emit("DISCOVERY / "+marker.name,"UNLOCKED / AVAILABLE IN FUTURE RUNS" if Discoveries.ENTRIES[marker.id].cost==0 else "RECORDED IN THE ARCHIVE / UNLOCK WITH AMBER BETWEEN RUNS")
-			sound.emit("loot")
+			banner.emit("DISCOVERY / "+Discoveries.ENTRIES[marker.id].name,"Hitta de tre försvunna rösterna" if marker.get("mystery",false) else "UNLOCKED / AVAILABLE IN FUTURE RUNS" if Discoveries.ENTRIES[marker.id].cost==0 else "RECORDED IN THE ARCHIVE / UNLOCK WITH AMBER BETWEEN RUNS")
+			var pickup_cue={"tfk_factbook":"tfk_pickup_facts","tfk_toplist":"tfk_pickup_list","tfk_telephone":"tfk_pickup_phone","tfk_microphone":"tfk_pickup_mic"}.get(marker.id,"loot")
+			sound.emit(pickup_cue)
 			effect.emit("evolve",marker.p,Color("83ddff"),220)
 			log_event("discovery",{"id":marker.id})
 			discovered_content.emit(marker.id)
 func area_scale(): return 1.0 + buff_power("area")*0.12
 func speed(): return stage.modifiers.get("player_speed",1.0)*C.HEROES[hero].speed*(1+buff_power("speed")*0.08)*(1+minf(0.15,(level-1)*0.005) if hero==3 else 1.0)
 func trait_text():
+	if preload("res://scripts/god_content.gd").god_hero(C.HEROES[hero]):
+		var hammers=0
+		var capacity=0
+		var orbit=false
+		for id in weapons:
+			if C.WEAPONS[id].get("god_kind","")=="hammer":
+				capacity=Rules.stats(self,id).count
+				orbit=weapons[id].get("branches",{}).get("5","")=="orbit"
+		for shot in shots:
+			if shot.get("god_hammer",false) and shot.life>0:hammers+=1
+		var label="HAMMERS %s / %s"%[hammers,capacity] if orbit else "VOLLEY %s · AIRBORNE %s"%[capacity,hammers] if capacity>0 else "DIVINE ARSENAL"
+		return "STORMLOAD %s / 8 · "%god_state.get("reserve",0)+label
+	if preload("res://scripts/tfk_content.gd").active(self):return "SAMSPELET / %d av 100 · DIREKTSÄNDNING / %.1f s"%[tfk_state.get("charge",0),tfk_state.get("empowered",0)]
 	if companions!=null:return "SOULS / %s · UNDEAD / %s · NEXT / %s"%[int(companions.souls),companions.units.size(),int(companions.next_threshold)]
 	match hero:
 		0: return "GUNSLINGER / +%s projectiles (one per 10 levels; max 3)"%mini(3,level/10)
@@ -292,6 +323,10 @@ func tick(dt, direction):
 		transition_time = maxf(0,transition_time-dt)
 		return
 	time += dt
+	var goat_defense=preload("res://scripts/goat_rescue.gd").busy(self)
+	if goat_defense:
+		next_boss+=dt;next_elite+=dt;director.respite_shift+=dt
+	preload("res://scripts/tfk_system.gd").update(self,dt)
 	var resting = spawn_respite>0
 	if resting:
 		spawn_respite=maxf(0,spawn_respite-dt)
@@ -299,7 +334,7 @@ func tick(dt, direction):
 		next_elite+=dt
 		director.respite_shift+=dt
 		if spawn_respite==0:banner.emit("THE HORDES RETURN","ENTER THE RIFT BEFORE THEY OVERWHELM YOU")
-	if portal!=null:
+	if portal!=null and not goat_defense:
 		var old_pressure = linger_pressure()
 		if not resting:linger += dt
 		if old_pressure<=0 and linger_pressure()>0:
@@ -325,24 +360,25 @@ func tick(dt, direction):
 	if combo_time == 0: streak = 0
 	hp = minf(max_hp,hp+(buff_power("regen")*0.35+research_ranks.get("recovery",0)*0.15)*dt)
 	for key in relic_timers: relic_timers[key] = maxf(0,relic_timers[key]-dt)
-	if not resting:director.update(self,dt)
+	if not resting and not goat_defense:director.update(self,dt)
 	var spawn_rate = 2.4+time/18.0 if time<120 else 3+time/14.0+depth*5
 	spawn_rate *= lerpf(0.65,1.0,clampf(time/120.0,0.0,1.0))
 	# More bodies and XP opportunities, with a gentler increase at the opening.
 	spawn_rate *= lerpf(1.35,1.65,clampf(time/120.0,0.0,1.0))
 	spawn_rate *= stage.modifiers.get("density",1.0)*(1+minf(5,linger_pressure()/12.0))
-	spawn_budget = 0.0 if resting else minf(12,spawn_budget+dt*spawn_rate*(0.4 if boss != null else 1.0))
+	spawn_budget = 0.0 if resting or goat_defense else minf(12,spawn_budget+dt*spawn_rate*(0.4 if boss != null else 1.0))
 	while spawn_budget >= 1:
 		spawn_budget -= 1
 		if enemies.size()<director.cap(self): spawn_enemy()
-	if not resting and time >= next_elite:
+	if not resting and not goat_defense and time >= next_elite:
 		next_elite = time+elite_interval()
 		if enemies.size()<director.cap(self): spawn_enemy(true)
-	if boss == null and portal==null and time >= next_boss and boss_stage < 3:
+	if not goat_defense and boss == null and portal==null and time >= next_boss and boss_stage < 3:
 		spawn_boss(boss_stage+1)
 	update_enemies(dt)
 	if not active or choosing: return
 	build_grid()
+	preload("res://scripts/goat_rescue.gd").update(self,dt)
 	Relics.update(self,dt)
 	if not active or choosing: return
 	if companions!=null:companions.update(self,dt)
@@ -376,6 +412,7 @@ func tick(dt, direction):
 		xp -= xp_goal
 		level += 1
 		voice_event.emit("level_up")
+		preload("res://scripts/tfk_dialogue.gd").speak(self,"level_up")
 		xp_goal = 9+pow(level,1.45)*4.8
 		open_choices(false)
 
@@ -426,7 +463,7 @@ func update_enemies(dt):
 		if not e.boss and not e.anchor and not e.get("encounter_guard",false) and e.p.distance_squared_to(pos)>pow(maxf(2400,spawn_view.length()*0.9),2):
 			e.dead = true
 			continue
-		var step = dt
+		var step:float = dt
 		# Under extreme population pressure, stagger ordinary creature AI at
 		# 15 Hz. Player, attacks, bosses and contact rendering retain 30 Hz.
 		if not e.boss and not e.anchor and not e.elite and (enemies.size()>1000 or e.p.distance_squared_to(pos)>650*650):
@@ -450,13 +487,17 @@ func update_enemies(dt):
 				hit(e,e.get("burn_damage",8.0),e.get("burn_source","fire"),false,false)
 		if e.dead or e.anchor or e.get("boss_prop",false): continue
 		if not e.boss and (buffs.get("freeze",0)>0 or e.frozen>0): continue
+		if preload("res://scripts/goat_rescue.gd").hunter_update(self,e,step):continue
 		if e.get("role","")=="stampede" and e.has("flow"):
 			preload("res://scripts/compy_stampede.gd").update(self,e,step)
 			continue
-		var delta = pos-e.p
-		var move = delta.normalized()
+		var delta:Vector2 = pos-e.p
+		var move:Vector2 = delta.normalized()
+		if not e.boss and not e.anchor and e.get("tfk_fear_until",0)>time:
+			e.p=terrain.move(e.p,-move*e.speed*step)
+			continue
 		if not e.boss:
-			var slow_scale = 0.48 if e.slow>0 or buffs.get("slow",0)>0 else 1.0
+			var slow_scale:float = 0.48 if e.slow>0 or buffs.get("slow",0)>0 else 1.0
 			if e.get("enraged_until",0)>time:slow_scale*=1.3
 			var role = e.get("role","chase")
 			if e.get("spit_wait",0)>0:
@@ -669,6 +710,7 @@ func update_weapons(dt):
 	Combat.update(self,dt)
 
 func shoot(id,p,dir,damage,speed_value,life,pierce):
+	if not C.WEAPONS.has(id) or not preload("res://scripts/god_content.gd").allowed(C.HEROES[hero],C.WEAPONS[id]):return
 	if shots.size()>=240: return
 	var d = C.WEAPONS[id]
 	var active_count = 0
@@ -680,20 +722,30 @@ func shoot(id,p,dir,damage,speed_value,life,pierce):
 	if id in ["revolver","shotgun","lastword"]: effect.emit("muzzle",p,Color("ffe4a0"),dir.angle())
 	var m = Rules.modifiers(self,id)
 	var evolved = weapons.get(id,{}).get("evolved",false)
+	var impact_radius=d.get("impact_radius",0)*area_scale()*(1.35 if evolved else 1.0)*(1+m.get("impact_radius",0))
 	var homing = m.get("homing",0.0)+d.get("projectile_homing",0.0)+(d.get("evolved_homing",0.0) if evolved else 0.0)
 	var penetration = 8+int(m.get("pierce",0)) if id=="return" else pierce
-	shots.append({"id":id,"p":p,"old":p,"v":dir*speed_value,"damage":damage,"life":life,"pierce":penetration,"return_pierce":penetration,"return_power":1.25 if evolved else 1.0,"hit":[],"homing":homing,"bounce":int(m.get("bounce",0))+d.get("bounce",0)+(2 if id in ["ricochet","glacier"] and evolved else 0),"seek":0.0,"target":null,"age":0.0,"returning":false})
+	shots.append({"id":id,"return_after":d.get("return_after",0)*(1+m.get("return_after",0)),"impact_radius":impact_radius,"p":p,"old":p,"v":dir*speed_value,"damage":damage,"life":life,"pierce":penetration,"return_pierce":penetration,"return_power":1.25 if evolved else 1.0,"hit":[],"homing":homing,"bounce":int(m.get("bounce",0))+d.get("bounce",0)+(2 if id in ["ricochet","glacier"] and evolved else 0),"seek":0.0,"target":null,"age":0.0,"returning":false})
 
+	preload("res://scripts/union_system.gd").prepare_shot(self,shots.back())
 	return shots.back()
 
 func update_shots(dt):
 	var impact_budget = 16
 	for shot in shots:
+		if preload("res://scripts/god_system.gd").update_shot(self,shot,dt):
+			if not active:return
+			continue
+		if preload("res://scripts/union_system.gd").orbit(self,shot,dt):
+			if not active:return
+			continue
 		shot.life -= dt
 		shot.old = shot.p
 		shot.age = shot.get("age",0.0)+dt
-		if C.WEAPONS[shot.id].has("return_after") and shot.age>=C.WEAPONS[shot.id].return_after:
+		var return_delay=shot.get("return_after",C.WEAPONS[shot.id].get("return_after",0))
+		if return_delay>0 and shot.age>=return_delay:
 			if not shot.get("returning",false):
+				preload("res://scripts/union_system.gd").turn(self,shot)
 				shot.returning = true
 				shot.hit.clear()
 				shot.pierce = shot.return_pierce
@@ -704,10 +756,12 @@ func update_shots(dt):
 			shot.seek -= dt
 			if shot.seek<=0:
 				shot.seek = 0.15
-				shot.target = nearest(shot.p,220,shot.hit)
+				var locked=shot.get("locked_target")
+				shot.target = locked if locked!=null and not locked.dead and locked.uid not in shot.hit else nearest(shot.p,220,shot.hit)
 			if shot.target!=null and not shot.target.dead:
 				shot.v = shot.v.lerp((shot.target.p-shot.p).normalized()*shot.v.length(),minf(1,dt*shot.homing))
 		shot.p += shot.v*dt
+		if preload("res://scripts/soul_projectile_vfx.gd").applies(self,shot.id):preload("res://scripts/soul_projectile_vfx.gd").record(shot)
 		if C.WEAPONS[shot.id].get("terrain_blocks",false) and not terrain.line_clear(shot.old,shot.p):
 			shot.life = 0
 			continue
@@ -726,13 +780,16 @@ func update_shots(dt):
 				impact_budget -= 1
 				effect.emit("impact_"+shot.id,e.p,Color(C.WEAPONS[shot.id].color),32)
 				sound.emit("impact_frost" if shot.id=="frost" else "impact_fire" if shot.id=="fire" else "impact_metal")
-			if C.WEAPONS[shot.id].has("impact_radius"):
-				blast(shot.p,C.WEAPONS[shot.id].impact_radius*area_scale()*(1.35 if weapons.get(shot.id,{}).get("evolved",false) else 1.0),shot.damage,shot.id)
+			var impact_radius=shot.get("impact_radius",C.WEAPONS[shot.id].get("impact_radius",0)*area_scale()*(1.35 if weapons.get(shot.id,{}).get("evolved",false) else 1.0))
+			if impact_radius>0:
+				blast(shot.p,impact_radius,shot.damage,shot.id)
 				shot.life = 0
 			else:
-				var dealt=hit(e,shot.damage,shot.id)
+				var dealt=hit(e,shot.damage,shot.id,not shot.get("tfk_proc",false),true,"projectile")
 				if companions!=null and shot.has("companion"):companions.credit(shot.companion,dealt,e.dead)
-				if shot.id=="harpoon" and not e.boss and not e.anchor and not rooted(e): e.p=terrain.move(e.p,shot.v.normalized()*35)
+				if shot.id in ["harpoon","tempest_anchor"] and not e.boss and not e.anchor and not rooted(e): e.p=terrain.move(e.p,shot.v.normalized()*35)
+			preload("res://scripts/union_system.gd").projectile_hit(self,shot,e)
+			if not active:return
 			shot.pierce -= 1
 			if shot.pierce<=0:
 				shot.life = 0
@@ -743,7 +800,7 @@ func update_shots(dt):
 							shot.bounce -= 1
 							shot.damage *= C.WEAPONS[shot.id].get("falloff",1.0)
 							shot.pierce = 1
-							shot.life = 0.7
+							shot.life = maxf(.7,shot.life) if C.WEAPONS[shot.id].has("return_after") else .7
 							shot.p = closest
 							break
 				# A ricochet starts a new segment next tick; it cannot also hit
@@ -755,7 +812,8 @@ func update_shots(dt):
 func blast(p,radius,damage,id,hit_channel = "impact"):
 	var tags = C.WEAPONS.get(id,{}).get("tags",[])
 	var visual = "frost" if "ICE" in tags else "lightning" if "LIGHTNING" in tags else "orbital" if "ARCANE" in tags else "fire" if "FIRE" in tags else id
-	effect.emit("blast_"+visual,p,Color(C.WEAPONS.get(id,{"color":"ffad68"}).color),radius)
+	if id.begins_with("tfk_"):preload("res://scripts/tfk_weapon_animation.gd").cue(self,id,p,radius)
+	else:effect.emit("blast_"+visual,p,Color(C.WEAPONS.get(id,{"color":"ffad68"}).color),radius)
 	for e in nearby(p,radius):
 		hit(e,damage,id,true,true,hit_channel)
 		if not e.boss and not e.anchor and not e.get("boss_prop",false) and not rooted(e) and "KNOCKBACK" in tags: e.p = terrain.move(e.p,(e.p-p).normalized()*35*Bestiary.DATA[e.kind].get("knockback",1.0))
@@ -776,7 +834,9 @@ func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "imp
 		e.pulse_times[pulse_key] = time
 	var crit_tier = roll_crit_tier(crit_chance()) if can_crit else 0
 	var critical = crit_tier>0
+	if preload("res://scripts/tfk_content.gd").active(self) and not e.boss and not e.anchor and not e.get("breakable",false) and e.hp<e.max_hp*.12 and rng.randf()<minf(.4,Relics.modifiers(self).get("tfk_execute",0)):amount=maxf(amount,e.hp)
 	if critical: amount *= pow(1.9,crit_tier)
+	if critical and preload("res://scripts/tfk_content.gd").active(self):preload("res://scripts/tfk_items.gd").on_critical(self,e,id,amount)
 	if e.slow>0: amount *= 1+Relics.modifiers(self).get("chilled_damage",0)
 	if e.boss and boss_stage == 3:
 		if boss_time<3 or boss.get("reform",0)>0: return 0.0
@@ -788,7 +848,10 @@ func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "imp
 	if companions!=null:
 		amount*=1+e.get("dread",0.0)
 		e.unit_hit=id.begins_with("u")
+	if apply_status:amount+=preload("res://scripts/god_system.gd").mark_bonus(self,e,id,hit_channel)
 	var hit_damage=maxf(0,amount*BossResistance.multiplier(self,e))
+	if e.get("tfk_vulnerable_until",0)>time:hit_damage*=1.15
+	if critical and preload("res://scripts/tfk_content.gd").active(self):preload("res://scripts/tfk_system.gd").charge(self,.5)
 	var dealt = effective_damage(hit_damage,e.hp)
 	if e.boss and boss_stage==2 and phase==1:
 		dealt = minf(dealt,maxf(0,e.hp-e.max_hp*0.5))
@@ -808,6 +871,8 @@ func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "imp
 		if proc_queue.size()<32: proc_queue.append({"p":e.p,"id":id,"damage":minf(450,amount*0.5)})
 		effect.emit("blast_frost",e.p,Color("d9faff"),95)
 		sound.emit("impact_frost")
+	if apply_status and C.WEAPONS.has(id) and not e.boss and not e.anchor and not e.get("boss_prop",false) and not e.get("breakable",false):
+		e.slow=maxf(e.slow,Rules.modifiers(self,id).get("slow_onhit",0))
 	if apply_status and "ICE" in tags:
 		e.slow = 2.5
 		e.chill = e.get("chill",0.0)+Rules.modifiers(self,id).get("status",0.0)+1+(1 if weapons.get(id,{}).get("evolved",false) else 0)
@@ -845,7 +910,7 @@ func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "imp
 	if e.elite or e.boss or critical:
 		effect.emit("crit_number_%s"%crit_tier if critical else "number",e.p,crit_color(crit_tier) if critical else Color.WHITE,dealt if e.boss else hit_damage)
 		if critical: effect.emit("crit",e.p,crit_color(crit_tier),crit_tier)
-	if e.hp<=0: kill(e)
+	if e.hp<=0: kill(e,id)
 	elif e.boss and boss_stage==2 and phase==1 and e.hp<=e.max_hp*0.5+0.1:
 		phase = 2
 		boss.reform = 1.8
@@ -865,7 +930,7 @@ func hit(e, amount, id, can_crit = true, apply_status = true, hit_channel = "imp
 		log_event("boss-phase",{"phase":phase,"hp":e.hp})
 	return dealt
 
-func kill(e):
+func kill(e,source=""):
 	if not active or e.dead: return
 	e.dead = true
 	if e.get("boss_prop",false):
@@ -874,8 +939,12 @@ func kill(e):
 	if e.get("breakable",false):
 		Breakables.destroy(self,e)
 		return
+	preload("res://scripts/union_system.gd").on_kill(self,e)
 	Relics.on_kill(self,e)
+	preload("res://scripts/tfk_system.gd").on_kill(self,e)
+	if preload("res://scripts/tfk_content.gd").active(self):preload("res://scripts/tfk_items.gd").on_kill(self,e)
 	kills += 1
+	if source!="":ledger.kills[source]=ledger.kills.get(source,0)+1
 	if companions!=null:companions.on_kill(self,e)
 	streak += 1
 	best_streak = maxi(streak,best_streak)
@@ -950,6 +1019,7 @@ func kill(e):
 
 func enter_portal():
 	if not active or choosing or portal==null or boss!=null: return
+	preload("res://scripts/goat_rescue.gd").end(self,"failed","You left through the rift")
 	beams.clear()
 	preload("res://scripts/remnant_system.gd").clear(self)
 	if mode=="daily" and boss_stage==3:
@@ -978,6 +1048,7 @@ func enter_portal():
 	strikes.clear()
 	echoes.clear()
 	kael_attack.clear()
+	ancestor_ruptures.clear()
 	starter_attack.clear()
 	volleys.clear()
 	gems.clear()
@@ -1061,6 +1132,7 @@ func update_gems(dt):
 
 func hurt(amount, reason, piercing = false):
 	if invul>0 or buffs.get("immune",0)>0 or not active: return
+	if preload("res://scripts/tfk_content.gd").active(self) and preload("res://scripts/tfk_items.gd").block(self):invul=.3;return
 	if not piercing and time>=relic_state.get("thorns_ready",0.0):
 		for id in weapons:
 			if C.WEAPONS[id].delivery!="thorns": continue
@@ -1076,7 +1148,15 @@ func hurt(amount, reason, piercing = false):
 		amount -= absorbed
 		if shield<=0:
 			for id in weapons:
-				if C.WEAPONS[id].delivery=="shield" and weapons[id].level>=7: blast(pos,200,180*damage_scale(id),id)
+				if C.WEAPONS[id].delivery!="shield":continue
+				if weapons[id].level>=7:blast(pos,200,180*damage_scale(id),id)
+				if not active:return
+				var mods=Rules.modifiers(self,id)
+				if mods.get("shield_freeze",0)>0:
+					for enemy in nearby(pos,180):
+						if not enemy.dead and not enemy.boss and not enemy.anchor and not enemy.get("boss_prop",false):enemy.frozen=maxf(enemy.get("frozen",0),mods.shield_freeze)
+				if mods.get("shield_chain",0)>0:preload("res://scripts/chain_system.gd").cast(self,pos,80*damage_scale(id),id,int(mods.shield_chain),220)
+				if not active:return
 		if amount<=0:
 			invul = 0.3
 			return
@@ -1087,8 +1167,12 @@ func hurt(amount, reason, piercing = false):
 		return
 	amount = maxf(4,amount-(0 if piercing else armor+(companions.armor_bonus(self) if companions!=null else 0)))*(1+Relics.modifiers(self).get("incoming",0))
 	if companions!=null:amount=companions.absorb(self,amount)
+	amount=preload("res://scripts/tfk_system.gd").absorb(self,amount)
 	if amount<=0:return
 	hp -= amount
+	if preload("res://scripts/tfk_content.gd").active(self):
+		tfk_state.last_damage=time
+		preload("res://scripts/tfk_dialogue.gd").speak(self,"low_health" if hp/max_hp<.25 else "heavy_damage")
 	hits += 1
 	streak = 0
 	invul = 0.7
@@ -1205,6 +1289,7 @@ func spawn_boss(stage):
 	banner.emit(Maps.boss_name(map_id,stage),"APEX ENCOUNTER" if stage<3 else "BREAK THE ORBITAL ANCHORS / EXPOSE THE CORE")
 	sound.emit("boss")
 	voice_event.emit("boss_spawn")
+	preload("res://scripts/tfk_dialogue.gd").speak(self,"boss_appears")
 	log_event("boss-arrived",{"stage":stage})
 
 func make_anchors():
@@ -1361,6 +1446,7 @@ func can_take_buff(id):
 func upgrade_pool(owned_only = false):
 	var pool = []
 	for id in C.WEAPONS:
+		if not preload("res://scripts/god_content.gd").allowed(C.HEROES[hero],C.WEAPONS[id]):continue
 		if C.WEAPONS[id].get("fusion",false) or Evolutions.consumed(self,id): continue
 		if weapons.has(id):
 			if weapons[id].level<Rules.MAX_RANK: pool.append({"type":"weapon","id":id})
@@ -1368,7 +1454,8 @@ func upgrade_pool(owned_only = false):
 	for id in C.PASSIVES:
 		if content_allowed("passives",id) and can_take_buff(id) and rank_of(id)<C.PASSIVES[id].max and Rules.eligible(weapons,C.WEAPONS,C.PASSIVES[id].filter): pool.append({"type":"passive","id":id})
 	for id in C.AUGMENTS:
-		if can_take_buff(id) and content_allowed("augments",id) and augments.get(id,0)<C.AUGMENTS[id].max and Rules.eligible(weapons,C.WEAPONS,C.AUGMENTS[id].filter): pool.append({"type":"augment","id":id})
+		if can_take_buff(id) and content_allowed("augments",id) and augments.get(id,0)<C.AUGMENTS[id].max and preload("res://scripts/god_content.gd").eligible_augment(self,id): pool.append({"type":"augment","id":id})
+	if not owned_only and preload("res://scripts/torr_lesson.gd").eligible(self):pool.append({"type":"weapon","id":"club","torr_lesson":true})
 	return pool.filter(func(o):return not banished.has(o.type+":"+o.id))
 
 func open_choices(relic):
@@ -1408,6 +1495,8 @@ func open_choices(relic):
 		var fresh = pool.filter(func(o):return not reroll_exclude.any(func(old):return old.type==o.type and old.id==o.id))
 		if fresh.size()>=3: pool = fresh
 		reroll_exclude.clear()
+		var lessons=pool.filter(func(o):return o.get("torr_lesson",false))
+		if not lessons.is_empty():options.append(lessons[0]);pool.erase(lessons[0])
 		var owned = pool.filter(func(o):return o.type=="weapon" and weapons.has(o.id))
 		if not owned.is_empty():
 			var offer = owned[rng.randi_range(0,owned.size()-1)]
@@ -1462,9 +1551,18 @@ func banish_choice(index):
 func choose(index):
 	if not choosing or index<0 or index>=options.size(): return
 	var o = options[index]
+	if o.get("torr_lesson",false):
+		preload("res://scripts/torr_lesson.gd").request(self)
+		return
+	if o.type in ["weapon","fusion","evolution","beam_path"] and (not C.WEAPONS.has(o.id) or not preload("res://scripts/god_content.gd").allowed(C.HEROES[hero],C.WEAPONS[o.id])):return
+	if o.type=="fusion":
+		if not Evolutions.UNIONS.has(o.id):return
+		for part in Evolutions.UNIONS[o.id].parts:
+			if not weapons.has(part) or weapons[part].level<10:return
+	if o.type in ["evolution","beam_path"] and not weapons.has(o.id):return
 	match o.type:
 		"beam_path":
-			if not preload("res://scripts/beam_prototype.gd").choose(o.id,weapons[o.id],o.milestone,o.branch):return
+			if not preload("res://scripts/weapon_paths.gd").choose(o.id,weapons[o.id],o.milestone,o.branch):return
 		"fusion":
 			for part in Evolutions.UNIONS[o.id].parts:
 				ledger.retired[part] = time
@@ -1484,7 +1582,7 @@ func choose(index):
 			else: return
 		"evolution":
 			weapons[o.id].evolved = true
-			if companions!=null:voice_event.emit("final_evolution")
+			if companions!=null or preload("res://scripts/god_system.gd").active(self):voice_event.emit("final_evolution")
 			effect.emit("evolve",pos,Color("ffe2af"),450)
 			sound.emit("evolve")
 			banner.emit(C.WEAPONS[o.id].evolution,"LEGENDARY EVOLUTION / LET THEM COME")
@@ -1519,10 +1617,10 @@ func choose(index):
 
 func request_beam_path():
 	for id in weapons:
-		var milestone=preload("res://scripts/beam_prototype.gd").pending(id,weapons[id])
+		var milestone=preload("res://scripts/weapon_paths.gd").pending(id,weapons[id])
 		if milestone==0:continue
 		options=[]
-		for choice in preload("res://scripts/beam_prototype.gd").CHOICES[id][milestone]:
+		for choice in preload("res://scripts/weapon_paths.gd").choices(id,milestone,weapons[id]):
 			options.append({"type":"beam_path","id":id,"milestone":milestone,"branch":choice.id,"name":choice.name,"desc":choice.desc})
 		choosing=true;option_is_relic=false
 		choice_requested.emit(options,false)
@@ -1531,12 +1629,16 @@ func request_beam_path():
 
 func finish(victory):
 	if not active: return
+	preload("res://scripts/tfk_dialogue.gd").speak(self,"victory" if victory else "defeat")
 	hazards.clear()
 	hostile_shots.clear()
 	beams.clear()
 	kael_attack.clear()
+	ancestor_ruptures.clear()
 	starter_attack.clear()
 	active = false
+	preload("res://scripts/goat_rescue.gd").end(self,"failed","The expedition ended before the rescue")
+	preload("res://scripts/god_system.gd").clear(self)
 	encounter_epoch += 1
 	won = victory
 	if victory:
@@ -1548,6 +1650,6 @@ func finish(victory):
 	ended.emit(victory)
 
 func report():
-	var result={"version":"native-0.13.1","halloween":halloween,"daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"relic_stacks":relic_stacks.duplicate(true),"buff_stacks":buff_stacks.duplicate(true),"reward_schema":3,"events":event_log,"samples":samples}
+	var result={"version":"native-"+str(ProjectSettings.get_setting("application/config/version")),"halloween":halloween,"daily_loop":daily_loop,"daily_seed":daily_plan.get("seed",0),"map":map_id,"augments":augments,"hero":C.HEROES[hero].name,"mode":mode,"time":time,"won":won,"kills":kills,"hits":hits,"score":score,"best_streak":best_streak,"damage":damage_total,"damage_by_weapon":damage_by_weapon,"casts":ledger.casts,"kills_by_weapon":ledger.kills,"discoveries":discovered,"weapons":weapons,"passives":passives,"relics":relics,"relic_stacks":relic_stacks.duplicate(true),"buff_stacks":buff_stacks.duplicate(true),"reward_schema":3,"events":event_log,"samples":samples}
 	if companions!=null:result.army=companions.army_report()
 	return result

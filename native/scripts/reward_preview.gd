@@ -7,6 +7,7 @@ static func number(value):
 static func stat_number(value,key):
 	return ("%.3fs"%value if value<.1 else "%.2fs"%value) if key=="cooldown" else number(value)
 static func badge(g,o):
+	if o.get("torr_lesson",false):return "ONE-TIME STORY"
 	if o.type=="evolution":return "EVOLVE"
 	if o.type=="fusion":return "UNION"
 	if o.type=="relic":return "RELIC"
@@ -33,7 +34,7 @@ static func transition(g,o):
 	return ""
 static func effective(g,id,stats,rank,evolved):
 	var s=stats.duplicate();var d=g.C.WEAPONS[id]
-	if rank==10 and d.delivery!="companion":s.power*=1.2
+	if rank==10 and d.delivery not in ["companion","god"]:s.power*=1.2
 	if evolved and d.delivery=="melee" and "SWEEP" in d.tags:s.arc=TAU
 	if preload("res://scripts/kael_slam.gd").applies(g,id):s.arc=TAU
 	if preload("res://scripts/kael_slam.gd").applies(g,id):s.repeat=mini(8,s.repeat)
@@ -41,6 +42,7 @@ static func effective(g,id,stats,rank,evolved):
 	if d.delivery=="projectile":
 		s.bounce+=d.get("bounce",0)+(2 if id in ["ricochet","glacier"] and evolved else 0)
 		s.homing+=d.get("projectile_homing",0.0)
+		if id=="prismatic_ouroboros":s.pierce=2
 		if id=="return":s.pierce=8+int(g.Rules.modifiers(g,id).get("pierce",0))
 	if d.delivery=="ground":
 		s.count=mini(4 if id=="thunderstorm" else 8,s.count)
@@ -53,6 +55,7 @@ static func effective(g,id,stats,rank,evolved):
 		if d.get("role","")=="chill":s.radius=minf(160,s.radius)
 	return s
 static func rows(g,o):
+	if o.get("torr_lesson",false):return []
 	var out=[]
 	if o.type in ["weapon","fusion","evolution"]:
 		var pair=weapon_stats(g,o);var d=g.C.WEAPONS[o.id]
@@ -62,6 +65,8 @@ static func rows(g,o):
 		if not pair[0].is_empty():pair[0]=effective(g,source,pair[0],current.level,current.evolved)
 		pair[1]=effective(g,o.id,pair[1],rank,o.type in ["evolution","fusion"] or current.evolved)
 		var keys=["power","cooldown","count","pierce","velocity","lifetime","homing","bounce"]
+		if d.delivery=="god":
+			keys=["power","cooldown","radius","count"] if d.god_kind in ["hammer","rebuke"] else ["power","cooldown","count","pierce","velocity"] if d.god_kind in ["spear","bow"] else ["power","cooldown","radius","repeat"] if "MELEE" in d.tags else ["power","cooldown","radius"]
 		if d.delivery=="beam":keys=["power","cooldown","range","width","duration","count"]
 		if d.delivery=="chain":keys=["power","cooldown","count","range","falloff","fork","rechain"]
 		if d.delivery=="melee":keys=["power","cooldown","radius","arc","repeat"]
@@ -72,6 +77,8 @@ static func rows(g,o):
 			keys=["power","cooldown","count"] if d.get("role","") in ["spear","soul"] else ["power","cooldown","radius"] if d.get("role","")=="chill" else ["power"] if d.get("role","")=="corpse" else [] if d.get("role","") in ["banner","reanimate"] else ["power","cooldown"]
 		var names={"power":"Base hit damage" if d.delivery=="companion" else "Hit damage","cooldown":"Summon interval" if d.delivery=="companion" else "Cooldown","count":"Targets" if d.delivery=="chain" else "Projectiles" if d.delivery=="projectile" else "Blades" if d.delivery=="orbital" else "Strikes","radius":"Radius","shield":"Barrier","pierce":"Pierce","velocity":"Shot speed","lifetime":"Shot lifetime","homing":"Tracking","bounce":"Bounces","range":"Chain range","falloff":"Damage retained","fork":"Fork chance","rechain":"Revisit chance","arc":"Sweep angle","repeat":"Echo strikes","duration":"Duration" if d.delivery=="utility" or o.id=="thunderstorm" else "Ground linger"}
 		if d.delivery=="beam":names.merge({"power":"Damage / second","range":"Beam length","width":"Beam width","duration":"Firing duration","count":"Beams","cooldown":"Recharge"},true)
+		if d.delivery=="god":
+			names.count="Hammers" if d.god_kind=="hammer" else "Projectiles" if "PROJECTILE" in d.tags else "Strikes"
 		if d.delivery=="companion" and d.get("role","") not in ["warrior","guard","archer","wraith","colossus"]:names.cooldown="Cooldown"
 		for key in keys:
 			if pair[0].is_empty() and key in ["velocity","lifetime","falloff","homing","bounce","fork","rechain","arc","repeat"]:continue
@@ -194,6 +201,7 @@ static func profile_rows(g,o):
 		if m[1]!=m[2]:rows.append({"name":m[0],"before":number(m[1])+m[3],"after":number(m[2])+m[3]})
 	return rows
 static func copy(g,o):
+	if o.get("torr_lesson",false):return preload("res://scripts/torr_lesson.gd").description(g)
 	if o.type in ["weapon","evolution","fusion"]:
 		var d=g.C.WEAPONS[o.id]
 		if d.get("role","")=="reanimate":return "Each trigger now raises two temporary warriors lasting 18 seconds, instead of one lasting 12 seconds." if o.type=="evolution" else "Kills raise temporary warriors nearby. Even ranks reduce the kills required; odd ranks leave this trigger unchanged."

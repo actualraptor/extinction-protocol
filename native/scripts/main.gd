@@ -41,12 +41,14 @@ var chosen_mode = "expedition"
 var daily_date = ""
 var page = "menu"
 var reset_countdown = 0
+var archive_refund_research_only = true
 var reset_confirm_button = null
 var reset_countdown_label = null
 var finish_delay = -1.0
 var defeat_cinematic = null
 var save_data = {"version":1,"amber":0,"wins":0,"runs":0,"research":{},"records":[],"settings":{"sound":true,"music":true,"shake":true}}
 var save_error = ""
+var save_notice:Label
 var save_blocked = false
 var ui_clock = 0.0
 var reveal_index = -1
@@ -64,8 +66,10 @@ var victory_credits_pending=false
 var turbo_test=false
 var normal_profile_path="user://progress.json"
 var progress_path = "user://progress.json"
+var closing=false
 
 func _ready():
+	get_tree().auto_accept_quit=false
 	if OS.has_feature("boss_rig_playtest") or "--boss-rig-test" in OS.get_cmdline_user_args():
 		get_window().title="Extinction Protocol / PRIVATE T-REX PLAYTEST"
 		progress_path=OS.get_executable_path().get_base_dir().path_join("boss-rig-test-profile.json")
@@ -77,11 +81,19 @@ func _ready():
 		progress_path=OS.get_executable_path().get_base_dir().path_join("soundtrack-test-profile.json")
 	if "--individual-art-test" in OS.get_cmdline_user_args():get_window().title="Extinction Protocol / INDIVIDUAL MINIONS PLAY TEST V14"
 	preload("res://scripts/content_extension.gd").install(C)
+	preload("res://scripts/tfk_content.gd").install(C)
+	preload("res://scripts/god_content.gd").install(C)
 	# Package smoke checks never touch a player's real progression.
+	if preload("res://scripts/tfk_content.gd").playtest_enabled():
+		progress_path="res://build/tfk-test-profile.json" if OS.has_feature("editor") else OS.get_executable_path().get_base_dir().path_join("tfk-test-profile.json")
 	if "--remnant-test" in OS.get_cmdline_user_args():
 		progress_path=OS.get_executable_path().get_base_dir().path_join("remnant-test-profile.json")
+	elif "--scoreboard-playtest" in OS.get_cmdline_user_args():
+		progress_path=OS.get_executable_path().get_base_dir().path_join("scoreboard-playtest-profile.json")
 	elif "--meteor-test" in OS.get_cmdline_user_args():
 		progress_path=OS.get_executable_path().get_base_dir().path_join("meteor-test-profile.json")
+	elif "--ancestor-rupture-test" in OS.get_cmdline_user_args():
+		progress_path=OS.get_executable_path().get_base_dir().path_join("ancestor-rupture-test-profile.json")
 	elif "--slam-test" in OS.get_cmdline_user_args():
 		progress_path=OS.get_executable_path().get_base_dir().path_join("slam-test-profile.json")
 	elif "--verify-package" in OS.get_cmdline_user_args():
@@ -139,19 +151,24 @@ func _ready():
 		if item is Control and not item is ColorRect and item != xp_bar and item.get_script()!=preload("res://scripts/player_health.gd") and item.get_script()!=preload("res://scripts/navigation.gd"):
 			hud_layout.append({"node":item,"position":item.position})
 	main_menu()
-	if "--boss-rig-test" not in OS.get_cmdline_user_args() and "--beam-test" not in OS.get_cmdline_user_args() and "--soundtrack-test" not in OS.get_cmdline_user_args() and preload("res://scripts/opening_story.gd").available() and preload("res://scripts/opening_story.gd").first_play(save_data,OS.get_cmdline_user_args()):
+	if preload("res://scripts/tfk_content.gd").playtest_enabled():
+		var tfk_lab=load("res://scripts/tfk_lab.gd").new();tfk_lab.game=self;add_child(tfk_lab)
+	if not preload("res://scripts/tfk_content.gd").playtest_enabled() and "--boss-rig-test" not in OS.get_cmdline_user_args() and "--beam-test" not in OS.get_cmdline_user_args() and "--ancestor-rupture-test" not in OS.get_cmdline_user_args() and "--soundtrack-test" not in OS.get_cmdline_user_args() and preload("res://scripts/opening_story.gd").available() and preload("res://scripts/opening_story.gd").first_play(save_data,OS.get_cmdline_user_args()):
 		play_opening()
 	if "--beam-test" in OS.get_cmdline_user_args():
-		var beam_lab=preload("res://scripts/beam_lab.gd").new();beam_lab.game=self;add_child(beam_lab)
+		var beam_lab=load("res://scripts/beam_lab.gd").new();beam_lab.game=self;add_child(beam_lab)
 	if "--boss-rig-test" in OS.get_cmdline_user_args():
-		var rig_lab=preload("res://scripts/boss_rig_lab.gd").new();rig_lab.game=self;add_child(rig_lab)
+		var rig_lab=load("res://scripts/boss_rig_lab.gd").new();rig_lab.game=self;add_child(rig_lab)
 	if "--soundtrack-test" in OS.get_cmdline_user_args():
-		var lab=preload("res://scripts/soundtrack_lab.gd").new();lab.game=self;add_child(lab)
+		var lab=load("res://scripts/soundtrack_lab.gd").new();lab.game=self;add_child(lab)
+	if "--scoreboard-playtest" in OS.get_cmdline_user_args():
+		if ProjectSettings.load_resource_pack(OS.get_executable_path().get_base_dir().path_join("scoreboard-playtest.pck")):
+			var scoreboard_lab=load("res://private/scoreboard_playtest.gd").new();scoreboard_lab.game=self;add_child(scoreboard_lab)
 	if "--meteor-test" in OS.get_cmdline_user_args():
 		selected=1;chosen_mode="expedition";selected_map="cradle"
 		start_run()
 		if "--meteor-balance-test" in OS.get_cmdline_user_args():
-			preload("res://scripts/meteor_review_loadout.gd").apply(sim,"EPIC" if "--meteor-epic-build" in OS.get_cmdline_user_args() else "RARE")
+			load("res://scripts/meteor_review_loadout.gd").apply(sim,"EPIC" if "--meteor-epic-build" in OS.get_cmdline_user_args() else "RARE")
 		else:
 			sim.base_damage=10000000.0
 			sim.max_hp=1000000.0;sim.hp=sim.max_hp
@@ -163,9 +180,9 @@ func _ready():
 			print("METEOR BALANCE PLAYTEST / hp=",sim.hp," maxhp=",sim.max_hp," base_damage=",sim.base_damage," weapons=",sim.weapons.size()," no automatic invulnerability")
 		else:show_toast("METEOR CINEMATIC TEST","SUPER KAEL / BREAK ANCHORS, THEN THE CORE / ISOLATED SAVE")
 		if "--meteor-review" in OS.get_cmdline_user_args():
-			var meteor_lab=preload("res://scripts/meteor_review_lab.gd").new();meteor_lab.game=self;add_child(meteor_lab)
+			var meteor_lab=load("res://scripts/meteor_review_lab.gd").new();meteor_lab.game=self;add_child(meteor_lab)
 	if "--remnant-test" in OS.get_cmdline_user_args():
-		var lab=preload("res://scripts/remnant_lab.gd").new();lab.game=self;add_child(lab)
+		var lab=load("res://scripts/remnant_lab.gd").new();lab.game=self;add_child(lab)
 		if "--verify-first-kill" in OS.get_cmdline_user_args():
 			for i in range(3):
 				lab.variant=i*2;lab.configure()
@@ -206,15 +223,18 @@ func _ready():
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png(OS.get_executable_path().get_base_dir().path_join("ritual-preview.png"))
 			audio.shutdown();survivor_voice.stop();release_run();get_tree().quit()
+	if "--ancestor-rupture-test" in OS.get_cmdline_user_args():
+		var lab=load("res://scripts/ancestor_rupture_lab.gd").new();lab.game=self;add_child(lab)
 	if "--slam-test" in OS.get_cmdline_user_args():
-		var lab=preload("res://scripts/kael_slam_lab.gd").new();lab.game=self;add_child(lab)
+		var lab=load("res://scripts/kael_slam_lab.gd").new();lab.game=self;add_child(lab)
 		if "--verify-slam-test" in OS.get_cmdline_user_args():
 			await get_tree().create_timer(3).timeout
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png(OS.get_executable_path().get_base_dir().path_join("slam-test-preview.png"))
 			audio.shutdown();survivor_voice.stop();release_run();get_tree().quit()
 	if "--verify-package" in OS.get_cmdline_user_args():
-		selected = 5 if "--verify-profile" in OS.get_cmdline_user_args() else 1 if "--verify-kael" in OS.get_cmdline_user_args() else 0 if "--verify-voss" in OS.get_cmdline_user_args() else 2
+		selected = preload("res://scripts/god_content.gd").install(C) if "--verify-torr" in OS.get_cmdline_user_args() else 5 if "--verify-profile" in OS.get_cmdline_user_args() else 1 if "--verify-kael" in OS.get_cmdline_user_args() else 0 if "--verify-voss" in OS.get_cmdline_user_args() else 2
+		if "--verify-torr" in OS.get_cmdline_user_args() and "torr" not in save_data.unlocks:save_data.unlocks.append("torr")
 		if "--verify-original" in OS.get_cmdline_user_args():
 			save_data.settings.halloween=false
 			apply_settings()
@@ -225,6 +245,7 @@ func _ready():
 				for j in range(3):sim.companions.summon(sim,id)
 		await get_tree().create_timer(3).timeout
 		paused = true
+		if "--verify-torr" in OS.get_cmdline_user_args():print("TORR PACKAGE / ",C.HEROES[sim.hero].name," / voice ",survivor_voice.hero_key," / casts ",sim.ledger.casts," / damage ",sim.damage_total)
 		if "--verify-cards" in OS.get_cmdline_user_args():
 			var preview_options=[]
 			for pair in [["weapon","club","RARE"],["weapon","lightning","EPIC"],["passive","crit","ARTIFACT"]]:
@@ -242,7 +263,7 @@ func _ready():
 			preload("res://scripts/starter_attack.gd").update(sim)
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png(OS.get_executable_path().get_base_dir().path_join("package-preview.png"))
-		get_tree().quit()
+		request_quit()
 	if "--capture" in OS.get_cmdline_user_args():
 		selected = 2
 		chosen_mode = "safari"
@@ -251,7 +272,7 @@ func _ready():
 		paused = true
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("res://build/native-preview.png")
-		get_tree().quit()
+		request_quit()
 
 func box(background, border, radius = 10):
 	var b = StyleBoxFlat.new()
@@ -309,11 +330,47 @@ func column(parent,p,size_value,spacing = 14):
 	parent.add_child(v)
 	return v
 
-func shade(alpha = 0.82):
+func glass_row(control):
+	# Settings rows and toggles in the run-summary language: dark glass with a thin gold frame.
+	for state in ["normal","hover","pressed","focus","disabled","hover_pressed"]:
+		var box = StyleBoxFlat.new()
+		box.bg_color = Color(0.025,0.032,0.04,0.80) if state != "hover" else Color(0.07,0.06,0.04,0.86)
+		box.border_color = Color("f8da95") if state == "focus" else Color("8e7240")
+		box.set_border_width_all(2);box.set_corner_radius_all(6)
+		box.content_margin_left = 18;box.content_margin_right = 18
+		control.add_theme_stylebox_override(state,box)
+	control.add_theme_color_override("font_color",Color("e7d6af"))
+	control.add_theme_color_override("font_hover_color",Color("fff0c5"))
+	control.add_theme_font_override("font",UIArt.body_font())
+
+func shade(alpha = 0.82, art = true):
+	# Every full-screen menu shares the run-summary look: the world backdrop under a dark wash and the crest banner.
+	if art:
+		var backdrop = TextureRect.new()
+		backdrop.texture = preload("res://assets/scoreboard-world-backdrop.png")
+		backdrop.expand_mode = TextureRect.EXPAND_IGNORE_SIZE;backdrop.stretch_mode = TextureRect.STRETCH_SCALE
+		backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		menu_root.add_child(backdrop)
 	var bg = ColorRect.new()
-	bg.color = Color(0.018,0.027,0.042,alpha)
+	bg.color = Color(0.018,0.027,0.042,alpha*0.80 if art else alpha)
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	menu_root.add_child(bg)
+	if art:
+		var crest = TextureRect.new();var crest_texture = AtlasTexture.new()
+		crest_texture.atlas = preload("res://assets/scoreboard-world-backdrop.png");crest_texture.region = Rect2(0,0,1586,235)
+		var width = menu_root.size.x if menu_root.size.x > 100 else 1440.0
+		var crest_scale = minf(1.0,width/1586.0)
+		crest.texture = crest_texture;crest.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		crest.position = Vector2(width-1586*crest_scale,0);crest.size = Vector2(1586,235)*crest_scale;crest.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var crest_material = ShaderMaterial.new();crest_material.shader = preload("res://shaders/scoreboard_crest.gdshader");crest.material = crest_material
+		menu_root.add_child(crest)
+
+func page_title(value,subtitle = "",position_value = Vector2(100,34)):
+	# The summary screen's large gold heading, for the other pages.
+	var RS = preload("res://scripts/run_scoreboard.gd")
+	RS.heading(menu_root,value,Rect2(position_value,Vector2(900,76)),52)
+	if subtitle != "":RS.text(menu_root,subtitle,Rect2(position_value+Vector2(6,76),Vector2(640,32)),22,"d7bfa0")
 
 func main_menu():
 	if turbo_test:
@@ -354,6 +411,8 @@ func play_opening():
 		main_menu())
 
 func texture(index):
+	if C.HEROES[index].get("voice_key","")=="torr":return preload("res://assets/torr-poses/ready.png")
+	if C.HEROES[index].get("profile","")=="tfk":return preload("res://assets/tfk-duo-portrait-v1.png")
 	if index==5:return preload("res://scripts/content_extension.gd").sprite(0)
 	var hero_id=["voss","kael","vesper","iona","orin"][index]
 	var seasonal_portrait="res://assets/clean-icons/portrait-halloween-"+hero_id+".png"
@@ -384,7 +443,7 @@ func characters():
 	shade(0.91)
 	var head = column(menu_root,Vector2(80,45),Vector2(1280,100))
 	label(head,"CHOOSE WHO HISTORY FORGOT",16,"d1ae77")
-	label(head,"History remembers." if preload("res://scripts/content_extension.gd").visible(save_data) else "Five survivors. New frontiers.",40)
+	label(head,"History remembers." if preload("res://scripts/content_extension.gd").visible(save_data) else "Survivors. New frontiers.",40)
 	var row = HBoxContainer.new()
 	row.position = Vector2(80,168)
 	row.size = Vector2(1280,540)
@@ -396,6 +455,8 @@ func characters():
 	if selected not in roster:selected=roster[0]
 	for i in roster:
 		var data = C.HEROES[i]
+		var is_tfk=data.get("profile","")=="tfk"
+		var hidden=is_tfk and not Discoveries.hero_open(save_data,i)
 		var panel = PanelContainer.new()
 		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		panel.custom_minimum_size.x = 192 if roster.size()>5 else 238
@@ -404,19 +465,33 @@ func characters():
 		var v = VBoxContainer.new()
 		v.add_theme_constant_override("separation",13)
 		panel.add_child(v)
-		label(v,data.title,14,data.color).autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label(v,"" if hidden else data.title,14,data.color).autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		var art = TextureRect.new()
 		art.texture = texture(i)
 		art.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 		art.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		art.custom_minimum_size = Vector2(170,215)
 		v.add_child(art)
-		label(v,data.name,23)
-		var desc = label(v,data.desc,15,"bac8c8")
+		if is_tfk and hidden:
+			art.texture=null
+			for host in [0,1]:
+				var duo_art=TextureRect.new()
+				var sprite=AtlasTexture.new()
+				sprite.atlas=preload("res://assets/tfk-mathie-walk-v1.png") if host==0 else preload("res://assets/tfk-johan-walk-v1.png")
+				var bounds=JSON.parse_string(FileAccess.get_file_as_string("res://assets/tfk-walk-regions.json"))[host][1]
+				sprite.region=Rect2(bounds[0],bounds[1],bounds[2],bounds[3]);duo_art.texture=sprite
+				duo_art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;duo_art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				duo_art.position=Vector2(15+host*72,0);duo_art.size=Vector2(95,210)
+				duo_art.modulate=Color(0,0,0,1) if hidden else Color.WHITE
+				art.add_child(duo_art)
+		label(v,"???" if hidden else data.name,23)
+		var desc = label(v,"" if hidden else data.desc,15,"bac8c8")
 		desc.tooltip_text=data.get("innate_hint","")
 		desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		desc.custom_minimum_size.y = 110
-		var unlocked = chosen_mode!="expedition" or Discoveries.hero_open(save_data,i)
+		var unlocked = Discoveries.hero_open(save_data,i) if is_tfk or preload("res://scripts/god_content.gd").god_hero(data) else chosen_mode!="expedition" or Discoveries.hero_open(save_data,i)
+		if not unlocked and preload("res://scripts/god_content.gd").god_hero(data):
+			desc.text="LOCKED / Find the wounded goats near the first camp on any expedition map. Tend both through the hunt."
 		var spacer=Control.new()
 		spacer.size_flags_vertical=Control.SIZE_EXPAND_FILL
 		v.add_child(spacer)
@@ -424,6 +499,7 @@ func characters():
 			selected=i
 			survivor_voice.set_hero(i)
 			survivor_voice.play_event("chosen")
+			if C.HEROES[i].get("profile","")=="tfk":show_toast("Johan",preload("res://scripts/tfk_dialogue.gd").record("selected").text)
 			characters(),selected==i and unlocked)
 		choose.add_theme_font_size_override("font_size",13)
 		choose.disabled = not unlocked
@@ -441,8 +517,7 @@ func maps_menu():
 	page="maps"
 	clear_menu()
 	shade(0.93)
-	label(menu_root,"CHOOSE AN EXPEDITION",36,"efd6a7").position=Vector2(80,65)
-	label(menu_root,"Each map has three biome sections, its own terrain, score and ecosystem.",19,"adc6ca").position=Vector2(80,120)
+	page_title("CHOOSE AN EXPEDITION","Three biome sections each, with their own terrain and ecosystem.",Vector2(80,30))
 	var index=0
 	for id in Maps.DATA:
 		var d=Maps.DATA[id]
@@ -495,7 +570,7 @@ func flush_campaign(force=false):
 		campaign_save_clock=0
 
 func start_run():
-	if chosen_mode=="expedition" and not Discoveries.hero_open(save_data,selected): selected = 1
+	if (chosen_mode=="expedition" or preload("res://scripts/god_content.gd").god_hero(C.HEROES[selected])) and not Discoveries.hero_open(save_data,selected): selected = 1
 	release_run()
 	clear_menu()
 	page = "playing"
@@ -512,6 +587,7 @@ func start_run():
 	sim.banner.connect(show_toast)
 	sim.choice_requested.connect(present_upgrade)
 	sim.rite_requested.connect(on_first_rite)
+	sim.torr_lesson_requested.connect(play_torr_lesson)
 	sim.ended.connect(run_ended)
 	sim.discovered_content.connect(on_discovery)
 	world.sim = sim
@@ -526,6 +602,7 @@ func start_run():
 	survivor_voice.set_hero(sim.hero)
 	sim.halloween=save_data.settings.get("halloween",true)
 	if chosen_mode=="expedition": sim.configure_content(save_data)
+	arm_tfk_portal()
 	sim.update_exploration()
 	hud_root.show()
 	show_toast("HISTORY HAS NO RECORD OF THIS","SURVIVE / ADAPT / DENY EXTINCTION")
@@ -659,6 +736,16 @@ func update_hud_scale():
 	world.position = offset
 	if sim!=null: sim.spawn_view=viewport
 	menu_root.position = offset
+	if page=="summary":
+		menu_root.position=Vector2.ZERO
+		var content=menu_root.get_node_or_null("SummaryContent")
+		if content!=null:
+			var scale_value=viewport.y/992.0;var target=Vector2(viewport.x/scale_value,992)
+			content.scale=Vector2.ONE*scale_value
+			if content.size.distance_to(target)>.5:
+				content.size=target
+				for child in content.get_children():content.remove_child(child);child.queue_free()
+				preload("res://scripts/run_scoreboard.gd").build(self,content)
 	var pixel_ratio = maxf(0.1,get_viewport().get_screen_transform().get_scale().y)
 	var factor = clampf(float(save_data.settings.get("hud_scale",1.0)),0.65,1.35)
 	for entry in hud_layout:
@@ -736,6 +823,9 @@ func update_hud_scale():
 
 func _process(dt):
 	update_hud_scale()
+	if is_instance_valid(save_notice):
+		save_notice.visible=toast_time>0 and not save_notice.text.is_empty()
+		save_notice.position=Vector2((get_viewport_rect().size.x-960)*.5,150)
 	ui_clock += dt
 	toast_time = maxf(0,toast_time-dt)
 	if toast_label: toast_label.modulate.a = minf(1,toast_time)
@@ -810,13 +900,19 @@ func _process(dt):
 	for id in sim.buffs:
 		if sim.buffs[id]>0: buffs.append("%s / %ss"%[id.to_upper(),ceili(sim.buffs[id])])
 	if not sim.director.current.is_empty(): buffs.append("HORDE / %ss"%ceili(sim.director.current.at+sim.director.current.duration-sim.time))
+	var rescue_status=preload("res://scripts/goat_rescue.gd").status(sim)
+	if rescue_status!="":buffs.append(rescue_status)
 	buff_label.text = "   ·   ".join(buffs)
 
 func _input(event):
 	if not event is InputEventKey or not event.pressed or event.echo: return
 	if page=="menu" and (event.unicode==167 or event.keycode==KEY_SECTION):
 		cheat_gate();get_viewport().set_input_as_handled();return
-	if sim!=null and sim.active and not sim.choosing:
+	if sim!=null and sim.active and not sim.choosing and page in ["playing","pause","map","ledger"]:
+		if event.keycode==KEY_E and page=="playing" and not paused and preload("res://scripts/goat_rescue.gd").begin(sim):
+			get_viewport().set_input_as_handled();return
+		if event.keycode==KEY_E and page=="playing" and not paused and enter_tfk_portal():
+			get_viewport().set_input_as_handled();return
 		if event.keycode in [KEY_TAB,KEY_M]:
 			if page=="map": resume()
 			else: map_menu()
@@ -836,6 +932,15 @@ func _unhandled_key_input(event):
 	if event.keycode==KEY_F11:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED if DisplayServer.window_get_mode()==DisplayServer.WINDOW_MODE_FULLSCREEN else DisplayServer.WINDOW_MODE_FULLSCREEN)
 	if event.keycode==KEY_ESCAPE:
+		if page=="archive-refund":
+			research_menu() if archive_refund_research_only else discovery_menu()
+			return
+		if page in ["reset-confirm","records"]:
+			research_menu()
+			return
+		if page=="settings":
+			pause_menu() if sim!=null and sim.active else main_menu()
+			return
 		if page=="map":
 			resume()
 			return
@@ -876,7 +981,7 @@ func present_upgrade(opts,relic):
 			return
 		upgrade_menu(opts,false)
 		return
-	if not relic and opts.size()==1 and opts[0].type not in ["evolution","fusion"]:
+	if not relic and sim.mode!="daily" and opts.size()==1 and opts[0].type not in ["evolution","fusion"]:
 		var only=opts[0]
 		var current=sim
 		call_deferred("accept_single_upgrade",current,only)
@@ -935,6 +1040,8 @@ func present_upgrade(opts,relic):
 			chest_data.desc=UpgradeCopy.description(sim,o).replace("\n"," / ")
 		reel.reward_data = chest_data
 		reel.audio = audio
+		reel.reduced_effects=save_data.settings.get("reduced_effects",false)
+		reel.shake_enabled=save_data.settings.get("shake",true)
 		menu_root.add_child(reel)
 		reel.awarded.connect(func():
 			if sim==run and sim.choosing and page=="relic-spin":
@@ -947,10 +1054,10 @@ func present_upgrade(opts,relic):
 		return
 	page = "anticipation"
 	await get_tree().create_timer(0.16).timeout
-	if sim==run and sim.choosing: upgrade_menu(opts,false)
+	if sim==run and sim.choosing and page=="anticipation": upgrade_menu(opts,false)
 
 func evolution_menu(opts):
-	page="upgrade";clear_menu();shade(.90)
+	page="upgrade";clear_menu();shade(.90,false)
 	# A chest chooses one transformation; no second ordinary-reward card.
 	var panel=preload("res://scripts/evolution_reveal.gd").build(sim,opts[0],func():pick_upgrade(0))
 	menu_root.add_child(panel)
@@ -960,13 +1067,14 @@ func evolution_menu(opts):
 func upgrade_menu(opts,relic):
 	page = "upgrade"
 	clear_menu()
-	shade(0.82)
+	shade(0.82,false)
 	var head = column(menu_root,Vector2(95,65),Vector2(1250,110))
 	var caption="CHOOSE YOUR PATH / RANK %s"%opts[0].milestone if opts[0].type=="beam_path" else "WEAPON UNION" if opts[0].type=="fusion" else "WEAPON EVOLUTION" if opts[0].type=="evolution" else "RELIC RECOVERED" if relic else "LEVEL %s / CHOOSE YOUR POWER"%sim.level
 	var tier=label(head,caption,17,"c7a76b")
 	tier.add_theme_font_override("font",UIArt.heading_font())
 	label(head,"Take something dangerous" if relic else "Become their extinction",32,"d9bd83")
-	label(menu_root,"Weapons %s / 5  ·  Upgrade your build or fill an empty slot."%sim.weapons.size(),16,"c6baa3").position = Vector2(95,169)
+	var path_choice=opts[0].type=="beam_path"
+	label(menu_root,"Choose how this weapon develops. This path lasts for the run." if path_choice else "Weapons %s / 5  ·  Upgrade your build or fill an empty slot."%sim.weapons.size(),16,"c6baa3").position = Vector2(95,169)
 	var row = HBoxContainer.new()
 	var reward_width = minf(1250,opts.size()*380+maxi(0,opts.size()-1)*22)
 	row.position = Vector2((1440-reward_width)/2,205)
@@ -974,13 +1082,13 @@ func upgrade_menu(opts,relic):
 	row.add_theme_constant_override("separation",22)
 	menu_root.add_child(row)
 	for i in range(opts.size()):
-		var panel=preload("res://scripts/beam_card.gd").build(sim,opts[i],i,func():pick_upgrade(i)) if opts[i].type=="beam_path" else preload("res://scripts/reward_card.gd").build(sim,opts[i],i,func():pick_upgrade(i),relic)
+		var panel=preload("res://scripts/weapon_path_card.gd").build(sim,opts[i],i,func():pick_upgrade(i)) if opts[i].type=="beam_path" else preload("res://scripts/reward_card.gd").build(sim,opts[i],i,func():pick_upgrade(i),relic)
 		row.add_child(panel)
 		panel.modulate.a=0
 		var tween=create_tween()
 		tween.tween_interval(i*.09)
 		tween.tween_property(panel,"modulate:a",1.0,.2)
-	label(menu_root,"1 / 2 / 3 to choose. Buff types %s / 8. One offensive aura."%sim.buff_slots_used(),18,"95aeae").position=Vector2(95,800)
+	label(menu_root,"1 / 2 to choose your path." if path_choice else "1 / 2 / 3 to choose. Buff types %s / 8. One offensive aura."%sim.buff_slots_used(),18,"95aeae").position=Vector2(95,800)
 	if opts[0].type=="beam_path":return
 	var reroll = preload("res://scripts/ornate_action.gd").new()
 	reroll.text="RE-ROLL  •  %s"%sim.rerolls
@@ -1004,6 +1112,7 @@ func pick_upgrade(index):
 
 func finish_upgrade(index):
 	var option = sim.options[index]
+	if option.get("torr_lesson",false):sim.choose(index);return
 	if option.type=="fusion" and sim.mode=="expedition" and option.id not in save_data.recipes:
 		save_data.recipes.append(option.id)
 		persist()
@@ -1011,12 +1120,33 @@ func finish_upgrade(index):
 	page = "playing"
 	sim.choose(index)
 
+func play_torr_lesson():
+	if sim==null or not sim.god_state.get("lesson_pending",false) or page=="torr-story":return
+	var run=sim
+	var was_paused=paused
+	paused=true;page="torr-story";clear_menu();survivor_voice.stop()
+	for voice in audio.voices:voice.stop()
+	for music in audio.music_players:music.stream_paused=true
+	var story=preload("res://scripts/torr_story_player.gd").new()
+	story.sound_enabled=save_data.settings.sound
+	story.completed.connect(func():
+		if sim!=run or not run.active:return
+		page="playing";paused=was_paused
+		if preload("res://scripts/torr_lesson.gd").complete(run):
+			var previous=save_data.duplicate(true)
+			save_data.settings[preload("res://scripts/torr_lesson.gd").SEEN]=true
+			persist(previous)
+			run.content_profile.settings[preload("res://scripts/torr_lesson.gd").SEEN]=save_data.settings.get(preload("res://scripts/torr_lesson.gd").SEEN,false)
+		for music in audio.music_players:music.stream_paused=false
+		apply_settings())
+	layer.add_child(story)
+
 func pause_menu():
 	paused = true
 	audio.ritual_voice.stream_paused=true
 	page = "pause"
 	clear_menu()
-	shade()
+	shade(0.82,false)
 	var Skin=preload("res://scripts/hud_skin.gd")
 	var active_skin=Skin.THEMES[preload("res://scripts/hero_hud.gd").selected(save_data,sim.hero)]
 	var menu_factor=0.8*minf(1.0,minf(get_viewport_rect().size.x/760.0,get_viewport_rect().size.y/820.0))
@@ -1042,9 +1172,36 @@ func resume():
 
 func on_discovery(id):
 	if sim.mode!="expedition" or id in save_data.discoveries: return
+	var tfk_before=Discoveries.tfk_unlocked(save_data)
 	save_data.discoveries.append(id)
 	if Discoveries.ENTRIES[id].cost==0 and id not in save_data.unlocks: save_data.unlocks.append(id)
+	if not tfk_before and Discoveries.tfk_unlocked(save_data):
+		show_toast("De tre rösterna är samlade","En portal har öppnats. Tryck E intill den.")
+		arm_tfk_portal()
+	elif id=="tfk_microphone":
+		show_toast("Hitta de tre försvunna rösterna","Sök efter ? i Lost Cradles tre biomer.")
 	persist()
+
+func arm_tfk_portal():
+	if sim==null or sim.map_id!="cradle" or sim.mode!="expedition" or save_data.get("tfk_reveal_seen",false) or not Discoveries.tfk_unlocked(save_data):return
+	sim.tfk_state.portal=sim.terrain.open_position(sim.pos+Vector2(120,0))
+
+func enter_tfk_portal():
+	if sim==null or not sim.tfk_state.has("portal") or sim.pos.distance_to(sim.tfk_state.portal)>85:return false
+	sim.tfk_state.erase("portal")
+	play_tfk_unlock()
+	return true
+
+func play_tfk_unlock():
+	if sim==null or page=="tfk-story":return
+	var previous_page=page;var was_paused=paused
+	paused=true;page="tfk-story"
+	var story=preload("res://scripts/tfk_unlock_story.gd").new()
+	story.sound_cue.connect(func(id):audio.play(id))
+	story.completed.connect(func():
+		save_data.tfk_reveal_seen=true;persist()
+		page=previous_page;paused=was_paused)
+	layer.add_child(story)
 
 func scrolling_body(y = 185,height = 555):
 	var scroll = ScrollContainer.new()
@@ -1162,76 +1319,39 @@ func summary():
 		layer.move_child(defeat_cinematic,0)
 	page="summary";clear_menu();shade(1.0 if sim.extinction_timeout else 0.82)
 	hud_root.hide()
-	UIArt.plate(menu_root,2,Rect2(90,12,1260,770))
-	# This inset excludes the skull crest and the lower corner fossils. All
-	# results belong to it, rather than treating the art's outer bounds as usable.
 	var content=Control.new();content.name="SummaryContent"
-	content.position=Vector2(235,205);content.size=Vector2(970,490);menu_root.add_child(content)
-	var title=label(content,"EXTINCTION DENIED" if sim.won else "EXPEDITION COMPLETE",32,"f4d49b")
-	title.size=Vector2(970,42)
-	var detail=label(content,"%s · %02d:%02d · %s · %s"%[C.HEROES[sim.hero].name,int(sim.time)/60,int(sim.time)%60,sim.mode.to_upper(),Maps.DATA[sim.map_id].name],18,"b7cbd0")
-	detail.position=Vector2(0,45);detail.size=Vector2(970,25);detail.clip_text=true;UIArt.fit_label(detail,18)
-	if not sim.won:
-		var reason=label(content,sim.death_reason,15,"ecb4a4")
-		reason.position=Vector2(0,69);reason.size=Vector2(970,22);reason.clip_text=true;UIArt.fit_label(reason,15)
-	var metrics=[["SCORE",sim.score],["KILLS",sim.kills],["AMBER",0 if sim.mode=="safari" else int(sim.amber*sim.fortune)],["BEST STREAK",sim.best_streak],["PEAK HORDE",sim.peak_enemies],["HITS TAKEN",sim.hits]]
-	for i in range(metrics.size()):
-		var x=(i%3)*330;var y=98+(i/3)*55
-		var caption=label(content,metrics[i][0],13,"afbdc2");caption.position=Vector2(x,y)
-		var value=label(content,str(metrics[i][1]),24,"f0d098");value.position=Vector2(x,y+17);value.size=Vector2(290,32);value.clip_text=true;UIArt.fit_label(value,24)
-	var army_present=sim.companions!=null
-	var damage_x=355 if army_present else 600
-	var share_x=485 if army_present else 815
-	for heading in [["WEAPON",0],["DAMAGE",damage_x],["SHARE",share_x]]:
-		label(content,heading[0],14,"b7cbd0").position=Vector2(heading[1],209)
-	var ids=sim.damage_by_weapon.keys();ids.sort_custom(func(a,b):return sim.damage_by_weapon[a]>sim.damage_by_weapon[b])
-	var total=maxf(1,sim.damage_total)
-	for i in range(mini(5,ids.size())):
-		var id=ids[i];var damage=sim.damage_by_weapon[id];var y=236+i*28
-		var icon=Icons.control(content,id,"weapon",24);icon.position=Vector2(0,y)
-		var name_label=label(content,C.WEAPONS.get(id,{"name":"Relics"}).name,17,"e4d9c3")
-		name_label.clip_text=true;name_label.position=Vector2(34,y);name_label.size=Vector2(damage_x-48,25);name_label.tooltip_text=name_label.text;UIArt.fit_label(name_label,17)
-		var damage_label=label(content,str(int(damage)),17);damage_label.clip_text=true;damage_label.position=Vector2(damage_x,y);damage_label.size=Vector2(share_x-damage_x-12,25);UIArt.fit_label(damage_label,17)
-		var share=label(content,"%.1f%%"%(damage/total*100),17,"8fdac8");share.position=Vector2(share_x,y);share.size=Vector2(90,25)
-	if sim.companions!=null:
-		var army=sim.companions.army_report()
-		var army_title=label(content,"YOUR ARMY",14,"8fdac8");army_title.position=Vector2(620,209)
-		var army_totals=label(content,"%s summoned · %s lost"%[army.total_summoned,army.losses],16,"8fdac8")
-		army_totals.clip_text=true;army_totals.position=Vector2(620,234);army_totals.size=Vector2(350,24);UIArt.fit_label(army_totals,16)
-		var sources=army.summoned_by_ability.keys()
-		sources.sort()
-		for i in range(sources.size()):
-			var id=sources[i]
-			var x=620;var y=266+i*23
-			var entry=label(content,"%s: %s"%[C.WEAPONS.get(id,{"name":id}).name,army.summoned_by_ability[id]],15,"e4d9c3")
-			entry.clip_text=true;entry.position=Vector2(x,y);entry.size=Vector2(350,23);UIArt.fit_label(entry,15)
-		if not army.strongest_summon.is_empty():
-			var best=army.strongest_summon
-			var summon_name=preload("res://scripts/boss_identity.gd").short_name(best.identity) if not best.get("identity","").is_empty() else C.WEAPONS.get(best.source,{"name":best.role}).name
-			var entry=label(content,"STRONGEST SUMMON\n%s #%s\n%s damage · %s kills"%[summon_name,best.uid,int(best.damage),best.kills],15,"f0d098")
-			entry.clip_text=true;entry.position=Vector2(0,405);entry.size=Vector2(575,74);UIArt.fit_label(entry,15)
-	var row=HBoxContainer.new();row.position=Vector2(100,800);row.size=Vector2(1240,60);row.add_theme_constant_override("separation",16);menu_root.add_child(row)
-	button(row,"RUN IT BACK",start_run,true).size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	button(row,"Today's build" if sim.mode=="daily" else "Change survivor",daily_menu if sim.mode=="daily" else characters).size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	button(row,"Leaderboard" if sim.mode=="daily" else "Run report",daily_records_menu if sim.mode=="daily" else func():export_report(true)).size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	button(row,"Main menu",main_menu).size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	var scale_value=get_viewport_rect().size.y/992.0
+	content.size=Vector2(get_viewport_rect().size.x/scale_value,992);content.scale=Vector2.ONE*scale_value;menu_root.position=Vector2.ZERO;menu_root.add_child(content)
+	preload("res://scripts/run_scoreboard.gd").build(self,content)
 
 func research_menu():
 	clear_menu();shade(0.94);page="research"
-	label(menu_root,"THE ARCHIVE / %s AMBER"%int(save_data.amber),27,"e7c88c").position=Vector2(100,45)
-	label(menu_root,"Permanent upgrades · expedition only",21,"b9ced3").position=Vector2(100,88)
+	page_title("THE ARCHIVE / %s AMBER"%int(save_data.amber),"Permanent upgrades · expedition only")
 	var refund=button(menu_root,"Reset upgrades / refund amber",func():archive_refund_menu(true))
 	refund.position=Vector2(885,65);refund.size=Vector2(455,56)
 	var reset=button(menu_root,"Reset all progress",reset_all_confirm)
 	reset.position=Vector2(885,125);reset.size=Vector2(455,46)
 	refund.disabled=preload("res://scripts/archive_respec.gd").research_total(save_data)<=0
-	var grid=GridContainer.new();grid.columns=3;grid.position=Vector2(100,180);grid.size=Vector2(1240,555)
-	grid.add_theme_constant_override("h_separation",14);grid.add_theme_constant_override("v_separation",12);menu_root.add_child(grid)
+	var scroll=ScrollContainer.new();scroll.position=Vector2(100,180);scroll.size=Vector2(1240,555);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;menu_root.add_child(scroll)
+	scroll.follow_focus=true
+	var grid=GridContainer.new();grid.columns=3;grid.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	grid.add_theme_constant_override("h_separation",14);grid.add_theme_constant_override("v_separation",12);scroll.add_child(grid)
 	for id in C.RESEARCH:
 		var r=C.RESEARCH[id];var rank_value=int(save_data.research.get(id,0));var cost=int(r.cost*pow(1.65,rank_value))
+		var research_icon=Icons.get_icon(r.get("icon",id),r.get("icon_category","weapon" if r.has("icon") else "research"))
+		if r.get("profile","")=="07" and not preload("res://scripts/content_extension.gd").visible(save_data):
+			var hidden=button(grid,"",func():pass)
+			hidden.set_meta("research_id",id)
+			hidden.custom_minimum_size=Vector2(396,110);hidden.disabled=true
+			var silhouette=TextureRect.new();silhouette.texture=research_icon
+			var mask=ShaderMaterial.new();mask.shader=preload("res://shaders/locked_research.gdshader");silhouette.material=mask
+			silhouette.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;silhouette.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			silhouette.position=Vector2(173,30);silhouette.size=Vector2(50,50);silhouette.mouse_filter=Control.MOUSE_FILTER_IGNORE;hidden.add_child(silhouette)
+			continue
 		var b=button(grid,"%s  %s/%s\n%s\n%s"%[r.name,rank_value,r.max,UIArt.wrap_copy(r.desc,preload("res://scripts/ui_art.gd").body_font(),16,240),"MAXED" if rank_value>=r.max else str(cost)+" AMBER"],func():buy(id))
-		b.icon=Icons.get_icon(id,"research");b.expand_icon=true;b.add_theme_constant_override("icon_max_width",42);b.add_theme_constant_override("h_separation",12)
-		b.custom_minimum_size=Vector2(404,110);b.add_theme_font_size_override("font_size",16)
+		b.set_meta("research_id",id)
+		b.icon=research_icon;b.expand_icon=true;b.add_theme_constant_override("icon_max_width",42);b.add_theme_constant_override("h_separation",12)
+		b.custom_minimum_size=Vector2(396,110);b.add_theme_font_size_override("font_size",16)
 		b.add_theme_font_override("font",preload("res://scripts/ui_art.gd").body_font())
 		b.disabled=rank_value>=r.max or save_data.amber<cost
 	var back=button(menu_root,"Main menu",main_menu,true);back.position=Vector2(100,785);back.size=Vector2(390,60)
@@ -1247,11 +1367,13 @@ func records_menu():
 	button(v,"Back to archive",research_menu)
 
 func buy(id):
+	var previous=save_data.duplicate(true)
 	if not preload("res://scripts/archive_respec.gd").buy_research(save_data,id):return
-	persist()
+	persist(previous)
 	research_menu()
 
 func archive_refund_menu(research_only):
+	archive_refund_research_only=research_only
 	clear_menu();shade(0.96);page="archive-refund"
 	var respec=preload("res://scripts/archive_respec.gd")
 	var amount=respec.research_total(save_data) if research_only else respec.discovery_total(save_data)
@@ -1262,14 +1384,15 @@ func archive_refund_menu(research_only):
 	copy+="\nYour runs, records, discovered recipes and milestone progress are preserved."
 	var details=label(v,copy,22,"c7c3b4");details.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	button(v,"Confirm refund / %s amber"%amount,func():
+		var previous=save_data.duplicate(true);var previous_selected=selected
 		if research_only:respec.refund_research(save_data)
 		else:
 			respec.refund_discoveries(save_data)
 			if not Discoveries.hero_open(save_data,selected):selected=1
-		persist()
+		if not persist(previous):selected=previous_selected
 		if research_only:research_menu()
 		else:discovery_menu(),true)
-	button(v,"Keep my upgrades" if research_only else "Keep my unlocks",research_menu if research_only else discovery_menu)
+	button(v,"Keep my upgrades" if research_only else "Keep my unlocks",research_menu if research_only else discovery_menu).grab_focus()
 
 func reset_all_confirm():
 	clear_menu();shade(0.97);page="reset-confirm"
@@ -1285,6 +1408,7 @@ func reset_all_confirm():
 	reset_confirm_button.custom_minimum_size.y=68
 	var no=button(v,"NO, KEEP MY PROGRESS",research_menu)
 	no.custom_minimum_size.y=62
+	no.grab_focus()
 	_reset_countdown()
 
 func _reset_countdown():
@@ -1302,13 +1426,14 @@ func _reset_countdown():
 
 func reset_all_progress():
 	if page!="reset-confirm" or reset_countdown>0:return
+	var previous=save_data.duplicate(true);var previous_selected=selected;var previous_map=selected_map
 	var store=preload("res://scripts/profile_store.gd")
 	save_data=store.defaults()
 	Discoveries.migrate(save_data)
 	Campaign.ensure(save_data)
 	selected=1
 	selected_map="cradle"
-	persist()
+	if not persist(previous):selected=previous_selected;selected_map=previous_map
 	main_menu()
 
 func manual():
@@ -1328,26 +1453,33 @@ func manual():
 	button(v,"I'LL MAKE HISTORY",main_menu,true)
 
 func settings():
+	page="settings"
 	clear_menu()
 	shade(0.94)
 	var scroll=ScrollContainer.new();scroll.position=Vector2(330,50);scroll.size=Vector2(780,730);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;menu_root.add_child(scroll)
+	scroll.follow_focus=true
 	var v=VBoxContainer.new();v.size_flags_horizontal=Control.SIZE_EXPAND_FILL;v.add_theme_constant_override("separation",12);scroll.add_child(v)
-	label(v,"Make the apocalypse yours.",36)
-	for key in ["sound","music","shake","halloween"]:
+	var settings_title = label(v,"Make the apocalypse yours.",36)
+	settings_title.custom_minimum_size.y = 120   # clears the crest banner
+	settings_title.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	for key in ["sound","music","shake","reduced_effects","halloween"]:
 		var check = CheckButton.new()
-		check.text = {"sound":"Sound effects","music":"Music","shake":"Screen shake","halloween":"Hollow Harvest theme / next run"}[key]
+		check.text = {"sound":"Sound effects","music":"Music","shake":"Screen shake","reduced_effects":"Reduced reveal effects","halloween":"Hollow Harvest theme / next run"}[key]
 		check.button_pressed = save_data.settings.get(key,false)
 		check.custom_minimum_size.y = 55
+		glass_row(check)
 		check.toggled.connect(func(value):save_data.settings[key]=value;apply_settings();persist())
 		v.add_child(check)
+		if key=="sound":check.grab_focus()
 	for pair in [["sfx_volume","Sound effects volume"],["music_volume","Music volume"],["voice_volume","Voices / narration volume"],["cinematic_volume","Reveal cinematic volume"]]:
 		var key=pair[0]
 		var caption=label(v,pair[1]+" / %s%%"%roundi(save_data.settings.get(key,1.0)*100),18,"b8cdd3")
 		var slider=HSlider.new();slider.min_value=0;slider.max_value=1;slider.step=.01;slider.value=save_data.settings.get(key,1.0);slider.custom_minimum_size=Vector2(500,30)
+		slider.scrollable=false
 		slider.value_changed.connect(func(value):save_data.settings[key]=value;caption.text=pair[1]+" / %s%%"%roundi(value*100);apply_settings();persist())
 		v.add_child(slider)
 	if preload("res://scripts/content_extension.gd").visible(save_data):
-		var alternate=CheckButton.new();alternate.text="Non-canon roster: keep both Kael and Nagash";alternate.button_pressed=save_data.settings.get("noncanon_roster",false);alternate.custom_minimum_size.y=55
+		var alternate=CheckButton.new();alternate.text="Non-canon roster: keep both Kael and Nagash";alternate.button_pressed=save_data.settings.get("noncanon_roster",false);alternate.custom_minimum_size.y=55;glass_row(alternate)
 		alternate.toggled.connect(func(value):save_data.settings.noncanon_roster=value;persist());v.add_child(alternate)
 	label(v,"HUD theme",18,"b8cdd3")
 	var skin_choice=OptionButton.new()
@@ -1359,10 +1491,11 @@ func settings():
 		if skin==stored_skin:skin_choice.select(skin_choice.item_count-1)
 	skin_choice.item_selected.connect(func(index):save_data.settings.hud_skin=skin_choice.get_item_id(index)-1;persist())
 	v.add_child(skin_choice)
-	var minimap_toggle=CheckButton.new();minimap_toggle.text="Show HUD minimap";minimap_toggle.button_pressed=save_data.settings.get("hud_minimap",true)
+	var minimap_toggle=CheckButton.new();minimap_toggle.text="Show HUD minimap";minimap_toggle.button_pressed=save_data.settings.get("hud_minimap",true);glass_row(minimap_toggle)
 	minimap_toggle.toggled.connect(func(value):save_data.settings.hud_minimap=value;persist());v.add_child(minimap_toggle)
 	label(v,"HUD size (live preview; menus stay readable)",18,"b8cdd3")
 	var scale_slider = HSlider.new()
+	scale_slider.scrollable=false
 	scale_slider.min_value = 0.65
 	scale_slider.max_value = 1.35
 	scale_slider.step = 0.05
@@ -1394,6 +1527,8 @@ func replay_cinematic(identity):
 			story=preload("res://scripts/opening_story.gd").new()
 			story.sound_enabled=save_data.settings.sound;story.music_enabled=save_data.settings.music
 		"reveal":story=preload("res://scripts/sequence_player.gd").new()
+		"torr_mortal":
+			story=preload("res://scripts/torr_story_player.gd").new();story.sound_enabled=save_data.settings.sound
 		"extinction":
 			story=preload("res://scripts/extinction_end.gd").new()
 			story.world=world;story.audio=audio
@@ -1423,6 +1558,7 @@ func apply_settings():
 		if not survivor_voice.enabled:survivor_voice.stop()
 	audio.music_enabled = save_data.settings.music
 	world.shake_enabled = save_data.settings.shake
+	world.reduced_effects = save_data.settings.get("reduced_effects",false)
 
 func load_progress():
 	var result=preload("res://scripts/profile_store.gd").load_profile(progress_path)
@@ -1430,9 +1566,21 @@ func load_progress():
 	save_error=result.message
 	save_blocked=result.blocked
 
-func persist():
-	if save_blocked: return
-	save_error=preload("res://scripts/profile_store.gd").save_profile(progress_path,save_data)
+func persist(previous={})->bool:
+	if not save_blocked:save_error=preload("res://scripts/profile_store.gd").save_profile(progress_path,save_data)
+	if save_blocked or not save_error.is_empty():
+		if not previous.is_empty():save_data=previous
+		if is_inside_tree():
+			show_toast("PROGRESS NOT SAVED",save_error)
+			if not is_instance_valid(save_notice):
+				save_notice=label(layer,"",18,"ffb6a0")
+				save_notice.size=Vector2(960,74);save_notice.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+				save_notice.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;save_notice.mouse_filter=Control.MOUSE_FILTER_IGNORE
+				save_notice.add_theme_stylebox_override("normal",box(Color("161010"),Color("b55b45")))
+			save_notice.text=toast_label.text
+		return false
+	if is_instance_valid(save_notice):save_notice.text="";save_notice.hide()
+	return true
 
 func export_report(open_folder):
 	if sim==null: return
@@ -1443,6 +1591,27 @@ func export_report(open_folder):
 		file.store_string(JSON.stringify(sim.report(),"\t"))
 		file.close()
 	if open_folder: OS.shell_open(ProjectSettings.globalize_path("user://reports"))
+
+func _notification(what):
+	if what==NOTIFICATION_WM_CLOSE_REQUEST:request_quit()
+
+func request_quit():
+	if closing:return
+	closing=true
+	get_tree().paused=true
+	if audio!=null:audio.shutdown()
+	if survivor_voice!=null:survivor_voice.stop()
+	release_run()
+	stop_tree_audio(self)
+	# Stop commands release playback buffers on the mixer thread. Immediate
+	# process exit otherwise retains active WAV/OGG decoders in exported builds.
+	await get_tree().create_timer(.2).timeout
+	get_tree().quit()
+
+func stop_tree_audio(node):
+	if node is AudioStreamPlayer or node is AudioStreamPlayer2D or node is AudioStreamPlayer3D:
+		node.stop();node.stream=null
+	for child in node.get_children():stop_tree_audio(child)
 
 func _exit_tree():
 	if survivor_voice!=null:survivor_voice.stop()

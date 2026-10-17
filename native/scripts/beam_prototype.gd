@@ -5,7 +5,7 @@ const WEAPONS={
  "flametorch":{"name":"Flametorch","damage":32.0,"range":155.0,"width":34.0,"duration":1.25,"cooldown":3.0,"tags":["WEAPON","FIRE","BEAM","AREA","CRITICAL","DURATION"]}}
 const CHOICES={
  "plasma_tether":{5:[{"id":"reach","name":"Far Conduit","desc":"+45% connection length."},{"id":"sustain","name":"Lasting Bond","desc":"+60% connection duration."}],10:[{"id":"split","name":"Rift Web","desc":"Three simultaneous connections. Crossing enemies take damage too."},{"id":"power","name":"Overcharged","desc":"+85% plasma damage."}]},
- "flametorch":{5:[{"id":"reach","name":"Longburn","desc":"+45% beam length."},{"id":"sustain","name":"Deep Fuel","desc":"+60% firing duration."}],10:[{"id":"split","name":"Twin Pyres","desc":"Two full-strength streams aimed at separate nearby enemies."},{"id":"power","name":"White Heat","desc":"+85% beam damage."}]}}
+ "flametorch":{5:[{"id":"reach","name":"Longburn","desc":"+45% beam length."},{"id":"sustain","name":"Deep Fuel","desc":"+60% firing duration."}],10:[{"id":"split","name":"Twin Pyres","desc":"Two full-strength streams rotate evenly around you."},{"id":"power","name":"White Heat","desc":"+85% beam damage."}]}}
 static func pending(id,weapon):
  if not CHOICES.has(id):return 0
  for milestone in [5,10]:
@@ -17,8 +17,8 @@ static func choose(id,weapon,milestone,choice):
  if not weapon.has("branches"):weapon.branches={}
  weapon.branches[str(milestone)]=choice
  return true
-static func stats(id,weapon,modifiers={}):
- var s=WEAPONS[id].duplicate(true)
+static func stats(id,weapon,modifiers={},definition={}):
+ var s=(WEAPONS[id] if definition.is_empty() else definition).duplicate(true)
  var branches=weapon.get("branches",{})
  s.damage*=1+.3*(weapon.get("level",1)-1)
  s.range*= (1.45 if branches.get("5","")=="reach" else 1.0)*(1+modifiers.get("range",0.0))

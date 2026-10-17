@@ -65,8 +65,6 @@ static func weapon_data(base):
 	for id in ["pyre","winter","miasma","dread","aegis","stasis"]:
 		out[id].pickup_icon = {"pyre":3,"winter":0,"miasma":1,"dread":6,"aegis":5,"stasis":0}[id]
 	out.thorns={"name":"Ironbriar","desc":"Thorn bursts. Retaliates when hit. Armor adds damage.","color":"9feeab","damage":25.0,"cooldown":2.4,"evolution":"BRAMBLE CROWN","evolution_desc":"Wider, stronger thorn bursts and retaliation.","requires":"armor","tags":["WEAPON","PHYSICAL","AREA","DEFENSIVE","RETALIATION","KNOCKBACK","CRITICAL"],"delivery":"thorns","radius":115.0,"icon":3}
-	out = preload("res://scripts/evolutions.gd").enrich(out)
-	out.bastion.tags.append("DEFENSIVE")
 	out.ricochet = {"name":"Prism Skipper","desc":"Crystal bolts ricochet between different enemies. Each bounce keeps 85% damage.","color":"81ffd4","damage":24.0,"cooldown":1.05,"count":1,"velocity":570.0,"lifetime":1.6,"bounce":2,"falloff":0.85,"evolution":"PRISM CASCADE","evolution_desc":"Four ricochets per crystal and faster, wider volleys.","requires":"crit","tags":["SPELL","OFFENSIVE","PROJECTILE","ARCANE","CRITICAL"],"delivery":"projectile","icon":3}
 	out["return"] = {"name":"Sun Chaser","desc":"Thrown crescents carve outward, then return to you for a second hit.","color":"ffb869","damage":32.0,"cooldown":1.65,"count":1,"velocity":440.0,"lifetime":2.2,"return_after":0.6,"evolution":"SECOND DAWN","evolution_desc":"Wider returning crescents with more blades and a stronger second pass.","requires":"speed","tags":["WEAPON","PROJECTILE","PHYSICAL","AREA","CRITICAL"],"delivery":"projectile","icon":3}
 	out.ricochet.tags.append("RICOCHET")
@@ -84,11 +82,14 @@ static func weapon_data(base):
 		var beam=preload("res://scripts/beam_prototype.gd").WEAPONS[beam_id].duplicate(true)
 		beam.merge({"delivery":"beam","color":"ff963c" if beam_id=="flametorch" else "71edd4","icon":3 if beam_id=="flametorch" else 4,"requires":"damage","evolution":"","desc":"Pressurized flame jets track nearby prey and roll into turbulent fire." if beam_id=="flametorch" else "Liquid plasma locks onto prey and burns everything crossing its connection." if beam_id=="plasma_tether" else "A surging plasma beam cuts through lines of enemies."})
 		out[beam_id]=beam
+	out.merge(preload("res://scripts/god_content.gd").WEAPONS.duplicate(true),true)
+	out = preload("res://scripts/evolutions.gd").enrich(out)
+	out.bastion.tags.append("DEFENSIVE")
 	for id in out:
 		out[id].targeting = out[id].get("targeting","nearest")
 		out[id].projectile_interval = 0.035 if out[id].delivery=="projectile" else 0.0
 		out[id].max_active = 60 if out[id].delivery=="projectile" else 24
-		out[id].terrain_blocks = id in ["revolver","shotgun","lastword","ricochet"]
+		out[id].terrain_blocks = out[id].get("terrain_blocks",id in ["revolver","shotgun","lastword","ricochet"])
 		out[id].boss_hit_interval = {"orbital":0.4,"bastion":0.4,"mortar":0.65,"supernova":0.1,"thunderstorm":0.2}.get(id,0.0)
 	return out
 
@@ -127,10 +128,11 @@ const AUGMENTS = {
 
 static func modifiers(g,id):
 	if g.modifier_cache.has(id): return g.modifier_cache[id]
-	var out = {}
+	var out = preload("res://scripts/weapon_paths.gd").modifiers(id,g.weapons.get(id,{}))
 	for key in g.augments:
 		var d = AUGMENTS[key]
 		if not matches(g.C.WEAPONS[id].tags,d.filter): continue
+		if not preload("res://scripts/god_content.gd").supports_augment(g,id,key):continue
 		for stat in d.stats: out[stat] = out.get(stat,0.0)+d.stats[stat]*g.BuffRewards.power(g,key)
 	g.modifier_cache[id] = out
 	return out
@@ -142,20 +144,21 @@ static func stats(g,id):
 	var rank = w.level
 	var evo = w.evolved
 	var milestones = int(rank>=5)+int(rank>=10 if id=="lightning" else rank>=9)
-	var count = d.get("count",1)+int(g.BuffRewards.power(g,"count"))+milestones+(2 if evo else 0)
-	if d.delivery=="chain": count+=g.research_ranks.get("chains",0)
-	elif d.delivery=="projectile": count+=g.research_ranks.get("projectiles",0)+(mini(3,g.level/10) if g.hero==0 else 0)
+	var count = d.get("count",1)+int(m.get("count",0))+int(g.BuffRewards.power(g,"count"))+milestones+(2 if evo else 0)
+	if d.delivery=="chain" or (d.delivery=="tfk" and "CHAIN" in d.tags): count+=g.research_ranks.get("chains",0)
+	elif d.delivery=="projectile" or (d.delivery in ["tfk","god"] and "PROJECTILE" in d.tags): count+=g.research_ranks.get("projectiles",0)+(mini(3,g.level/10) if g.hero==0 else 0)
 	var radius = d.get("radius",100.0)*g.area_scale()*(1+m.get("radius",0)+rank*0.025)
 	if "AURA" in d.tags: radius *= 1+minf(0.65,g.relic_state.get("aura_growth",0.0))
 	var haste = 1+g.BuffRewards.power(g,"haste")*0.1+m.get("haste",0)+rank*0.018
 	if g.hero==4 and "ARCANE" in d.tags: haste+=minf(0.2,(g.level-1)*0.005)
 	var relic_mods = g.Relics.modifiers(g)
 	haste += relic_mods.get("haste",0)
-	if d.delivery in ["projectile","chain","orbital","ground"]: count += int(relic_mods.get("count",0))
+	if d.delivery in ["projectile","chain","orbital","ground","god"] or (d.delivery=="tfk" and matches(d.tags,{"any":["PROJECTILE","CHAIN"]})): count += int(relic_mods.get("count",0))
 	if g.buffs.get("frenzy",0)>0: haste *= 1.65
 	if g.hp<g.max_hp*0.35: haste *= 1+relic_mods.get("low_health_haste",0)
-	var result = {"power":(d.damage+(minf(g.armor,25)*4 if "RETALIATION" in d.tags else 0))*(1+(rank-1)*0.30)*(1+m.get("power",0))*g.damage_scale(id)*(1.85 if evo else 1.0),"cooldown":d.cooldown/haste*(0.8 if evo else 1.0),"count":count,"radius":radius,"arc":minf(TAU,d.get("arc",TAU)+m.get("arc",0)+(0.45 if rank>=5 else 0)),"repeat":int(m.get("repeat",0))+int(rank>=7),"pierce":d.get("base_pierce",1)+int(rank>=5)+int(rank>=9)+int(m.get("pierce",0))+(2 if evo else 0),"velocity":d.get("velocity",460.0)*(1+m.get("velocity",0)),"lifetime":d.get("lifetime",1.5)*(1+m.get("lifetime",0)),"homing":m.get("homing",0),"bounce":int(m.get("bounce",0)),"range":d.get("range",240.0)*(1+m.get("range",0)),"falloff":minf(1,0.85+m.get("falloff",0)),"fork":minf(0.85,m.get("fork",0)+(0.3 if rank>=7 else 0)+relic_mods.get("fork",0)),"rechain":m.get("rechain",0),"duration":m.get("duration",0),"shield":25+rank*5+m.get("shield",0),"status":1+m.get("status",0)}
+	var result = {"return_after":d.get("return_after",0)*(1+m.get("return_after",0)),"power":(d.damage+(minf(g.armor,25)*4 if "RETALIATION" in d.tags else 0))*(1+(rank-1)*0.30)*(1+m.get("power",0))*g.damage_scale(id)*(1.85 if evo else 1.0),"cooldown":d.cooldown/haste*(0.8 if evo else 1.0),"count":count,"radius":radius,"arc":minf(TAU,d.get("arc",TAU)+m.get("arc",0)+(0.45 if rank>=5 else 0)),"repeat":int(m.get("repeat",0))+int(rank>=7),"pierce":d.get("base_pierce",1)+int(rank>=5)+int(rank>=9)+int(m.get("pierce",0))+(2 if evo else 0),"velocity":d.get("velocity",460.0)*(1+m.get("velocity",0)),"lifetime":d.get("lifetime",1.5)*(1+m.get("lifetime",0)),"homing":m.get("homing",0),"bounce":int(m.get("bounce",0)),"range":d.get("range",240.0)*(1+m.get("range",0)),"falloff":minf(1,0.85+m.get("falloff",0)),"fork":minf(0.85,m.get("fork",0)+(0.3 if rank>=7 else 0)+relic_mods.get("fork",0)),"rechain":m.get("rechain",0),"duration":m.get("duration",0),"shield":25+rank*5+m.get("shield",0),"status":1+m.get("status",0)}
 
+	if d.delivery=="god" and rank==10:result.power*=1.2
 	if evo:
 		if "AREA" in d.tags: result.radius *= 1.2
 		if "ICE" in d.tags: result.status += 1.0
@@ -176,7 +179,7 @@ static func stats(g,id):
 	result.cooldown = maxf(d.cooldown*(.08 if g.hero==1 and id=="club" else .3),result.cooldown)
 	result.duration = minf(5,result.duration)
 	if d.delivery=="beam":
-		var b=preload("res://scripts/beam_prototype.gd").stats(id,w,{"range":m.get("range",0),"duration":m.get("duration",0)})
+		var b=preload("res://scripts/beam_prototype.gd").stats(d.get("beam_base",id),w,{"range":m.get("range",0),"duration":m.get("duration",0)},d)
 		result.range=minf(600,b.range)
 		result.width=d.width*g.area_scale()*(1+m.get("radius",0))
 		result.duration=minf(6,b.duration)

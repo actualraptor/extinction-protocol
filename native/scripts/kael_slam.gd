@@ -12,7 +12,9 @@ static func update(g):
 	var age=g.time-a.start
 	if not a.hit and age>=a.duration*Art.IMPACT_PROGRESS:
 		a.hit=true;a.visual_until=g.time+minf(.04,a.duration*.15)
+		var epoch=g.encounter_epoch
 		impact(g,a.id,a.aim,a.stats)
+		if not g.active or g.encounter_epoch!=epoch:return
 		for i in range(mini(8,a.stats.repeat)):
 			if g.echoes.size()<32:g.echoes.append({"wait":.16*(i+1),"id":a.id,"aim":a.aim,"stats":a.stats.duplicate(),"slam":true})
 		if g.weapons[a.id].level>=7 and g.echoes.size()<96:
@@ -26,6 +28,11 @@ static func progress(g):
 	if a.hit and g.time<=a.visual_until:return .67
 	return clampf((g.time-a.start)/a.duration,0,1)
 static func impact(g,id,aim,s,echo=false):
+	var epoch=g.encounter_epoch
+	# The rupture is Kael's live starter attack (14 October). Only the evolved Earthshaker keeps the old radial cleave.
+	if (id=="club" and not g.weapons.get(id,{}).get("evolved",false)) or g.weapons.get(id,{}).get("rupture_preview",false):
+		preload("res://scripts/ancestor_rupture.gd").impact(g,id,aim,s,echo)
+		return
 	var origin=Art.impact_point(g.pos,aim.x<0)
 	var strong=id=="earthshaker" or g.weapons.get(id,{}).get("evolved",false)
 	var bands=4 if strong else 3
@@ -36,12 +43,14 @@ static func impact(g,id,aim,s,echo=false):
 	var shared={"seen":{},"origin":origin,"radius":s.radius,"power":s.power,"bands":bands,"material":material,"strong":strong,"id":id,"hit_limit":s.get("hit_limit",0),"life":life,"glow":2 if id=="earthshaker" else 1 if strong else 0}
 	if not echo:g.effect.emit("kael_crater_%s_0_%s_%s_%s_%s"%[material,bands,roundi(life*1000),shared.glow,roundi(g.time*1000)],origin,Color("b4edff" if material=="ice" else "e6ad66"),s.radius)
 	pulse(g,shared,0)
+	if not g.active or g.encounter_epoch!=epoch:return
 	for band in range(1,bands):
 		if g.echoes.size()<96:g.echoes.append({"wait":band*interval,"id":id,"radial":shared,"band":band})
 	if not echo:
 		g.sound.emit("club")
 		# Crack stamp carries the impact; no particle burst for Kael.
 static func pulse(g,wave,band):
+	var epoch=g.encounter_epoch
 	var outer=wave.radius*float(band+1)/wave.bands
 	var inner=wave.radius*float(band)/wave.bands
 	var color=Color("b4edff" if wave.material=="ice" else "bc9460" if wave.material=="dirt" else "a5afbd")
@@ -52,4 +61,5 @@ static func pulse(g,wave,band):
 		if delta.length()>outer+e.size or delta.length()+e.size<inner:continue
 		wave.seen[e.uid]=true
 		g.hit(e,wave.power,wave.id)
+		if not g.active or g.encounter_epoch!=epoch:return
 		if not e.boss and not e.anchor and not e.get("boss_prop",false) and not g.rooted(e):e.p=g.terrain.move(e.p,delta.normalized()*(60 if wave.strong else 45))

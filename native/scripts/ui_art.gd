@@ -19,15 +19,18 @@ static func heading_font():
 		title_variant=FontVariation.new();title_variant.base_font=TITLE_FONT;title_variant.variation_opentype={2003265652:600.0};title_variant.fallbacks=[body_font()]
 	return title_variant
 static func button_style(state="normal",primary=false):
-	var t=AtlasTexture.new();t.atlas=ATLAS;t.region=Rect2(87,150,592,105)
-	var s=StyleBoxTexture.new();s.texture=t
-	for side in [SIDE_LEFT,SIDE_RIGHT,SIDE_TOP,SIDE_BOTTOM]:
-		s.set_texture_margin(side,26 if side in [SIDE_LEFT,SIDE_RIGHT] else 14)
-		s.set_content_margin(side,34 if side in [SIDE_LEFT,SIDE_RIGHT] else 12)
-	s.modulate_color=Color("fff0c9") if primary else Color("c5c8c4")
-	if state=="hover":s.modulate_color=Color(1.3,1.18,0.95)
-	elif state=="pressed":s.modulate_color=Color("af9465")
-	elif state=="disabled":s.modulate_color=Color("787b7d")
+	# The run-summary button plate: slim gold double frame over a dark glass panel (green when primary).
+	var s=StyleBoxTexture.new()
+	s.texture=preload("res://assets/menu-plate-green.png") if primary else preload("res://assets/menu-plate-dark.png")
+	var cap=80.0 if primary else 64.0
+	s.set_texture_margin(SIDE_LEFT,cap);s.set_texture_margin(SIDE_RIGHT,60)
+	s.set_texture_margin(SIDE_TOP,26);s.set_texture_margin(SIDE_BOTTOM,26)
+	s.set_content_margin(SIDE_LEFT,34);s.set_content_margin(SIDE_RIGHT,34)
+	s.set_content_margin(SIDE_TOP,10);s.set_content_margin(SIDE_BOTTOM,10)
+	s.modulate_color=Color.WHITE
+	if state=="hover":s.modulate_color=Color(1.28,1.2,1.0)
+	elif state=="pressed":s.modulate_color=Color(.72,.7,.65)
+	elif state=="disabled":s.modulate_color=Color(.5,.52,.53)
 	return s
 static func style(index=3):
 	var s=StyleBoxTexture.new();s.texture=texture(index)

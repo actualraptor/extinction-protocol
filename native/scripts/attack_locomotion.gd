@@ -15,9 +15,9 @@ static func draw(target,frame,p,flip,tint,phase,moving,hero):
 				var st=Vector2(float(x)/columns,float(y)/rows)
 				var at=rect.position+st*rect.size
 				# Weight around the two leg chains, never the outer weapon silhouette.
-				var leg_left=-15.0 if hero==1 else -9.0
-				var leg_right=-2.0 if hero==1 else 7.0
-				var lower=smoothstep(-33,-4,at.y)
+				var leg_left=frame.get("leg_left",-15.0 if hero==1 else -9.0)
+				var leg_right=frame.get("leg_right",-2.0 if hero==1 else 7.0)
+				var lower=smoothstep(frame.get("leg_top",-33),-4,at.y)
 				var left=exp(-pow((at.x-leg_left)/9.0,4))*lower
 				var right=exp(-pow((at.x-leg_right)/8.0,4))*lower
 				var stride=sin(gait)

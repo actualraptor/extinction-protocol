@@ -20,6 +20,9 @@ func build(units):
 		buckets[cell].append(u)
 func block_enemy(e,origin,destination,terrain=null):
 	if e.get("immovable",false):origin=e.anchor_p;destination=e.anchor_p
+	# Every hero owns this system, including runs with no summons. There
+	# cannot be ally contact when its spatial index contains no bodies.
+	if buckets.is_empty():return destination
 	var painted_body=e.boss and e.has("rig_heading") and e.get("identity","") in ["thorn","basalt"]
 	var half_length=90.0 if e.get("identity","")=="basalt" else 70.0
 	var reach=enemy_radius(e)+65.0+(half_length if painted_body else 0.0)

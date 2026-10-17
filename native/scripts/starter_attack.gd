@@ -2,11 +2,13 @@ extends RefCounted
 const Chain=preload("res://scripts/chain_system.gd")
 const Art=preload("res://scripts/hero_attack_animation.gd")
 const IMPACT_PROGRESS=.62
-static func applies(g,id):return (g.hero==0 and id in ["revolver","lastword"]) or (g.hero==2 and id in ["lightning","whiteout"])
+static func applies(g,id):return (g.C.HEROES[g.hero].get("voice_key","")=="torr" and g.C.WEAPONS[id].get("god_kind","")=="hammer") or (g.hero==0 and id in ["revolver","lastword"]) or (g.hero==2 and id in ["lightning","whiteout"])
 static func aim(g,id,fallback):
 	var target=g.weapon_target(id)
 	return (target.p-g.pos).normalized() if target!=null else fallback
-static func emission(g,direction):return g.pos+Art.emission_offset(g.hero,g.halloween,direction.x<0)
+static func emission(g,direction):
+	if g.C.HEROES[g.hero].get("voice_key","")=="torr":return g.pos+preload("res://scripts/torr_animation.gd").emission_offset(direction.x<0)
+	return g.pos+Art.emission_offset(g.hero,g.halloween,direction.x<0)
 static func release_aim(g,id,origin,fallback):
 	var target=g.weapon_target(id)
 	return (target.p-origin).normalized() if target!=null else fallback
@@ -30,7 +32,10 @@ static func update(g):
 	if g.starter_attack.is_empty():return
 	var a=g.starter_attack
 	if not g.weapons.has(a.id):g.starter_attack.clear();return
-	if not a.hit and g.time-a.start>=a.duration*IMPACT_PROGRESS:release(g,a)
+	if not a.hit and g.time-a.start>=a.duration*IMPACT_PROGRESS:
+		var epoch=g.encounter_epoch
+		release(g,a)
+		if not g.active or g.encounter_epoch!=epoch:return
 	if g.time-a.start>=a.duration and g.time>a.visual_until:g.starter_attack.clear()
 static func progress(g):
 	var a=g.starter_attack
@@ -46,7 +51,10 @@ static func release(g,a):
 	var trajectory=release_aim(g,a.id,origin,a.aim)
 	var s=a.stats
 	var d=g.C.WEAPONS[a.id]
-	g.sound.emit(a.id)
+	g.sound.emit("impact_metal" if d.get("god_kind","")=="hammer" else a.id)
+	if d.get("god_kind","")=="hammer":
+		preload("res://scripts/god_system.gd").release(g,a)
+		return
 	if d.has("secondary"):
 		var extra=d.secondary
 		for j in range(extra.count):g.shoot(a.id,origin,trajectory.rotated((j-(extra.count-1)*.5)*.14),s.power*extra.power,extra.velocity,extra.lifetime,extra.pierce)

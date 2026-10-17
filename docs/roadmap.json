@@ -1,21 +1,49 @@
 {
-  "updated": "2026-10-10",
+  "updated": "17 October 2026",
   "release": "0.14.4",
   "policy": "Done means accepted by the developer. A private preview is not a shipped feature. No release dates are promised.",
   "cards": [
+    {
+      "id": "norse-survivor",
+      "title": "New Norse survivor",
+      "status": "improve",
+      "summary": "Torr Stormbuk is included in the 0.15.0 Early Access content release with divine equipment, painted movement, an optional encounter and a replayable illustrated lesson.",
+      "next": "Continue human difficulty, animation-transition and heavy-crowd performance feedback. The wider enemy/minion animation roster remains a separate task."
+    },
+    {
+      "id": "companion-rigging",
+      "title": "Companion sprite animation",
+      "status": "done",
+      "summary": "Developer decision: regular units and playable characters keep their existing painted 2D sprites and animation, including in the top-down game. The full-rig replacement experiment is closed.",
+      "next": "Final for regular units. The 13 October 3D-roster request was withdrawn on 14 October; bosses remain the 3D exception."
+    },
+    {
+      "id": "isometric-environments",
+      "title": "Isometric 3D environment revamp (paused)",
+      "status": "planned",
+      "summary": "Paused on 14 October: the developer returned to the top-down presentation. A private shared 3D scene was built (streamed terrain and rocks, early combat, rewards and selected bosses), but it never replaced the game and is not part of any release.",
+      "next": "No work is scheduled. The private experiment and its checks are preserved and can be revisited; production gameplay remains the top-down game."
+    },
+    {
+      "id": "companion-engagement",
+      "title": "Companion engagement prototype",
+      "status": "in-progress",
+      "summary": "The private exported playtest includes the heavy-ally ground slam and textured traveling rupture. Locked aim, terrain blocking, individual damage credit and runtime captures pass.",
+      "next": "Closer attack-spacing trials remain rejected. Eighteen seeded mixed-army encounters now track complete slam-and-wave coverage across three maps; lower-rank attacks connected reliably. All complete misses in that sample followed target death during wind-up; committed aim remains unchanged. A generated-terrain review now passes 576 approaches across three maps and four frame intervals. Player-survival review remains open before release. Shared-scene verification is paused with the 3D revamp; review continues in the top-down game."
+    },
     {
       "id": "meteor-encounter",
       "title": "Meteor encounter redesign",
       "status": "in-progress",
       "summary": "Reconstructed Meteor model and redesigned encounter shipped in 0.14.4: animated shell, orbiting debris, burning flyby, randomized safe sectors and advancing fire.",
-      "next": "Continue player feedback, presentation polish and full-fight balance."
+      "next": "The private balance loadout now respects five weapon slots and declared relic health. An older movement replay fails with both current and former loadouts, so it cannot establish current full-fight balance. A separate declared-loadout offense review wins all three Epic observations before the fire deadline; owner immunity isolates damage output. The shared-scene presentation now passes source and Windows full fights through all three phases and victory at the same 153.7 seconds with the declared Epic inventory; owner immunity and suppressed hordes isolate presentation. A normal-health private late review now restores natural spawning and checks eight seconds with 113 rendered regular actors. Review actual player survival, full-pressure balance and remaining presentation polish; these fixtures do not accept those outcomes. Shared-world presentation is paused with the 3D revamp; the shipped 0.14.4 encounter is unchanged."
     },
     {
       "id": "boss-animation",
       "title": "Dinosaur boss animation",
       "status": "in-progress",
       "summary": "T-rex and Triceratops are finished in 0.14.2. Meteor is on its first reconstructed pass, with more updates coming. Other bosses wait.",
-      "next": "Keep the finished dinosaur rework in the public build while Meteor moves through its next presentation passes."
+      "next": "Keep the finished dinosaur rework in the public build while Meteor moves through its next presentation passes. Bosses are the exception to the sprite decision: they stay 3D models in the top-down game."
     },
     {
       "id": "cinematics",
@@ -63,67 +91,684 @@
       "id": "music",
       "title": "Soundtrack polish",
       "status": "improve",
-      "summary": "Map and boss themes are in game; further production and musical polish remain open.",
-      "next": "Refine balance, orchestration and transitions through in-game listening."
+      "summary": "Map and boss themes are in game. Track crossfades now avoid the deep gain dip caused by fading in decibels; cinematic and narration ducking remain prompt.",
+      "next": "Review transitions through in-game listening and continue production and musical polish. The revised fade passes the private R4 export checks; listening approval and production polish remain open."
     },
     {
       "id": "ui-polish",
       "title": "Interface polish",
       "status": "improve",
-      "summary": "Continue checking readability, button sizing and consistency across screens.",
-      "next": "Keep frames and text clear at supported window sizes."
+      "summary": "Settings scrolling no longer changes volume or HUD size accidentally. Keyboard focus scrolls into view, and Escape returns consistently to the menu or paused run. Actual 1024x768 and 1280x540 checks cover input, persistence and navigation; broader interface polish continues.",
+      "next": "Settings fixes pass the private R4 export. Review remaining screens before public release."
     },
     {
       "id": "hordes",
       "title": "Horde difficulty and experience",
       "status": "improve",
-      "summary": "Tune spawn density so hordes pose a stronger threat and reward more experience.",
-      "next": "Validate early pressure, progression and performance together."
+      "summary": "Increased spawn pressure remains in place. Event enemies grant 30% extra XP; a 5,000-drop check preserved every reward within the 800-gem cap.",
+      "next": "Review early survival and late crowd performance before increasing density further."
     },
     {
       "id": "level-sound",
       "title": "Level-up sound",
-      "status": "improve",
-      "summary": "Replace the notification-like cue with a satisfying fantasy level-up sound.",
-      "next": "Needs approval after repeated listening in gameplay."
+      "status": "done",
+      "summary": "Developer-approved sampled harp, celesta and string reward now replaces the previous cue in the local game sound bank. Repeated gameplay playback verified.",
+      "next": "Approved by the developer. It ships with the next validated build and is not yet in a public release."
     },
     {
       "id": "beams",
       "title": "Flametorch and Rift Conduit",
-      "status": "planned",
-      "summary": "Targeted flowing flame and plasma tether prototypes are on hold during the boss pass.",
-      "next": "Resume fluid animation, sound, upgrade-path cards and balance after bosses."
+      "status": "in-progress",
+      "summary": "Packaged combat and both milestone cards passed. Stream geometry, distinct targeting and exported sound lifecycle checks pass; a private combined playtest is available.",
+      "next": "Review the sound mix and weapon balance. Pause, reward selection, sound settings, expiration and run-exit audio checks pass in source and the private export. Repeat crowded encounters on an idle machine before performance acceptance and release."
     },
     {
       "id": "scoreboard",
       "title": "Scoreboard redesign",
-      "status": "planned",
-      "summary": "Bring run statistics into the current UI style with clear framed sections.",
-      "next": "Define text fitting and support long names, large totals and older records."
+      "status": "in-progress",
+      "summary": "The concept screen now fills ultrawide viewports with resizable gold panels and buttons. Live text no longer overlaps header ornaments. Ordinary survivors have independent damage and weapon-kill leaders; the army survivor retains individual leaders. Source reviews cover standard, small and ultrawide windows plus resizing; private R7 renders populated results at 3440x1392. Developer requested equal metric clarity with the concept. Private R8 now uses larger serif numerals, brighter contrast and spaced thousands; matched-data source captures and native ultrawide output were inspected. R10 repeats the populated ultrawide native check; typography equality is not yet accepted.",
+      "next": "The numeral weight is closer to the concept in inspected renders; exact visual equality still needs acceptance. R23 is a local scoreboard-only review with sound-enabled launcher, no archive/upload/publication. Finish broader interface quality and remaining gameplay/art/performance backlog."
     },
     {
       "id": "summon-names",
       "title": "Companion naming and statistics",
-      "status": "planned",
-      "summary": "Procedural names that persist for an individual companion and appear in run history.",
-      "next": "Use component-based generation and separate display names from internal IDs."
+      "status": "in-progress",
+      "summary": "The private exported playtest combines 640 given names, 128 titles and 320 epithets. Packaged checks confirm 100,000 unique names, persistent individual leaders and unchanged combat randomness.",
+      "next": "Developer chose to retain the current ceremonial naming tone. The longest generated names fit the actual exported score-screen frames; public release remains pending."
     },
     {
       "id": "research",
       "title": "Additional permanent research",
-      "status": "planned",
-      "summary": "Expand permanent upgrades with progression-aware presentation.",
-      "next": "Keep undiscovered entries as silhouettes without revealing their details."
+      "status": "in-progress",
+      "summary": "Three progression-gated permanent upgrades have dedicated original artwork in the private exported playtest. Packaged archive captures verify locked silhouettes and unlocked cards; purchase protection, refunds and effect scaling pass.",
+      "next": "Review artwork and balance in gameplay before public release; undiscovered entries remain unnamed."
     },
     {
       "id": "linux",
       "title": "Linux compatibility verification",
+      "status": "done",
+      "summary": "Previously published Linux builds confirmed working natively by the developer.",
+      "next": "Continue the existing Linux build process and check future release regressions."
+    },
+    {
+      "id": "starter-melee-paths",
+      "title": "Starter melee paths",
+      "status": "in-progress",
+      "summary": "A private ground-slam prototype uses dedicated textured ruptures and ornate rank-five cards. One path widens the forward fracture; the other launches full-strength fronts in both directions.",
+      "next": "Review the actual runtime preview and isolated playable lab before replacing the live starter. Public acceptance and balance remain open."
+    },
+    {
+      "id": "actor-3d-roster",
+      "title": "Animated 3D characters and monsters (paused)",
+      "status": "planned",
+      "summary": "Paused with the 3D revamp. Private reconstructed and rigged models exist for the 19 regular creature kinds, but regular units and playable characters keep their painted sprites. Playable-character 3D attempts did not reach the quality bar and were shelved.",
+      "next": "Nothing from this card is in a build. Bosses stay 3D through the boss animation card."
+    },
+    {
+      "id": "progress-safety",
+      "title": "Progress safety and respec",
+      "status": "in-progress",
+      "summary": "Save validation rejects malformed spent-research and discovery receipts and checks HUD settings; research respec refunds have dedicated source tests. Local source work, not yet in a public build.",
+      "next": "Re-run the validation and respec checks on the clean 0.14.4 base before including them in the next patch. Undiscovered entries stay unnamed."
+    },
+    {
+      "id": "projectile-effects",
+      "title": "Soul projectile effects",
+      "status": "in-progress",
+      "summary": "Soul Reaper and Soul Dominion have animated spectral skull frames, curved motion wakes and dedicated impact sparks. Frame blending, skull anchoring and evolved scaling pass source checks.",
+      "next": "Review in crowded combat and move onto the clean top-down base. Not in a public build."
+    },
+    {
+      "id": "crowd-performance",
+      "title": "Late-run crowd performance",
       "status": "improve",
-      "summary": "A Linux archive is available; runtime compatibility is not yet verified.",
-      "next": "Test actual Linux gameplay before calling it supported."
+      "summary": "A 30-second rendered test starting with 650 ordinary-health enemies averaged 8.7 ms per frame on the development RTX 5070 Ti, but keeping all 650 alive artificially cost about 42 ms. That surviving-crowd case is still open; the numbers are not a minimum-spec guarantee.",
+      "next": "Profile the surviving-crowd case in the top-down game on an idle machine; enemy updates were about three quarters of simulation time."
+    },
+    {
+      "id": "next-patch",
+      "title": "Next patch: consolidating reviewed work",
+      "status": "planned",
+      "summary": "Work finished after 0.14.4 sits in a working tree beside the paused 3D experiments. It moves onto a clean 0.14.4 base in priority order: save safety, the level-up cue, the score screen with army names and research art, then combat feel and the Kael path work.",
+      "next": "Each item needs developer acceptance in the top-down game before it is called done. No release date is promised."
+    },
+    {
+      "id": "weapon-milestones",
+      "title": "Level 5 and 10 upgrades for every weapon",
+      "status": "in-progress",
+      "summary": "Two behaviour-changing choices at ranks5and10 cover all59runtime weapons.236cards and118real keyboard claims pass; combat, summon/ritual, save and refund regressions pass.",
+      "next": "Implementation and local verification complete in Windows test build6. Await developer playtest acceptance before marking this roadmap card done."
+    },
+    {
+      "id": "weapon-combinations",
+      "title": "Weapon combinations",
+      "status": "in-progress",
+      "summary": "Seven additional combinations, including beams, have distinct combined attacks. Matched encounters exposed and corrected area/flight weaknesses. Source and final Windows build6 verify real merges, damage, milestones and persisted recipes.",
+      "next": "Implementation and local verification complete. Both rendered normal-health five-slot loadouts survive the pressure sample with bounded queues. Full-campaign balance is a separate continuing review; await developer acceptance before marking done."
+    },
+    {
+      "id": "rarity-jackpot",
+      "title": "Rarity reveal celebration",
+      "status": "in-progress",
+      "summary": "Epic, Legendary and Artifact use tiered reveals, including held Artifact names, original cues and reduced-effects controls. Source and Windows build6 verify small/UW layouts, real claims and saved settings. Live decoded cue-plus-music mixes retain headroom; SFX mute works.",
+      "next": "Implementation and local verification complete. Automated tests remain silent; subjective listening/taste remains for playtest. Await developer acceptance before marking this roadmap card done."
     }
   ],
   "devlog": [
+    {
+      "id": "catalog-milestones-source-20261016",
+      "date": "2026-10-16",
+      "title": "Milestone choices across the current catalog",
+      "card": "weapon-milestones",
+      "stage": "Source gameplay review",
+      "body": "Both milestone sets now cover every current runtime weapon, including gated content. Choices reuse established combat, summon and card systems without changing progression gates or ritual signatures.",
+      "testing": "Runtime inventory52/52has two choices per milestone.56gated actual branch casts plus specific capacity, cadence, shared damage, credited projectile, return-flight, single-hit rupture, revival, field, rally and event-budget checks pass. Real hit/status tests verify late-rank footprint changes and distinct-target budgets.208actual milestone cards fit. Fourteen gated configurations render28casts/31captures after explicitly unlocking only their isolated test profile; selected gameplay and card output inspected. Existing army20checks/0failures, original gated-path regression and remnant/ritual111checks pass.",
+      "learned": "Legacy geometry caps could erase some late-rank choices; their bounded footprint hooks now apply after those caps. The first visual fixture was redirected to an ordinary hero by the real unlock guard; it was rejected and corrected rather than counted as successful gated coverage.",
+      "next": "Implement7newcombination recipes and their distinct attacks, then integrate their milestones and verify the complete packaged feature set. Source checks do not establish final balance, audio listening or developer acceptance."
+    },
+    {
+      "id": "ordinary-delivery-milestones-20261016",
+      "date": "2026-10-16",
+      "title": "Paths for the remaining ordinary weapon types",
+      "card": "weapon-milestones",
+      "stage": "Source gameplay review",
+      "body": "Milestones now reach melee, chains, orbitals, bombardments, auras, barriers and time effects, along with the existing ordinary unions. Choices include lingering fields, smaller orbiting pulses, shield-break effects, storm cadence and added shockwaves.",
+      "testing": "72nonprojectile and44projectile actual-cast selections pass. Dedicated damage/timing tests cover persistent-field departure/expiry, aura satellites, delayed thorns, spear fans, faster storms, shield recharge/break effects, time shatter, slows and extra club ruptures. Nonweapon proc compatibility and run-ending callback cleanup pass.116actual cards fit;13attack configurations render34casts/39captures with Dummy audio on monitor2. Selected aura and shield captures inspected. Existing rupture wall/geometry/cleanup checks and1274starter checks pass.",
+      "learned": "Union choices must match their resulting delivery: the radial cleave has its own choices rather than inheriting a thrust-only option. Persistent fields now reuse existing elemental ground artwork. New status lookup guards nonweapon sources, and delayed additions stop when a run ends.",
+      "next": "Finish14gated catalog entries and the new combination recipes. Source coverage is38of52current runtime weapons; no packaged performance, balance or final acceptance claim."
+    },
+    {
+      "id": "projectile-milestones-source-20261016",
+      "date": "2026-10-16",
+      "title": "Projectile weapons choose their paths",
+      "card": "weapon-milestones",
+      "stage": "Source gameplay review",
+      "body": "Ten projectile weapons now offer two choices at ranks5and10: seeking, ricochet, penetration, volley, freeze, explosion-area and return-flight changes. They reuse established ornate cards and weapon artwork.",
+      "testing": "Forty actual weapon casts pass selection/rejection checks. Direct damage tests cover steering, wider splash, fewer hits to freeze and later crescent turnaround; normal reward application clears modifier cache. Forty cards fit their frames in the real upgrade UI; finished card captures inspected. Four changed weapons render11casts/12captures in an isolated immune-owner fixture; selected attack captures inspected. Existing starter1274checks/0failures and beam targeting/moving-flame tests pass.",
+      "learned": "Extending a returning projectile lifetime alone did not extend its useful flight, because it already reached the owner; Long Sunset now explicitly delays the actual turnaround. Frost text now accurately describes faster freeze buildup, without promising a longer freeze duration.",
+      "next": "Complete the remaining33runtime weapons with incomplete milestones and the planned new unions. Source coverage is partial; packaged play, full-roster card review and balance remain."
+    },
+    {
+      "id": "rarity-celebration-source-20261016",
+      "date": "2026-10-16",
+      "title": "Giving rare finds their own reveal",
+      "card": "rarity-jackpot",
+      "stage": "Source runtime review",
+      "body": "Epic, Legendary and Artifact rewards now have distinct celebration timing and effects. Artifact holds its name before the final burst; reduced-effects mode keeps the reveal quiet. No motion blur or chromatic aberration.",
+      "changed": "Existing reward reel gains tiered light/ring/particle/push/shake, held-name timing and distinct deterministic metallic sound effects. Added validated reduced-effects setting. Fixed daily single rewards bypassing the reel. Combination design approval gate removed at developer request; documented pairings proceed autonomously.",
+      "testing": "Godot4.7.2 rendered on monitor2 with Dummy audio: eight rarity/effects timing cases, no early/held/double claims, one followup signal and boolean settings validation pass. Actual game chest verifies held name, untouched combat RNG, loaded audio, settings migration and exactly one Artifact award. Actual gameplay captures inspected and text clearance/contrast improved. Existing daily level/chest test now passes with pre-existing fixture shutdown resource warnings.",
+      "learned": "The daily single-option shortcut was swallowing its intended reel. Celebration particles initially crossed reward text; they now leave that band clear.",
+      "next": "Finish weapon milestones/combinations, then packaged end-to-end verification and audio/visual review. Source checks do not establish final sound mix or shipped acceptance."
+    },
+    {
+      "id": "return-to-top-down",
+      "date": "2026-10-14",
+      "title": "Back to the top-down game",
+      "stage": "Direction change",
+      "card": "isometric-environments",
+      "body": "The developer returned to the top-down presentation. The private shared 3D scene, the 3D creature roster and the playable-character 3D experiments are paused; regular units and playable characters keep their painted sprites. Bosses remain 3D.",
+      "testing": "A clean 0.14.4 source folder was created beside the working tree; nothing was removed from the experiments.",
+      "next": "Move the reviewed top-down work onto the clean base in priority order."
+    },
+    {
+      "id": "score-medium-numerals-20261014",
+      "date": "2026-10-14",
+      "title": "Matching scoreboard numeral weight",
+      "stage": "Local source and Windows visual review",
+      "card": "scoreboard",
+      "body": "The six metric values now use a medium-weight variation of the existing Cinzel font, preserving large numeral size, bright contrast and spaced thousands. Other headings retain their existing weight. Existing army and independent weapon leaders remain. Unaccepted actor assets are excluded from ordinary exports; explicit private actor packs remain separate.",
+      "testing": "Current source full scoreboard fixture passes matched concept data, long names, scrolling, three ordinary heroes, empty data,1280x800/2560x1080 resizing and keyboard navigation. New local Windows scoreboard-review-r23 passes populated army/Kael summaries at3440x1392 with isolated profile; actual source and Windows captures inspected. Embedded PCK directory1870entries excludes tests/build/tools/actor experiment resources. R22 base/art snapshot remains unchanged.",
+      "next": "The numeral weight is closer to the concept in inspected renders; exact visual equality still needs acceptance. R23 is a local scoreboard-only review with sound-enabled launcher, no archive/upload/publication. Finish broader interface quality and remaining gameplay/art/performance backlog."
+    },
+    {
+      "id": "shared-stroke-corners-20261014",
+      "date": "2026-10-14",
+      "title": "Reusing terrain stroke corners",
+      "stage": "Private Windows integration",
+      "card": "actor-3d-roster",
+      "body": "The common dynamic stroke builder reuses repeated triangle corners and adjacent subdivision edges, preserving the original triangles, colors and counter semantics. This reaches warning bands, wakes, hit strokes and army ground artwork through their existing shared caller.",
+      "testing": "Windows30exact original terrain triangle/color comparisons cover empty/single/zero-length paths, negative coordinates/tile edges, short/long multi-segment paths,3widths,2heights and explicit/implicit target counters. A rejected intermediate empty-path format difference was corrected before acceptance. Packaged projectile heading/glow, Soul wake, pause and release pass. Latest20.002wall seconds advance15.033simulation seconds,714kills,106peak crowd,HP240,phase1; effects4070.722ms,physics7889.912ms,poses2320.726ms.1440x900 Compatibility,30Hz,5800X/5070Ti,external workloads unknown. Different live crowds prevent a controlled speedup claim.",
+      "next": "Real-time simulation/full-fight performance is still not accepted. R22 local staging only; retain dynamic geometry profiling and review scoreboard concept metric equality next, alongside full roster/production integration and balance."
+    },
+    {
+      "id": "live-fire-cache-20261014",
+      "date": "2026-10-14",
+      "title": "Reducing closing-fire terrain rebuilds",
+      "stage": "Private Windows staging measurements",
+      "card": "actor-3d-roster",
+      "body": "Closing-fire coverage is reused while the camera remains within a padded terrain mesh; camera teleports rebuild coverage. Shader parameters and simulation damage stay live. A separate ground-glow tint cache was rejected after its pixel comparison differed; original vertex-color glow rendering restored. Added opt-in live engine scheduling and section profiling, excluded from ordinary exports.",
+      "testing": "Windows fire checks pass camera coverage/rebuild, actual inside/outside damage, pause, original shader include and cleanup; runtime capture inspected. Live staged native-contact profile at1440x900,30Hz Compatibility on Ryzen5800X/RTX5070Ti driver616.92: latest20.025wall seconds advance14.033simulation seconds,680kills,133peak crowd,HP240,phase1. Fire CPU376.954ms versus earlier5552.2ms. Median1.435ms/p9528.732ms does not establish real-time simulation; scene physics8627.668ms, effects4926.287ms and actor posing2258.164ms. External workloads, including concurrent model work, unverified; recordings differ and are not a controlled FPS comparison.",
+      "next": "R22 staging only,40allowlisted resources plus private opt-in DLL; original GDScript remains launcher default. Finish remaining dynamic hazard/wake geometry costs, sustained real-time/all-phase/full-fight balance and performance, final art, remaining model categories, production integration and score typography equality."
+    },
+    {
+      "id": "private-native-sole-kernel-20261014",
+      "date": "2026-10-14",
+      "title": "Accelerating complete sole calculations",
+      "stage": "Private opt-in Windows experiment",
+      "card": "actor-3d-roster",
+      "body": "A local C++ kernel uses the Godot extension interface for the weighted skin/terrain loop; the existing limb solver, animation timing and GDScript comparison path remain. No external dependency or model edits. Native mode is opt-in and Windows Godot4.7.2 float32/x64 only.",
+      "testing": "Reproducible local build passes. Rotated/scaled ABI test and100 seeded multi-bone/tile/negative-coordinate differential cases pass. Five malformed count/array/index/weight cases reject without native crash. Source/reference and native17-kind heading/tile/clip geometry gates, Windows walking/toe,19-kind coalescing/pause/death/despawn and30second normal-health33kill/2choice regressions pass. Controlled Windows crowd fitting medians19.198/28.825/50.462ms at60/120/240 actors versus34.185/58.998/107.121ms GDScript, identical combat/visibility counters.5800X/5070Ti,1440x900,Compatibility,highHP targets/immune owner/manual30Hz draw step,external workloads unknown. Not live/full-fight acceptance.",
+      "next": "Keep R22 staging and opt-in kernel;39 explicitly allowed resources plus loose privateDLL, no archive/public export. Complete live-host/full-pressure/all-phase and Linux/platform verification before promotion. Finish final model/environment art, other actors, continuous steering/body/terrain review, production flow, balance and score equality."
+    },
+    {
+      "id": "regular-render-pose-coalescing-20261014",
+      "date": "2026-10-14",
+      "title": "Applying creature poses once before drawing",
+      "stage": "Private source and Windows staging",
+      "card": "actor-3d-roster",
+      "body": "The live actor controller advances its simulation clock for every physics tick but applies the latest mesh/terrain pose once in Godot render processing. Manual diagnostic hosts retain immediate posing. Contact geometry, gameplay timing and authored assets remain unchanged.",
+      "testing": "Source/native19-kind movement/attack/recovery/pause/death/despawn tests prove two physics ticks consume one pose, and paused hosts schedule none. Source and Windows additionally check weighted sole clearance after the coalesced render. Normal-health30second Windows combat retains33kills,2choices,level3,61peak actors and98HP. Controlled60-target two-tick-per-draw Windows phase3 comparison has identical counters/visibility and median frame104.273->78.973ms, p95 230.407->205.127ms. Both cases use fitting; frame timings include deferred work while update timings exclude it.5800X/5070Ti,1440x900,Compatibility,highHP targets/immune owner,host workloads unverified. Not sustained live FPS or performance acceptance.",
+      "next": "R22 remains staging. Complete full live-host/all-phase performance, remaining hot-path/render work, continuous steering/body/terrain/final art and remaining actor categories, production flow, balance and score visual equality. Project physics is30Hz with at most2 catch-up steps; earlier60Hz ledger wording corrected."
+    },
+    {
+      "id": "regular-sparse-contact-20261013",
+      "date": "2026-10-13",
+      "title": "Removing unnecessary contact calculations",
+      "stage": "Private rendered source and Windows staging",
+      "card": "actor-3d-roster",
+      "body": "Profiling identifies weighted skinning and ground lookup as the remaining contact costs. The fitter reads only influencing bones, stores only nonzero bone/sample pairs, and uses a precomputed home-cell triangle with the full lookup retained at tile crossings. Hot packed-array loops now have explicit types. No model asset or gameplay-rule changes.",
+      "testing": "Source/native pose gates now include four paired heading/tile offsets for17 ground kinds, complete measured sole geometry, limb lengths, raised feet and roll. Floor analytic289 samples/eviction still pass. Controlled persistent phase2 benchmark retains identical combat and visibility counters. Median frame ms with fitting at60/120/240 creatures are34.185/58.998/107.121, versus41.949/74.829/139.714 before this change.5800X/5070Ti,1440x900,Compatibility; immune owner/highHP targets/manual30Hz step per draw; host workloads unverified and boss mostly outside camera. Final Windows locomotion/toe, all19-kind clip/pause/death/despawn and normal-health30second33kill/2choice regressions also pass. Not live FPS or full-fight/performance acceptance.",
+      "next": "R22 remains staging with38 environment resources; performance still unacceptable. Finish remaining contact/render hot-path work and live full-pressure/all-phase tests, continuous steering/terrain/body/art review, remaining model categories and production integration. R21 unchanged."
+    },
+    {
+      "id": "regular-contact-performance-20261013",
+      "date": "2026-10-13",
+      "title": "Measuring and reducing creature contact cost",
+      "stage": "Private rendered Windows measurements",
+      "card": "actor-3d-roster",
+      "body": "The shared renderer stops posing hidden dead creatures and creates regular model nodes after the simulation tick, avoiding models for creatures killed before their first frame. Terrain vertices reset their cache each tick. Weighted sole geometry uses native packed transforms, exact duplicate removal and cached terrain triangles; airborne feet already clear of the floor avoid unnecessary correction.",
+      "testing": "Source and Windows pose gates preserve full measured sole clearance, limb lengths, roll and raised feet;289 independent floor samples and frame eviction pass. Windows walk/toe and all19-kind clip/pause/death/despawn regressions pass. Controlled persistent phase2 encounters have60/120/240 creatures all on screen with identical combat counters. With fitting, median frames change145/282/537ms to42/75/140ms at1440x900 onRyzen5800X/RTX5070Ti, Compatibility renderer. Targets have artificially high health and owner immunity. External GPU workloads cannot be verified; no general performance acceptance. Native capture inspected. This advances one30Hz tick per draw and the boss is mostly outside view: controlled crowd cost, not live-host FPS/full-encounter acceptance. Normal-health30second regression retains33kills,2choices,level3,61peak actors and98HP.",
+      "next": "Performance is still too slow and R22 remains staging with38 allowed environment resources. Profile/accelerate the remaining weighted-foot hot path without compromising geometry, then verify realistic spawn/kill pressure and all encounter phases. Complete model art/other actors, continuous steering and terrain locations, production flow, full balance and score visual equality. R21 unchanged."
+    },
+    {
+      "id": "regular-full-sole-poses-20261013",
+      "date": "2026-10-13",
+      "title": "Keeping attack feet above terrain",
+      "stage": "Private rendered source and Windows staging",
+      "card": "actor-3d-roster",
+      "body": "Regular actors now use complete weighted sole samples rather than sparse support points. Attack and recovery only lift intersecting feet, preserving authored roll and raised poses. Existing limb aiming is reused; model source assets remain Claude-owned.",
+      "testing": "Rendered source and fixed-snapshot Windows tests cover17 ground kinds, four headings, and12 samples each of walk/attack/recovery. Minimum normalized sole clearance improves from -.009925 to +.000351. Limb length error .000000254; lowered-foot error .000000135 and roll error .000000120. Windows locomotion toe-slide and all19-kind clip/pause/lifecycle regressions also pass. Actual attack captures inspected; rough model surfaces/deformation remain unaccepted. Sparse support attempt failed -.004634 and was rejected.",
+      "next": "R22 remains staging with37 allowed environment resources. Complete continuous steering, full-body deformation and other terrain locations, remaining actors and art, production flow, balance and representative crowded native performance. R21 unchanged."
+    },
+    {
+      "id": "regular-terrain-fit-20261013",
+      "date": "2026-10-13",
+      "title": "Fitting regular feet to shared terrain",
+      "stage": "Private source and Windows staging",
+      "card": "actor-3d-roster",
+      "body": "The locomotion adapter retains authored foot roll and fits cached sole support samples with the existing limb solver. Flying actors retain separate hover semantics. Authored model assets are unchanged by Codex.",
+      "testing": "Source and fresh-snapshot Windows checks cover all17 ground kinds through complete walk cycles on flat and actual terrain. Full weighted sole measurements pass normalized penetration <=.002, stance gap <=.004, and limb length error below .0001. Same-mesh stance toe movement falls from .041181 to .010005. Windows all19-kind movement, attack/recovery, pause and despawn regression passes. Actual close runtime captures inspected; final art remains unaccepted. Import hashes reject changed snapshot bytes and preserve the completed pack.",
+      "next": "R22 is staging only with36 allowed environment resources and135 model entries. R21 remains unchanged. Review turning/attack contact and final deformation/art, integrate the other actor categories and production flow, then finish balance and populated native performance."
+    },
+    {
+      "id": "private-r21-model-review-20261013",
+      "date": "2026-10-13",
+      "title": "Packaging the regular model playtest",
+      "stage": "Private local Windows archive",
+      "card": "actor-3d-roster",
+      "body": "Local R21 includes a sound-enabled shared actor launcher for the 19 regular review models and the verified projectile presentation updates. Existing score, army, map and late-encounter launchers remain available. Other actor categories are still in progress.",
+      "testing": "The Windows normal-health actor preview completes 30 seconds with 33 kills, two choices, level3,61 peak actors and98 remaining HP. Capture inspected. ZIP has exactly18 allowed entries, passes CRC verification and has a saved SHA256. No upload/publication occurred.",
+      "next": "Review terrain/contact, deformation and final art; integrate remaining actors and complete production flow, human survival/balance and representative populated performance. R21 is now locally delivered; preserve it unchanged and use a new staging revision."
+    },
+    {
+      "id": "regular-model-gait-timing-20261013",
+      "date": "2026-10-13",
+      "title": "Matching gait motion to movement",
+      "stage": "Private source and Windows review",
+      "card": "actor-3d-roster",
+      "body": "Imported clips have different durations from the authored contract. The actor controller now maps declared animation time to imported samples, retaining movement speed, contact phase and recovery duration. Per-model manifests supply current settings while the roster identifies files.",
+      "testing": "After refreshing stale imports, a same-loaded-mesh comparison across 17 ground kinds reduces worst sampled stance toe movement from .04338 to .01514 of model length and passes the .02 regression bound. Windows snapshot pack passes all 19 kinds, four clips, pause/hover and lifecycle checks. Rejected stale pack attempts leave the previous completed file unchanged.",
+      "next": "Finish terrain-contact correction, turning/attack deformation and art review, remaining actor categories and full gameplay integration. Stable private import snapshots isolate concurrent modeling edits. R21 staging only; no human balance or populated performance acceptance."
+    },
+    {
+      "id": "regular-model-contact-measurement-20261013",
+      "date": "2026-10-13",
+      "title": "Measuring regular creature contact",
+      "stage": "Private rendered model review",
+      "card": "actor-3d-roster",
+      "body": "Actual skinned sole samples were reviewed across complete walking cycles on flat and shared terrain. Flying models now use their supplied hover offset and are reviewed separately from planted ground units.",
+      "testing": "17 ground kinds have nonempty weighted sole samples. Worst normalized terrain penetration is 0.00693 of model length; largest stance gap is 0.02532. Close runtime captures inspected. Source measurement and Windows roster/hover lifecycle checks pass as observations; these measurements are not final contact/art acceptance.",
+      "next": "Review flat-foot residuals, terrain contact correction, foot sliding and attack deformation with Claude, then complete the other actor categories and production flow. R21 staging only; no populated performance or human balance acceptance."
+    },
+    {
+      "id": "shared-regular-model-native-20261013",
+      "date": "2026-10-13",
+      "title": "Loading regular models in Windows",
+      "stage": "Private packaged integration",
+      "card": "actor-3d-roster",
+      "body": "A separate private actor pack now supplies the 19 regular model scenes, portable texture pixels and their imported dependencies. Runtime UID registration avoids fallback warnings; loaded scenes are reused across spawns. Model source files remain untouched.",
+      "testing": "The Windows executable passes the same rendered 19-kind movement, idle/attack/recovery, reward/freeze pause and kill/despawn fixture as source. Initial imported-texture failures were corrected by bundling identical decoded pixels; final native run has no model/dependency/UID errors. Actual runtime capture inspected.",
+      "next": "Review ground/foot contact and deformation per kind, verify representative populated native performance, and integrate the remaining actor roster and production flow. R21 remains staging; no final art or human balance acceptance."
+    },
+    {
+      "id": "shared-regular-model-integration-20261013",
+      "date": "2026-10-13",
+      "title": "Connecting the regular creature models",
+      "stage": "Private source integration",
+      "card": "actor-3d-roster",
+      "body": "Claude delivered review GLBs and manifests for all 19 regular kinds. An opt-in shared-scene adapter now binds those models to actual enemy identities, terrain positions, movement, attack windups/recovery, status materials and lifecycle without changing combat rules.",
+      "testing": "A rendered source encounter exercises 19 kinds and idle/walk/attack/recover, reward/freeze pauses and kill/despawn cleanup. Corrected one-shot final-pose handling and a fixture that confused scenery with a creature. Actual captures inspected. Native existing-preview regression passes with the new hook disabled.",
+      "next": "Package and verify actual model loading in Windows, review anatomy/deformation and foot contact at game scale, then integrate the remaining roster. No native model, final art, populated performance or human balance acceptance yet."
+    },
+    {
+      "id": "shared-spell-atlas-edges-20261013",
+      "date": "2026-10-13",
+      "title": "Keeping spell atlas edges clean",
+      "stage": "Private source and Windows review",
+      "card": "isometric-environments",
+      "body": "The original spell glow calculation is shared between the canvas and spatial shaders, including its atlas-edge fade. Shared projectile cards preserve explicit heading and existing readability opacity.",
+      "testing": "Rendered old/new canvas comparisons cover weapon and impact grids, their normal intensities, tinted alpha and an untextured primitive: zero changed pixels. Source and Windows shared-scene checks pass with the compiled spatial shader, included shader resource, heading, accents, pause and cleanup. Runtime captures inspected.",
+      "next": "Review the complete weapon presentation in full encounters and finish remaining environment/actor art and production migration. R21 remains staging with 32 allowed resources; R20 unchanged. Human balance and populated native performance stay open."
+    },
+    {
+      "id": "shared-fire-frost-accents-20261013",
+      "date": "2026-10-13",
+      "title": "Restoring spell motion accents",
+      "stage": "Private source and Windows review",
+      "card": "isometric-environments",
+      "body": "Shared fire and frost projectiles now retain the original two wakes, fire flicker, frost glints/core and waving tails. Ordinary spell artwork also uses its original trailing anchor and area scaling. Additive material/readability handling is reused for all accents.",
+      "testing": "Source and Windows checks cover twelve accents for live fire/frost shots, stable transforms/colors during rewards, removal at the original 100-shot secondary-art limit and complete projectile release. Existing heading, glow, Soul evolved blending and cleanup regressions pass; actual captures inspected.",
+      "next": "Finish atlas-edge feathering and broader weapon art, then remaining encounter/environment art, actor models and production integration. R21 remains staging; R20 archive unchanged. Human balance and populated native performance remain open."
+    },
+    {
+      "id": "shared-projectile-heading-20261013",
+      "date": "2026-10-13",
+      "title": "Making projectile artwork follow its path",
+      "stage": "Private source and Windows review",
+      "card": "isometric-environments",
+      "body": "A rendered check exposed material billboarding discarding projectile roll. Shared projectile cards now use explicit camera-plane orientation; Soul blend frames copy that same orientation.",
+      "testing": "Before the fix, rotating additive cards by 90 degrees changed zero rendered pixels. Source and Windows checks now find 588 changed pixels and confirm projected card direction matches actual shot velocity. Existing glow, evolved frame blending, pause, slot reuse and cleanup checks pass. Runtime captures inspected.",
+      "next": "Finish fire/frost secondary accents and atlas-edge feathering, then broader art, actor integration and production flow. R21 remains staging; R20 archive unchanged. Human balance and populated native performance remain open."
+    },
+    {
+      "id": "shared-projectile-glow-20261013",
+      "date": "2026-10-13",
+      "title": "Lighting projectile artwork",
+      "stage": "Private source and Windows review",
+      "card": "isometric-environments",
+      "body": "Ordinary spell projectile sprites now use Godot additive material blending with the existing .75 intensity and reduced opacity near the player or a boss. Soul vapor and weapon-icon sprites keep their original material behavior.",
+      "testing": "Source and Windows rendered comparisons find 478 changed pixels from the additive material. Existing alignment, evolved Soul blending, pause and cleanup checks pass; source also verifies material reset when a reused slot changes between ordinary spell and Soul. Runtime captures inspected.",
+      "next": "Finish atlas-edge feathering and fire/frost secondary accents, broader encounter art, 3D actors and production flow. R21 remains staging and R20 unchanged; full balance and populated performance remain open."
+    },
+    {
+      "id": "shared-soul-impact-20261013",
+      "date": "2026-10-13",
+      "title": "Showing projectile contacts",
+      "stage": "Private source and Windows review",
+      "card": "isometric-environments",
+      "body": "Actual Soul projectile hits now show the existing five-ray impact pattern and fading center in the shared scene, using the ordinary .52-second impact lifetime. No collision or damage rules change.",
+      "testing": "One shared source/native fixture verifies actual shot collision and damage, exact impact position, reward pause, 360 visibly changed pixels and natural expiry. Runtime captures inspected. R21 staging contains 30 allowed resources; R20 archive stays unchanged.",
+      "next": "Finish projectile glow and broader visual polish, 3D actors and production flow. Full art, human survival/balance and representative populated Windows performance remain open."
+    },
+    {
+      "id": "shared-soul-blending-20261013",
+      "date": "2026-10-13",
+      "title": "Keeping projectile animation smooth",
+      "stage": "Private source and Windows review",
+      "card": "isometric-environments",
+      "body": "Soul projectile vapor now blends adjacent authored frames and uses the original skull anchor. Existing atlas textures are reused; second sprites retire when their shots disappear or the slot changes weapon style.",
+      "testing": "Source and Windows checks cover adjacent-frame wrap, original opacity, matching anchors/transforms, normal and evolved scale, paused blend state and release cleanup. Actual runtime captures inspected. R21 remains staging; delivered R20 is unchanged.",
+      "next": "Soul impact sparks now pass source/native actual-hit, render, pause and expiry checks. Finish projectile glow, final environment/actor art and production integration. Full balance and representative crowded native performance remain unfinished."
+    },
+    {
+      "id": "shared-soul-wake-20261013",
+      "date": "2026-10-13",
+      "title": "Retaining projectile motion wakes",
+      "stage": "Private source and Windows review",
+      "card": "isometric-environments",
+      "body": "Soul projectiles now render their existing simulation-recorded wake in the shared scene, using the original opacity, width and evolved scaling. Other ground strokes keep their existing terrain offset.",
+      "testing": "Source and Windows runs check four styles at shot creation, actual surviving-shot alignment, wake terrain height, reward pause and complete removal when shots release. Actual captures inspected. The initial native fixture incorrectly required every shot to survive terrain; it now checks creation and follows the surviving simulation list.",
+      "next": "Soul frame blending and skull anchoring now pass source and Windows checks, including evolved scaling, frame wrap, pause and cleanup. Soul impact sparks now follow actual projectile-hit events; source and Windows checks cover damage, contact position, rendered contribution, pause and expiry. Finish projectile glow, broader encounter/environment art and 3D actor integration. R21 is staging; the delivered R20 ZIP remains unchanged. Full balance and populated performance remain open."
+    },
+    {
+      "id": "private-r20-contact-review-20261013",
+      "date": "2026-10-13",
+      "title": "Packaging the terrain contact review",
+      "stage": "Private local Windows archive",
+      "card": "isometric-environments",
+      "body": "The R20 review package adds the verified shared terrain effects, owner pulse and ritual marks/ribbons to the existing score, normal-health map, army and late-encounter launchers. Sound stays enabled for human playtests.",
+      "testing": "The executable and score helper match verified R19 byte for byte. The current private environment pack contains 29 allowed resources with source/native runtime coverage. The ZIP contains exactly 16 allowed files, passes CRC checks and has a saved SHA256 checksum. No publication or upload occurred.",
+      "next": "Review the local package, integrate Claude models when delivered, and finish art, production migration, human survival/balance and populated native performance. The ritual billboard-depth limit and scoreboard visual equality gate remain open."
+    },
+    {
+      "id": "shared-caster-ribbons-20261013",
+      "date": "2026-10-13",
+      "title": "Connecting the caster to the ritual",
+      "stage": "Private source and Windows review",
+      "card": "isometric-environments",
+      "body": "Caster ribbons reuse the original parchment paths and timing, with owner coordinates projected through the shared camera onto the existing ritual surface. Camera, owner and animation changes update presentation; paused states remain stable.",
+      "testing": "Source checks cover four ritual phases, visible ribbon contribution, owner projection, pause, complete resurrection and cancellation cleanup. Windows checks cover 2,504 rendered ribbon pixels, owner projection, pause and actual region transition cleanup. Runtime captures inspected.",
+      "next": "The ritual body and ribbons still share a billboard plane; review final depth and 3D actor attachment when the replacement models arrive. Broader art, production migration, human balance and populated native performance remain unfinished."
+    },
+    {
+      "id": "shared-owner-command-20261013",
+      "date": "2026-10-13",
+      "title": "Showing army commands on shared ground",
+      "stage": "Private source and Windows review",
+      "card": "companion-engagement",
+      "body": "The owner command pulse now reuses the existing cast timer, radius, color and line width on shared terrain. Combat targeting and summon rules are unchanged.",
+      "testing": "An actual source summon cast triggers the pulse. Source and Windows checks cover reward pause, terrain drawing and .55-second timer expiry; source/native runtime captures inspected. R20 remains staging only.",
+      "next": "Finish caster ribbons, broader attack art, model integration and full gameplay verification. Human survival, balance and populated native performance remain unaccepted."
+    },
+    {
+      "id": "shared-ritual-ground-20261013",
+      "date": "2026-10-13",
+      "title": "Keeping ritual marks on the terrain",
+      "stage": "Private source and Windows review",
+      "card": "isometric-environments",
+      "body": "The shared scene reuses the existing species-specific runoff and shed-fragment renderer on a terrain-fitted ground surface. Marks remain after resurrection or interruption and clear with their region.",
+      "testing": "Source checks cover four actual ritual phases, complete resurrection, cancellation, persistent marks, reward pause without redraw and cleanup. The Windows executable renders 3,646 stain pixels, passes terrain-centroid and pause checks, and clears the surface through an actual region transition. Runtime captures inspected; the private R20 staging pack contains 29 allowed resources.",
+      "next": "Finish caster-to-corpse ribbons and broader effect/environment polish, then integrate and verify the 3D roster and full gameplay flow. Survival, balance and representative crowded native performance remain open."
+    },
+    {
+      "id": "shared-ground-contact-effects-20261013",
+      "date": "2026-10-13",
+      "title": "Grounding army and encounter effects",
+      "stage": "Private source and Windows review",
+      "card": "isometric-environments",
+      "body": "Existing stone-burst shadows, traveling rupture dust and shard shadows now follow the actual shared terrain. The army owner uses existing trail timing and a terrain shadow without changing combat rules.",
+      "testing": "Rendered source and Windows checks cover terrain triangle centroids, reward pause, trail expiry and hero/effect cleanup. Rupture ground effects contribute 2,001 source and 2,177 Windows pixels above the review threshold. Actual captures inspected. R20 remains staging only.",
+      "next": "Finish remaining attack lighting, ritual world effects and environment art; integrate Claude models as delivered, then verify full gameplay, survival and populated native performance."
+    },
+    {
+      "id": "private-backlog-r5-20261013",
+      "date": "2026-10-13",
+      "title": "Winning attacks stop safely",
+      "stage": "Private Windows package",
+      "card": "meteor-encounter",
+      "body": "The private R5 package fixes attacks continuing after victory and gives the isolated encounter review a legal five-slot loadout. Companion names retain the chosen ceremonial tone.",
+      "testing": "Exported resources pass 25 slam checks, 1,274 starter checks and both loadout tiers. The native executable renders gameplay and shuts down cleanly. The nine-file allowlisted archive passes CRC verification. Separate immune-owner offense observations establish damage feasibility only.",
+      "next": "Continue survival, presentation, full-map environment integration, listening and packaged performance review. Public release remains unchanged."
+    },
+    {
+      "id": "private-backlog-r4-20261013",
+      "date": "2026-10-13",
+      "title": "Refreshing the private review build",
+      "stage": "Private Windows package",
+      "card": "ui-polish",
+      "body": "The private R4 package includes save protections, Settings input and return fixes, and music crossfades. The developer chose to retain the current ceremonial companion naming tone.",
+      "testing": "Exported-resource checks pass 43 save checks, Settings navigation and persistence, visible failed-purchase feedback and music lifecycle checks. The native executable renders a gameplay smoke capture and exits through drained audio cleanup. ZIP contents are allowlisted and CRC checked.",
+      "next": "Continue final environment art, full-map integration, balance, listening and packaged performance review; public release remains unchanged."
+    },
+    {
+      "id": "ponytail-audit-fixes-20261013",
+      "date": "2026-10-13",
+      "title": "Protecting saves and development files",
+      "stage": "Source and resource-pack review",
+      "card": "ui-polish",
+      "body": "Malformed receipt and HUD fields trigger save recovery. Failed purchases and refunds restore their prior state and show an immediate menu notice. The local browser server serves only browser assets; Linux exclusions match Windows for development scene payloads. Run reports use the current build version.",
+      "testing": "43 save checks, 160 refund checks, HTTP access checks and rendered settings checks pass. A fresh Linux resource pack checks excluded payloads and failed-purchase behavior. Generated rupture terrain checks cover 576 approaches.",
+      "next": "Continue full-game art, balance, listening and packaged performance review before release."
+    },
+    {
+      "id": "settings-wheel-safety",
+      "date": "2026-10-11",
+      "title": "Keeping scrolling separate from settings changes",
+      "stage": "Source runtime review",
+      "card": "ui-polish",
+      "body": "Scrolling the settings list no longer changes volume or HUD size when a slider passes beneath the pointer. Direct mouse and keyboard adjustment remain available. Settings now owns its page state: Escape follows Back, and keyboard focus scrolls into view.",
+      "testing": "Rendered 1024x768 and 1280x540 runs passed bounds, wheel access to the final action, unchanged settings during scrolling, deliberate slider input and persistence. Tab navigation reaches the visible final control; Escape preserves paused runs. Six cinematic replays return to Settings without changing progression. Captures inspected.",
+      "next": "Include the fix in a validated future build; broader interface polish remains open."
+    },
+    {
+      "id": "shared-environment-first-slice",
+      "date": "2026-10-11",
+      "title": "Starting a shared environment slice",
+      "stage": "Private geometry prototype",
+      "card": "isometric-environments",
+      "body": "A private first-map direction study puts textured terrain, rock geometry, an existing painted boss and 48 existing sprite actors into one shared 3D scene. Ordinary units retain sprites; production maps remain unchanged.",
+      "testing": "Actual Godot captures exposed and corrected reversed floor faces. Final rendered floor visibility, upward normals, shared-world structure and obstacle traversal checks pass. A four-second actual Expedition pursuit checks 48 enemy bodies, camera-relative facing, fixed hero pixel scale through variable-height frames and billboard ground anchors. A separate 30-second shared encounter checks pursuit, attack states, warning/gust/impact presentation, effect expiry, audio shutdown, rock clearance and leg length; 975 warning boundary samples match damage containment and existing 2D presentation; 720 actual mesh rays match the rock collision footprint. A subsequent 30-second rendered sole review covers 900 frames, animation blends and stomp, with skinning and actual floor geometry checks. The original flat-ground solver remains compatible across 420 reviewed poses. Owner immunity and disabled weapons isolate movement.",
+      "learned": "Depth and lighting can be shared without giving regular units full rigs. The current terrain and rock study is not final environment art or encounter integration.",
+      "next": "Refine environment and effect art, review the sound mix, broaden contact coverage, then review populated performance and full-map migration."
+    },
+    {
+      "id": "scoreboard-window-layout-review",
+      "date": "2026-10-11",
+      "title": "Checking results at different window shapes",
+      "stage": "Private exported review",
+      "card": "scoreboard",
+      "body": "The accepted score screen was reviewed at 1024x768 and an ultrawide 1280x540 window. Its existing design is retained.",
+      "testing": "Actual rendered captures confirm framed statistics, long individual names and all four actions remain visible. The R3 embedded Windows pack also passes viewport bounds and mouse-wheel input checks: the final army source scrolls fully into view.",
+      "next": "Include the accepted screen in a validated future build. Other interface screens and full-game balance remain separate review work."
+    },
+    {
+      "id": "beam-loop-lifecycle-review",
+      "date": "2026-10-11",
+      "title": "Checking sustained weapon sound",
+      "stage": "Private exported review",
+      "card": "beams",
+      "body": "Sustained weapon audio was checked with real split volleys through the game menus and settings. Multiple streams share two sound players instead of stacking extra loop voices.",
+      "testing": "Source and the R3 embedded Windows pack both pass pause and reward silence, resume, sound toggle, effects-volume routing, weapon expiration, run release and shutdown. PCM checks find no clipping; loop-boundary sample jumps are below each texture's ordinary 99th-percentile adjacent-sample jump.",
+      "next": "Listening approval, weapon balance and idle-machine performance remain open. No new public build or subjective sound-quality acceptance is claimed."
+    },
+    {
+      "id": "companion-attack-spacing-trial",
+      "date": "2026-10-11",
+      "title": "Checking heavy-ally attack spacing",
+      "stage": "Private balance comparison",
+      "card": "companion-engagement",
+      "body": "Three attack distances were compared across all maps and two army levels. Regular units retain existing sprite animation.",
+      "testing": "54 matched encounters simulated the full 24 seconds with ordinary unit health. Owner immunity isolates army contribution and losses; this is not a player-survival or frame-rate verdict.",
+      "learned": "Both closer settings reduced total clears for the lower-level army, especially on the second map. They were rejected; live spacing, power and attack cadence remain unchanged.",
+      "next": "Review target selection and slam coverage before choosing further balance changes."
+    },
+    {
+      "id": "retain-companion-sprite-animation",
+      "date": "2026-10-11",
+      "title": "Keeping sprite animation for regular units",
+      "stage": "Accepted design decision",
+      "card": "companion-rigging",
+      "body": "The developer chose to retain existing 2D sprites and animation for regular units. Full-rig replacement work has stopped.",
+      "testing": "Regular-unit rig renderers remain opt-in review tools; default gameplay retains its sprites and experimental assets remain excluded from release exports.",
+      "next": "Preserve private experiment sources for reference. This decision does not accept the experimental rig artwork or change boss work."
+    },
+    {
+      "id": "companion-anatomy-revision",
+      "date": "2026-10-11",
+      "title": "Refining companion anatomy",
+      "stage": "Private source art study",
+      "card": "companion-rigging",
+      "body": "A separate anatomy revision improves joint forms, body volume, facial structure and binding details. The original model remains available for a direct comparison.",
+      "testing": "The editable Blender source exports seven clips with portable baked materials. A Godot comparison shows actual exported idle, walk and attack motion.",
+      "next": "Full-rig replacement experiment closed by developer decision; existing 2D sprite animation retained. Private sources are preserved without release promotion."
+    },
+    {
+      "id": "active-audio-exit-cleanup",
+      "date": "2026-10-11",
+      "title": "Cleaning up active audio on exit",
+      "stage": "Private exported review",
+      "card": "ui-polish",
+      "body": "Window close now stops game and cinematic audio, releases the run and allows the mixer to drain before process exit. Repeated close requests are ignored during cleanup.",
+      "testing": "An immediate-exit comparison reproduced retained playback buffers; the drained comparison exited cleanly. The rebuilt Windows executable passes the player-weapon path lab with clean shutdown. Exported window-close notifications and beam choices also pass without retained-audio warnings.",
+      "next": "Continue interface and encounter review; full-game performance and balance remain open."
+    },
+    {
+      "id": "starter-melee-path-prototype",
+      "date": "2026-10-11",
+      "title": "Two directions for the ground slam",
+      "stage": "Private exported review",
+      "card": "starter-melee-paths",
+      "body": "The heavy-ally ground hit was accepted visually. A related player weapon prototype now uses dedicated raised-earth artwork, a grounded impact and ornate cards for a wide forward fracture or two opposing fronts at rank five.",
+      "testing": "The refreshed private archive includes an isolated playable lab. Exported checks verify single-hit protection, branch geometry, Area scaling and terrain blocking. The actual Windows executable passes both card choices and automatic damage; its exported cards and attack paths were captured and inspected. Test-exit resource cleanup remains open.",
+      "next": "Review the private prototype and its balance before replacing the live starter. No public release or performance acceptance is claimed."
+    },
+    {
+      "id": "backlog-export-refresh",
+      "date": "2026-10-11",
+      "title": "Refreshing the private playtest",
+      "stage": "Private exported review",
+      "card": "beams",
+      "body": "The refreshed Windows preview includes individual companion names, dedicated research artwork and the heavy-ally ground rupture. It remains private.",
+      "testing": "Packaged identity, unlock protection, effect scaling, score-frame bounds and rupture checks passed; rendered archive and score captures were inspected. The Windows executable starts and its beam milestone-card check passes. The ZIP contains only seven explicitly allowed files and passed CRC verification.",
+      "learned": "The developer was playing another demanding game during the stress runs. Those frame-time measurements do not establish standalone performance or reliably isolate a bottleneck. Functional assertions remain valid; timing must be repeated on an idle machine.",
+      "next": "Continue lightweight correctness checks and code review while the PC is busy, then repeat idle-machine performance and representative encounter review before public release."
+    },
+    {
+      "id": "permanent-research-art-review",
+      "date": "2026-10-11",
+      "title": "Dedicated artwork for permanent research",
+      "stage": "Local UI preview",
+      "card": "research",
+      "body": "Three progression-gated upgrade cards now use original emblems instead of reused weapon icons. Locked cards retain blank silhouettes without names, descriptions, prices or tooltips.",
+      "testing": "Both archive states were captured and visually reviewed at 1280 by 800. Visibility checks confirm the relevant cards were on screen. Purchase gating, refunds, health and power scaling, and actual attack-cadence scaling pass.",
+      "next": "Review the artwork and encounter balance before including it in a validated build."
+    },
+    {
+      "id": "heavy-ally-ground-rupture",
+      "date": "2026-10-11",
+      "title": "Giving the heavy ally a ground rupture",
+      "stage": "Local prototype",
+      "card": "companion-engagement",
+      "body": "A committed mace slam launches a traveling ground rupture. Textured earth fragments replace the first geometric effect, and the damage front stops at terrain without sliding sideways. The heavy ally now plants its slam within the ground attack's reach instead of walking into every target.",
+      "testing": "Combat checks and actual Godot capture pass. Corrected full-duration matched reviews replace the initial reward-paused fixture: evolved heavy contribution roughly doubled, while the earlier army cleared about four percent fewer foes overall. Loss totals stayed unchanged. Owner immunity isolates contribution rather than player survival.",
+      "next": "Continue observatory-map and earlier-build balance, and review the animation before release."
+    },
+    {
+      "id": "late-run-army-role-trial",
+      "date": "2026-10-11",
+      "title": "Testing roles in a late-run army",
+      "stage": "Local balance trial",
+      "card": "companion-engagement",
+      "body": "A subsequent audit found reward-card pauses in the original eighteen-encounter fixture. Its aggregate balance comparisons are withdrawn.",
+      "testing": "The corrected fixture suppresses reward selection without upgrading the build, retains ordinary summon health and verifies that each encounter simulates all 24 seconds. Owner immunity isolates contribution and losses rather than player survival.",
+      "next": "Use the corrected matched old-attack and rupture results, then broaden encounter and playtest review before accepting balance."
+    },
+    {
+      "id": "companions-at-boss-boundaries",
+      "date": "2026-10-11",
+      "title": "Companions at boss boundaries",
+      "stage": "Private exported review",
+      "card": "companion-engagement",
+      "body": "A mixed melee and ranged group was reviewed around both rebuilt dinosaur bosses while its owner moved. The actual packaged models and runtime animation clocks were used.",
+      "testing": "Both twelve-second encounters recorded companion damage with zero measured ground-body overlap; rendered contact captures were inspected. The initial accelerated fixture was discarded because simulation and rig clocks disagreed.",
+      "next": "Broader endgame balance and playtest feedback remain open."
+    },
+    {
+      "id": "backlog-packaged-review",
+      "date": "2026-10-11",
+      "title": "Checking the packaged backlog preview",
+      "stage": "Private playtest",
+      "card": "beams",
+      "body": "The local Windows export includes the accepted score screen and level reward alongside the beam prototype. It has not been publicly released.",
+      "testing": "Packaged beam damage, both mandatory milestone cards, repeated level reward playback and actual exported score/research captures passed. Fixed-seed ordinary-health crowd review averaged 8.9 ms with a 13.6 ms 95th percentile after warm-up on the development PC.",
+      "learned": "An artificially surviving 650-enemy crowd remains heavier at 27.3 ms average and a 47.5 ms 95th percentile. A terrain shortcut failed to improve its controlled comparison and was removed.",
+      "next": "Review the private prototype for sound and balance, then continue crowd performance and companion encounter checks."
+    },
+    {
+      "id": "companion-first-rigging-pass",
+      "date": "2026-10-11",
+      "title": "Companion rigs enter motion review",
+      "stage": "Private source prototype",
+      "card": "companion-rigging",
+      "changed": "Built an original articulated companion motion study and a private renderer that reuses the two existing dinosaur rigs for allied summons.",
+      "testing": "Godot imports four study clips. The review checks movement, attack timing, pause and removal; 31 army regressions pass. Exported straight-gait stance drift measures below 0.001 model units after correcting transform evaluation.",
+      "learned": "Still images hid a gait fault. Reviewing exported bones against a travelling floor grid exposed it. Working motion still does not establish finished character art.",
+      "next": "Full-rig replacement experiment closed by developer decision; existing 2D sprite animation retained. Private sources are preserved without release promotion.",
+      "body": "The first companion rigging pass is a private animation study. Existing dinosaur models now have an allied rendering adapter; other companion rigs and final art acceptance remain open."
+    },
+    {
+      "id": "isometric-environment-direction",
+      "date": "2026-10-11",
+      "title": "A direction for deeper environments",
+      "stage": "Planning",
+      "card": "isometric-environments",
+      "changed": "Recorded a staged environment revamp direction following a visual gameplay-reference review.",
+      "testing": "Sampled four sections of the reference footage and inspected current terrain and isolated boss rendering. No new map runtime has been tested.",
+      "learned": "Substantial rock geometry, paths, lighting and open combat spaces establish depth without requiring complex multi-level traversal.",
+      "next": "Prove a small shared 3D scene with existing actors before migrating full maps.",
+      "body": "The planned environment pass begins with one private map slice, shared terrain and boss lighting, and readable combat spaces. Elevation and wider conversion depend on gameplay and performance review."
+    },
+    {
+      "id": "companion-identities-and-results",
+      "date": "2026-10-11",
+      "title": "Giving the army a history",
+      "stage": "Local prototype",
+      "card": "scoreboard",
+      "body": "Run summaries now give totals, weapon contributions and individual companion achievements their own frames. Procedural names remain attached to their records after a companion is lost.",
+      "testing": "Checked 100,000 unique names, isolated cosmetic randomness, leader persistence, upgrade gating and refunds. Reviewed the actual interface at two window sizes; existing pursuit and 31 army/contact checks passed.",
+      "next": "Playtest feedback and acceptance, then continue beam weapons and the remaining quality backlog."
+    },
+    {
+      "id": "companion-interrupted-strikes",
+      "date": "2026-10-10",
+      "title": "Fewer wasted melee swings",
+      "stage": "Source prototype",
+      "card": "companion-engagement",
+      "body": "A melee swing can finish against another nearby enemy in front when its original target dies during windup. Ranged damage remains unchanged.",
+      "testing": "The actual interrupted strike and direction/range limits pass. Twelve seeded mixed-army comparisons show modest melee contribution gains on average, with variation between seeds. Pursuit and 31 contact/revision checks pass again.",
+      "next": "Review motion around bosses and test representative endgame encounters before accepting the prototype."
+    },
+    {
+      "id": "companion-pursuit-first-pass",
+      "date": "2026-10-10",
+      "title": "Melee companions close the gap",
+      "stage": "Source prototype",
+      "card": "companion-engagement",
+      "body": "Reviewed an older run report and began a focused companion engagement pass.",
+      "changed": "One melee role now has a brief pursuit burst with recovery. Existing collision remains in use; ranged damage is unchanged.",
+      "testing": "Controlled first-hit time improved from 1.05 to 0.825 seconds. Pursuit checks and 31 existing army checks pass. This does not establish mixed-army balance.",
+      "next": "Compare mixed armies and review pursuit visually around bosses before expanding the pass."
+    },
     {
       "id": "meteor-public-0144",
       "date": "2026-10-10",

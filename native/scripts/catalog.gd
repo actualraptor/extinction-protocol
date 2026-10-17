@@ -52,6 +52,9 @@ static var PASSIVES = Rules.passive_data(BASE_PASSIVES)
 static var RELICS = preload("res://scripts/relic_system.gd").definitions(BASE_RELICS)
 const AUGMENTS = Rules.AUGMENTS
 const RESEARCH = {
+	"summon_power":{"name":"Grave Authority","desc":"Nagash: +4% summon damage / rank","cost":350,"max":5,"profile":"07","icon":"summon_power","icon_category":"research"},
+	"summon_health":{"name":"Bound in Parchment","desc":"Nagash: +6% summon health / rank","cost":300,"max":5,"profile":"07","icon":"summon_health","icon_category":"research"},
+	"summon_haste":{"name":"Restless Legion","desc":"Nagash: +4% summon attack speed / rank","cost":450,"max":5,"profile":"07","icon":"summon_haste","icon_category":"research"},
 	"critical":{"name":"Hunter's Eye","desc":"+2% critical chance / rank. Stacks above 100%.","cost":200,"max":10},
 	"vitality":{"name":"Survivor's Blood", "desc":"+10 starting health / rank", "cost":70,"max":5},
 	"power":{"name":"Forbidden Knowledge", "desc":"+3% starting damage / rank", "cost":100,"max":5},

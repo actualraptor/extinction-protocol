@@ -20,6 +20,9 @@ var audio
 var elapsed = 0.0
 var duration = 2.6
 var strip = []
+var reduced_effects=false
+var shake_enabled=true
+var name_revealed=false
 var landed = false
 var claimed = false
 var card_followup=false
@@ -59,6 +62,13 @@ func data_for(id):
 	d.art_type = "relic"
 	return d
 
+func reveal_delay():
+	if reduced_effects:return .2 if reward_data.rarity=="ARTIFACT" else 0.0
+	return .85 if reward_data.rarity=="ARTIFACT" else .3 if reward_data.rarity=="LEGENDARY" else 0.0
+func celebration_duration():
+	if reduced_effects:return .45
+	return 2.7 if reward_data.rarity=="ARTIFACT" else 1.65 if reward_data.rarity=="LEGENDARY" else .65 if reward_data.rarity=="EPIC" else .3
+func ready_to_claim():return landed and elapsed>=duration+celebration_duration()
 func _process(dt):
 	elapsed += dt
 	var t = minf(1,elapsed/duration)
@@ -68,14 +78,18 @@ func _process(dt):
 		audio.play("reel_tick",-15,0.85+t*0.25)
 	if t>=1 and not landed:
 		landed = true
-		audio.play("rarity_"+str(R.TIERS.find(reward_data.rarity)),-7)
-	if card_followup and landed and elapsed>=duration+.25 and not claimed:
+		if R.TIERS.find(reward_data.rarity)>=4:audio.play("reveal_charge",-14)
+	if landed and not name_revealed and elapsed>=duration+reveal_delay():
+		name_revealed=true
+		var cue="reveal_artifact" if reward_data.rarity=="ARTIFACT" else "reveal_legendary" if reward_data.rarity=="LEGENDARY" else "rarity_"+str(R.TIERS.find(reward_data.rarity))
+		audio.play(cue,-9)
+	if card_followup and ready_to_claim() and not claimed:
 		claimed=true;set_process(false);revealed.emit()
 	queue_redraw()
 
 func _unhandled_key_input(event):
 	# A held movement key must not skip the reveal. Require a new press.
-	if card_followup or claimed or not landed or elapsed<duration+0.3: return
+	if card_followup or claimed or not ready_to_claim(): return
 	if event.pressed and not event.echo and event.keycode in [KEY_W,KEY_A,KEY_S,KEY_D,KEY_UP,KEY_LEFT,KEY_DOWN,KEY_RIGHT,KEY_SPACE,KEY_ENTER,KEY_E]:
 		keep_existing = not replacement_data.is_empty() and event.keycode!=KEY_E
 		claimed = true
@@ -99,11 +113,12 @@ func text_block(value,y):
 	for i in range(mini(4,lines.size())):text_center(lines[i],y+i*20,16,Color("dfedf1"))
 
 func _draw():
-	draw_rect(Rect2(-global_position,get_viewport_rect().size),Color(0.015,0.025,0.04,0.38))
+	draw_rect(Rect2(-global_position,get_viewport_rect().size),Color(0.015,0.025,0.04,0.72))
 	var data = reward_data
 	var color = Color(R.tier_color(data.rarity))
 	var rank = R.TIERS.find(data.rarity)
-	text_center("NEW COMBINATION DISCOVERED" if landed and new_combination else "MERGING" if not ingredients.is_empty() else "THE RIFT REMEMBERS",105 if not ingredients.is_empty() else 210,28,Color("f4e4c8"))
+	if landed:draw_celebration(rank,color)
+	text_center("NEW COMBINATION DISCOVERED" if name_revealed and new_combination else "MERGING" if not ingredients.is_empty() else "THE RIFT REMEMBERS",105 if not ingredients.is_empty() else 210,28,Color("f4e4c8"))
 	text_center(reveal_title,243,14,Color("9ebbc5"))
 	if ingredients.size()==2:
 		for i in range(2):
@@ -118,6 +133,12 @@ func _draw():
 		if index<0 or index>=strip.size(): continue
 		var d = data_for(strip[index])
 		var x = size.x/2+(index-at)*190
+		if landed and not reduced_effects and rank>=4:
+			var age=maxf(0,elapsed-duration-reveal_delay())
+			var kick=exp(-age*7) if name_revealed else 0.0
+			var center=Vector2(size.x/2,379)
+			var jitter=Vector2(sin(age*77),cos(age*61))*kick*(5 if rank==5 else 3) if shake_enabled else Vector2.ZERO
+			draw_set_transform_matrix(Transform2D(0,Vector2.ONE*(1+kick*.16),0,center*(-kick*.16)+jitter))
 		var fade = clampf(1-absf(x-size.x/2)/650,0,1)
 		if landed and index!=28: fade *= 0.25
 		if index==28 and landed:
@@ -126,19 +147,16 @@ func _draw():
 			draw_line(Vector2(x-35,449),Vector2(x+35,449),Color(color,0.85),2,true)
 		draw_texture_rect(Icons.get_icon(d.get("art_id",reward),d.get("art_type","relic")),Rect2(x-58,321,116,116),false,Color(1,1,1,fade))
 		draw_string(font,Vector2(x-72,465),d.rarity,HORIZONTAL_ALIGNMENT_CENTER,144,14,Color(Color(R.tier_color(d.rarity)),fade))
+	draw_set_transform(Vector2.ZERO)
 	draw_colored_polygon(PackedVector2Array([Vector2(size.x/2-12,274),Vector2(size.x/2+12,274),Vector2(size.x/2,293)]),Color("ffe2a5"))
-	if landed:
-		var reveal = minf(1,(elapsed-duration)*4)
-		for i in range(12+rank*8):
-			var a = i*TAU/(12+rank*8)+elapsed*0.16
-			var origin = Vector2(size.x/2,390)
-			draw_line(origin+Vector2.from_angle(a)*(105+reveal*20),origin+Vector2.from_angle(a)*(145+rank*7+reveal*10),Color(color,0.25*(1-reveal*0.4)),1+rank*0.25,true)
+	if name_revealed:
 		text_center(data.rarity+" / "+data.name,550,26,color)
 		text_block(data.desc,584)
 		if not ingredients.is_empty(): text_center("ONE BACKPACK SLOT FREED / RECIPE RECORDED IN THE ARCHIVE",651,16,Color("ffd795"))
 		if not replacement_data.is_empty():
 			text_center("CURRENT: "+replacement_data.name+" / "+replacement_data.desc,650,14,Color("b6c4c9"))
-		text_center("E: REPLACE CURRENT RELIC   /   SPACE OR MOVEMENT: KEEP IT & SALVAGE FOR 25 AMBER" if not replacement_data.is_empty() else "WASD / ARROWS / SPACE TO CONTINUE",689,15,Color("b6c4c9"))
+		if ready_to_claim():text_center("E: REPLACE CURRENT RELIC   /   SPACE OR MOVEMENT: KEEP IT & SALVAGE FOR 25 AMBER" if not replacement_data.is_empty() else "WASD / ARROWS / SPACE TO CONTINUE",689,15,Color("b6c4c9"))
+	elif landed:text_center("THE RIFT HOLDS ITS BREATH",580,20,Color("f6d879"))
 	else: text_center("Uncovering what survived...",580,20,Color("b6c4c9"))
 	if odds.size()==6:
 		text_center(odds_caption,755,14,Color("a6b8c5"))
@@ -148,3 +166,32 @@ func _draw():
 			draw_string(font,Vector2(x,819),"%.2f%%"%odds[tier],HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color.WHITE)
 	elif daily_level: text_center("FATE CHOOSES / NORMAL UPGRADE POOL / NO REROLLS",790,16,Color("ffd795"))
 	else: text_center("GUARANTEED TRANSFORMATION / REQUIREMENTS MET",790,16,Color("ffd795"))
+
+func draw_celebration(rank:int,color:Color):
+	if rank<3:return
+	var age=maxf(0,elapsed-duration);var center=Vector2(size.x/2,379)
+	if reduced_effects:
+		draw_arc(center,143,0,TAU,96,Color(color,.32),2,true)
+		return
+	var burst_age=age-reveal_delay()
+	if burst_age<0:
+		var charge=age/maxf(.01,reveal_delay())
+		for ring in 6:draw_arc(center,180-charge*45+ring*7,-PI*.5,TAU-PI*.5,96,Color(color,.025+charge*.02),2,true)
+		return
+	var fade=clampf(1-burst_age/celebration_duration(),0,1)
+	var flash=exp(-burst_age*9)*(.14 if rank==5 else .10 if rank==4 else .055)
+	draw_rect(Rect2(-global_position,get_viewport_rect().size),Color(color,flash))
+	for ring in 10:draw_circle(center,95+ring*18+burst_age*40,Color(color,fade*.012))
+	draw_arc(center,125+burst_age*(150 if rank>=4 else 95),0,TAU,128,Color(color,fade*.6),2.5,true)
+	if rank<4:return
+	var count=56 if rank==5 else 32
+	for i in count:
+		var angle=i*TAU/count+sin(i*7.31)*.12
+		var direction=Vector2.from_angle(angle)
+		var distance=140+burst_age*(85+fposmod(i*71,190))
+		var p=center+direction*distance+Vector2(0,burst_age*burst_age*45)
+		if p.y>500:continue
+		var half=2+fposmod(i*3.7,4)
+		draw_colored_polygon(PackedVector2Array([p+Vector2(0,-half*2),p+Vector2(half,0),p+Vector2(0,half*2),p-Vector2(half,0)]),Color(color,fade*.85))
+		if i%3==0:draw_line(center+direction*(125+burst_age*80),p,Color(color,fade*.1),1,true)
+	text_center("ARTIFACT UNEARTHED" if rank==5 else "LEGENDARY DISCOVERY",170,34,Color(color,fade))

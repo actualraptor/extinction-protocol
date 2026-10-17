@@ -1,6 +1,7 @@
 extends RefCounted
 static func entries(save):
 	var result=[{"id":"intro","title":"The opening"}]
+	if save.get("settings",{}).get("torr_mortal_seen",false):result.append({"id":"torr_mortal","title":"Torr / A mortal's weapon"})
 	if save.get("campaign",{}).get("route_07",false):
 		result.append({"id":"reveal","title":"The awakening"})
 	if save.get("settings",{}).get("rite_07_seen",false):

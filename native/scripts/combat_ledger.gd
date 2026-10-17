@@ -4,6 +4,7 @@ var totals = {}
 var buckets = {}
 var started = {}
 var casts = {}
+var kills = {}
 var retired = {}
 
 func record(id,amount,now):

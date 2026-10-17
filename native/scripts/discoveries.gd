@@ -3,6 +3,11 @@ extends RefCounted
 const BASE_WEAPONS = ["lightning","frost","fire","winter","revolver","club"]
 const KITS = [["revolver","club","shotgun"],["club","spear","thorns"],["lightning","frost","fire"],["harpoon","frost","return"],["lantern","fire","orbital"]]
 const ENTRIES = {
+	"torr":{"name":"Torr Stormbuk / The Thunderer's Debt","desc":"Find the wounded goats near the first camp on any expedition map. Tend both through the escalating hunt and final stand.","cost":0,"depth":0,"discoverable":false},
+	"tfk_microphone":{"name":"En främmande mikrofon","desc":"Hitta de tre försvunna rösterna i Lost Cradles tre biomer.","cost":0,"depth":0,"map":"cradle","pos":Vector2(420,480),"discoverable":false},
+	"tfk_factbook":{"name":"Mathies Faktablad","desc":"Ett faktablad med Mathies anteckningar.","cost":0,"depth":0,"map":"cradle","pos":Vector2(1700,-1100),"discoverable":false},
+	"tfk_toplist":{"name":"Johans Topplista","desc":"En försvunnen röst i Lost Cradle.","cost":0,"depth":1,"map":"cradle","pos":Vector2(-1500,1200),"discoverable":false},
+	"tfk_telephone":{"name":"Woolkes Telefon","desc":"En försvunnen röst i Lost Cradle.","cost":0,"depth":2,"map":"cradle","pos":Vector2(1400,1500),"discoverable":false},
 	"vesper":{"name":"Vesper / The Riftwalker","desc":"Recruit Vesper. Find the rift camp in the Lost Cradle.","cost":0,"depth":0,"pos":Vector2(12000,-12000),"map":"cradle","hero":2},
 	"ironbriar":{"name":"The Ironbriar Cache","desc":"Unlock Ironbriar: armor-scaling thorn bursts and retaliation.","cost":0,"depth":0,"pos":Vector2(-510,980),"map":"cradle","weapons":["thorns"],"goal":"kills","target":800,"alternate":{"goal":"weapon_damage","weapon":"club","weapon_name":"Ancestor's Wrath","target":60000}},
 	"map_frost":{"name":"Frostbreak Expanse","desc":"Open a new expedition map: glacial avenues, ice packs and three original score cues.","cost":0,"depth":0,"pos":Vector2.ZERO,"map":"frostbreak","goal":"kills","target":250,"discoverable":false},
@@ -46,11 +51,15 @@ static func migrate(save):
 	if "kael" not in save.discoveries: save.discoveries.append("kael")
 
 static func hero_open(save,index):
+	var heroes=preload("res://scripts/catalog.gd").HEROES
+	if index>=0 and index<heroes.size() and heroes[index].get("profile","")=="tfk":return tfk_unlocked(save) or preload("res://scripts/tfk_content.gd").playtest_enabled()
+	if index>=0 and index<heroes.size() and preload("res://scripts/god_content.gd").god_hero(heroes[index]):return heroes[index].get("unlock_id","") in save.get("unlocks",[])
 	if index==5:return preload("res://scripts/content_extension.gd").visible(save)
 	return index==1 or (index>=0 and index<5 and ["mara","kael","vesper","iona","orin"][index] in save.get("unlocks",[]))
 
 static func allowed(save,category,id):
-	if category=="weapons" and id in KITS[save.get("hero",1)]: return true
+	var hero=int(save.get("hero",1))
+	if category=="weapons" and hero>=0 and hero<KITS.size() and id in KITS[hero]: return true
 	for key in ENTRIES:
 		if id in ENTRIES[key].get(category,[]): return key in save.get("unlocks",[])
 	return true
@@ -73,6 +82,15 @@ static func field_reward(g,id):
 
 static func landmarks(g):
 	var out = []
+	if g.map_id=="cradle":
+		if g.depth==0 and "tfk_microphone" not in g.discovered and not tfk_unlocked({"discoveries":g.discovered}):
+			var mic=g.terrain.open_position(ENTRIES.tfk_microphone.pos)
+			if g.terrain.walkable(mic,22):out.append({"id":"tfk_microphone","name":"?","p":mic,"found":false,"quest_intro":true})
+		for id in ["tfk_factbook","tfk_toplist","tfk_telephone"]:
+			var entry=ENTRIES[id]
+			if entry.depth!=g.depth or id in g.discovered:continue
+			var p=g.terrain.open_position(entry.pos)
+			if g.terrain.walkable(p,22):out.append({"id":id,"name":"?","p":p,"found":false,"mystery":true})
 	for signal_data in g.stage.get("signals",[]):
 		if not ENTRIES.has(signal_data.id) or int(signal_data.get("depth",0))!=g.depth:continue
 		var d=ENTRIES[signal_data.id]
@@ -82,3 +100,6 @@ static func landmarks(g):
 			continue
 		out.append({"id":signal_data.id,"name":d.name,"p":p,"found":signal_data.id in g.discovered})
 	return out
+
+static func tfk_unlocked(save):
+	return ["tfk_factbook","tfk_toplist","tfk_telephone"].all(func(id):return id in save.get("discoveries",[]))

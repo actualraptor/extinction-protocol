@@ -133,7 +133,8 @@ func _draw():
  for item in items:
   var at=map_point(item.p)
   if not rect.grow(-24*ui_scale).has_point(at):continue
-  draw_texture_rect(Icons.get_icon(item.id,item.category,g.get("halloween")==true),Rect2(at-Vector2(12,12)*ui_scale,Vector2(24,24)*ui_scale),false)
+  if item.category=="mystery":text_center("?",at+Vector2(0,7)*ui_scale,25,Color("e0ce9c"))
+  else:draw_texture_rect(Icons.get_icon(item.id,item.category,g.get("halloween")==true),Rect2(at-Vector2(12,12)*ui_scale,Vector2(24,24)*ui_scale),false)
   var caption=short_name(item.name)
   var width=font.get_string_size(caption,HORIZONTAL_ALIGNMENT_LEFT,-1,roundi(13*ui_scale)).x
   var bounds=Rect2(at+Vector2(-width/2,16*ui_scale),Vector2(width,18*ui_scale))

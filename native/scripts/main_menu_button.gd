@@ -14,15 +14,16 @@ func outline(inset):
  var r=Rect2(Vector2.ONE*inset,size-Vector2.ONE*inset*2);var c=12.0
  return PackedVector2Array([r.position+Vector2(c,0),Vector2(r.end.x-c,r.position.y),Vector2(r.end.x,r.position.y+c),r.end-Vector2(0,c),r.end-Vector2(c,0),Vector2(r.position.x+c,r.end.y),Vector2(r.position.x,r.end.y-c),r.position+Vector2(0,c),r.position+Vector2(c,0)])
 func _draw():
- var texture=preload("res://assets/main-menu/amber-crescent-button-v1.png")
- var dims=texture.get_size();var cap=300.0;var width=size.y*.62
+ var texture=preload("res://assets/menu-plate-green.png") if primary else preload("res://assets/menu-plate-dark.png")
+ var dims=texture.get_size();var cap=80.0 if primary else 64.0;var width=size.y*.95
  var tint=Color.WHITE.lerp(Color(1.24,1.13,.92),heat)
  if primary:tint=Color(1.18,1.08,.91).lerp(Color(1.36,1.20,.94),heat)
  if is_pressed():tint=Color(.75,.73,.68)
  if disabled:tint=Color(.48,.50,.49)
- draw_texture_rect_region(texture,Rect2(0,-7,width,size.y+14),Rect2(0,0,cap,dims.y),tint)
- draw_texture_rect_region(texture,Rect2(width,-7,size.x-width*2,size.y+14),Rect2(cap,0,dims.x-cap*2,dims.y),tint)
- draw_texture_rect_region(texture,Rect2(size.x-width,-7,width,size.y+14),Rect2(dims.x-cap,0,cap,dims.y),tint)
+ var rcap=60.0
+ draw_texture_rect_region(texture,Rect2(0,0,width,size.y),Rect2(0,0,cap,dims.y),tint)
+ draw_texture_rect_region(texture,Rect2(width,0,size.x-width*2,size.y),Rect2(cap,0,dims.x-cap-rcap,dims.y),tint)
+ draw_texture_rect_region(texture,Rect2(size.x-width,0,width,size.y),Rect2(dims.x-rcap,0,rcap,dims.y),tint)
  var font=preload("res://scripts/ui_art.gd").heading_font();var px=23 if primary else 19
  while px>13 and font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,px).x>size.x-90:px-=1
  var measured=font.get_string_size(text,HORIZONTAL_ALIGNMENT_LEFT,-1,px)

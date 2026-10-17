@@ -32,8 +32,11 @@ static func build(g,o,index,accept,relic=false):
 	var name=text(card,v,title.to_upper(),Rect2(.13,.363-shift,.74,.055),27,"efe1bc",true,true)
 	name.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	var category=Preview.transition(g,o) if evolved else Copy.tags(g,o)
+	if evolved and "GOD" in data.get("tags",[]):category="[God] · "+category
 	if category=="":category="Relic" if o.type=="relic" else "Supplies" if o.type=="supplies" else "Survivor bonus"
 	if o.has("replace"):category="Replaces "+g.C.RELICS[o.replace].name
+	# A recipe that cannot fit the line even at the smallest font drops its result: the result is already the card title.
+	if evolved and " → " in category and Card.BODY.get_string_size(category,HORIZONTAL_ALIGNMENT_LEFT,-1,12).x>380*.76-6:category=category.get_slice(" → ",0)
 	text(card,v,category,Rect2(.12,.436-shift,.76,.031),16,"dfc68e",true)
 	var panel_top=.478-shift
 	var panel_end=.803

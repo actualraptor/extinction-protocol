@@ -1,0 +1,186 @@
+{
+  "stride": 72.0,
+  "scale": 0.068,
+  "views": {
+    "front": [
+      {
+        "file": "front-0.png",
+        "anchor": [
+          780,
+          1140
+        ],
+        "hand": [
+          450,
+          735
+        ]
+      },
+      {
+        "file": "front-1.png",
+        "anchor": [
+          780,
+          1140
+        ],
+        "hand": [
+          450,
+          735
+        ]
+      },
+      {
+        "file": "front-2.png",
+        "anchor": [
+          780,
+          1140
+        ],
+        "hand": [
+          450,
+          735
+        ]
+      },
+      {
+        "file": "front-3.png",
+        "anchor": [
+          780,
+          1140
+        ],
+        "hand": [
+          450,
+          735
+        ]
+      },
+      {
+        "file": "front-4.png",
+        "anchor": [
+          780,
+          1140
+        ],
+        "hand": [
+          450,
+          735
+        ]
+      },
+      {
+        "file": "front-5.png",
+        "anchor": [
+          780,
+          1140
+        ],
+        "hand": [
+          450,
+          735
+        ]
+      },
+      {
+        "file": "front-6.png",
+        "anchor": [
+          780,
+          1140
+        ],
+        "hand": [
+          450,
+          735
+        ]
+      },
+      {
+        "file": "front-7.png",
+        "anchor": [
+          780,
+          1140
+        ],
+        "hand": [
+          450,
+          735
+        ]
+      }
+    ],
+    "rear": [
+      {
+        "file": "rear-0.png",
+        "anchor": [
+          820,
+          1140
+        ],
+        "hand": [
+          1080,
+          720
+        ]
+      },
+      {
+        "file": "rear-1.png",
+        "anchor": [
+          820,
+          1140
+        ],
+        "hand": [
+          1080,
+          720
+        ]
+      },
+      {
+        "file": "rear-2.png",
+        "anchor": [
+          820,
+          1140
+        ],
+        "hand": [
+          1080,
+          720
+        ]
+      },
+      {
+        "file": "rear-3.png",
+        "anchor": [
+          820,
+          1140
+        ],
+        "hand": [
+          1080,
+          720
+        ]
+      },
+      {
+        "file": "rear-4.png",
+        "anchor": [
+          820,
+          1140
+        ],
+        "hand": [
+          1080,
+          720
+        ]
+      },
+      {
+        "file": "rear-5.png",
+        "anchor": [
+          820,
+          1140
+        ],
+        "hand": [
+          1080,
+          720
+        ]
+      },
+      {
+        "file": "rear-6.png",
+        "anchor": [
+          820,
+          1140
+        ],
+        "hand": [
+          1080,
+          720
+        ]
+      },
+      {
+        "file": "rear-7.png",
+        "anchor": [
+          820,
+          1140
+        ],
+        "hand": [
+          1080,
+          720
+        ]
+      }
+    ]
+  }
+}

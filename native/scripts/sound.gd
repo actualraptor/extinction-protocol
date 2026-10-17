@@ -13,6 +13,7 @@ var boss_motion_scale=1.0
 var boss_foley_voices=[]
 var next_boss_foley=0
 var ritual_voice:AudioStreamPlayer
+var torr_thunder:AudioStreamPlayer
 var voices = []
 var next_voice = 0
 var tension = 0.0
@@ -33,8 +34,7 @@ var meteor_started = false
 var sync_check = 0.0
 
 func _ready():
-	if "--beam-test" in OS.get_cmdline_user_args():
-		var beam_audio=preload("res://scripts/beam_audio.gd").new();beam_audio.sound=self;add_child(beam_audio)
+	var beam_audio=preload("res://scripts/beam_audio.gd").new();beam_audio.sound=self;add_child(beam_audio)
 	for dinosaur in ["thorn","basalt","hunt","aurora","warden","bloom"]:
 		for cue in ["step","windup","attack","impact","roar","death"]:
 			var id="dino_"+dinosaur+"_"+cue
@@ -58,9 +58,11 @@ func _ready():
 		add_child(voice)
 		voices.append(voice)
 	var ids = "revolver shotgun frost fire lightning club spear orbital mortar pyre winter miasma dread aegis stasis impact_frost impact_fire impact_metal thermal reel_tick hit kill level evolve boss loot freeze magnet nuke frenzy rarity_0 rarity_1 rarity_2 rarity_3 rarity_4 rarity_5".split(" ")
-	ids.append_array(["thunderstorm","thunder_hit","chain_tick","venom_spit","ricochet","return","harpoon","lantern","glacier","sunbow"])
+	ids.append_array(["reveal_charge","reveal_legendary","reveal_artifact","thunderstorm","thunder_hit","chain_tick","venom_spit","ricochet","return","harpoon","lantern","glacier","sunbow"])
 	for id in ids: bank[id] = load("res://assets/audio/"+id+".wav")
-	bank.level = load("res://assets/audio/level_0141.wav")
+	for id in ["tfk_pickup_facts","tfk_pickup_list","tfk_pickup_phone","tfk_pickup_mic","tfk_signal","tfk_reveal"]:
+		bank[id]=load("res://assets/audio/"+id+".wav")
+	bank.level = load("res://assets/audio/level_reward.wav")
 	bank.pumpkin_smash = load("res://assets/audio/pumpkin_smash.wav")
 	for id in "revolver shotgun frost fire lightning club spear orbital mortar pyre winter miasma dread aegis stasis thunderstorm thunder_hit chain_tick ricochet return harpoon lantern glacier sunbow thorns breakable impact_frost impact_fire impact_metal".split(" "):
 		bank[id]=load("res://assets/audio/"+id+"_08.wav")
@@ -68,6 +70,8 @@ func _ready():
 	bank.meteor_flare=bank.impact_fire
 	bank.meteor_skyfall=bank.mortar
 	bank.meteor_collapse=bank.thunder_hit
+	bank.torr_rumble=load("res://assets/audio/torr-story/torr_distant_thunder.wav")
+	torr_thunder=AudioStreamPlayer.new();torr_thunder.bus="SFX";torr_thunder.stream=bank.torr_rumble;add_child(torr_thunder)
 	bank.meteor_crash=bank.dino_basalt_step
 	if OS.has_feature("meteor_rework") or "--meteor-rig-test" in OS.get_cmdline_user_args():
 		for cue in ["flare","skyfall","collapse"]:
@@ -80,7 +84,7 @@ func _ready():
 			if not starter_variants[id].is_empty():bank[id]=starter_variants[id][0]
 			else:starter_variants.erase(id)
 	bank.gun = bank.revolver
-	for pair in [["whiteout","lightning"],["supernova","mortar"],["lastword","shotgun"],["earthshaker","club"],["bastion","orbital"]]: bank[pair[0]] = bank[pair[1]]
+	for pair in [["solar_procession","pyre"],["polar_crown","frost"],["funeral_procession","lantern"],["tempest_anchor","harpoon"],["prismatic_ouroboros","return"],["whiteout","lightning"],["supernova","mortar"],["lastword","shotgun"],["earthshaker","club"],["bastion","orbital"]]: bank[pair[0]] = bank[pair[1]]
 	# Apply after evolution aliases so other weapon sounds remain unchanged.
 	if NEW_STARTER_AUDIO:
 		for id in ["revolver","lightning","chain_tick"]:
@@ -117,6 +121,8 @@ func play(id,volume = -12.0,pitch = 1.0,_music = false):
 		return
 	if halloween and id in ["club","earthshaker"]: id = "pumpkin_smash"
 	if not enabled or not bank.has(id): return
+	if id=="torr_rumble":
+		torr_thunder.volume_db=volume;torr_thunder.stream_paused=false;torr_thunder.play();return
 	# The long roar must survive the rapid weapon voices instead of being stolen.
 	if id=="dino_basalt_roar" and ("--painted-rig-test" in OS.get_cmdline_user_args() or OS.has_feature("boss_rework")):
 		boss_roar_voice.stream=bank[id];boss_roar_voice.volume_db=-2.0
@@ -158,6 +164,9 @@ func sound_stream(id):
 	return bank.get(id)
 
 func _process(dt):
+	if torr_thunder!=null:
+		if not enabled:torr_thunder.stop()
+		torr_thunder.stream_paused=encounter_paused
 	if not enabled:ritual_voice.stop()
 	for foley in boss_foley_voices:
 		if not enabled:foley.stop()
@@ -183,7 +192,12 @@ func _process(dt):
 		if boss_roar_voice!=null and boss_roar_voice.playing:duck_db=maxf(duck_db,8.0)
 		target-=duck_db
 		if voice_duck: target -= 5.0
-		music_players[i].volume_db = lerpf(music_players[i].volume_db,target,1-exp(-dt*3))
+		var blend=1-exp(-dt*3)
+		if audible and (duck_db>0 or voice_duck or not music_enabled):
+			music_players[i].volume_db=lerpf(music_players[i].volume_db,target,blend)
+		else:
+			# Crossfade audible gain; interpolating decibels creates a deep volume gap.
+			music_players[i].volume_db=linear_to_db(lerpf(db_to_linear(music_players[i].volume_db),db_to_linear(target),blend))
 		if not audible and music_players[i].volume_db < -65.0:
 			music_players[i].stop()
 	sync_check+=dt
@@ -212,6 +226,7 @@ func shutdown():
 	var all_players=voices+music_players+boss_foley_voices
 	if ritual_voice!=null:all_players.append(ritual_voice)
 	if boss_roar_voice!=null:all_players.append(boss_roar_voice)
+	if torr_thunder!=null:all_players.append(torr_thunder)
 	for child in get_children():
 		if child.has_method("shutdown"):child.shutdown()
 	for voice in all_players:

@@ -32,7 +32,10 @@ static func visible(save):
 	return save.get("campaign",{}).get(FLAG,false)
 
 static func roster(save):
-	var heroes=[1,0,2,3,4]
+	var heroes=[1,0,2]
+	var catalog=preload("res://scripts/catalog.gd")
+	for i in range(catalog.HEROES.size()):
+		if catalog.HEROES[i].get("profile","")=="tfk" or preload("res://scripts/god_content.gd").god_hero(catalog.HEROES[i]):heroes.append(i)
 	if visible(save):
 		if save.get("settings",{}).get("noncanon_roster",false):heroes.append(5)
 		else:heroes[0]=5

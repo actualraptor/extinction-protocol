@@ -11,6 +11,16 @@ const RESEARCH_ICONS = {
  "armor":["armor","passive"],"recovery":["regen","passive"]}
 static var cache = {}
 static var missing = {}
+const SUMMON_RESEARCH=["summon_power","summon_health","summon_haste"]
+static func summon_research_icon(id):
+	var key="summon-research:"+id
+	if not cache.has(key):
+		var sheet=load("res://assets/summon-research-icons.png")
+		var cell=Vector2(sheet.get_width()/3.0,sheet.get_height())
+		var icon=AtlasTexture.new();icon.atlas=sheet
+		icon.region=Rect2(Vector2(SUMMON_RESEARCH.find(id)*cell.x,0),cell)
+		cache[key]=icon
+	return cache[key]
 static func field(index):
 	if index<0 or index>3: return null
 	return _clean("field-"+["thorns","urn","crate","stump"][index])
@@ -24,8 +34,13 @@ static func _clean(name):
 	return cache[path]
 
 static func _icon_name(id,category="weapon",halloween=false):
-	if id=="flametorch":return "weapons-pyre"
-	if id in ["plasma_tether"]:return "weapons-orbital"
+	if category in ["weapon","fusion","evolution"]:
+		id={"plague_furnace":"flametorch","event_lock":"plasma_tether","solar_procession":"pyre","polar_crown":"glacier","funeral_procession":"lantern","tempest_anchor":"harpoon","prismatic_ouroboros":"return"}.get(id,id)
+	if preload("res://scripts/god_content.gd").owns(id):return "weapons-"+preload("res://scripts/god_content.gd").base_id(id)
+	if id=="tfk_phone":return "weapons-lightning"
+	if id.begins_with("tfk_"):return "weapons-orbital"
+	if id=="flametorch":return "weapons-flametorch"
+	if id=="plasma_tether":return "weapons-conduit"
 	if id=="beam_fuel":return "upgrades-eternity"
 	if category in ["fusion","evolution"]: category="weapon"
 	if category=="supplies":
@@ -52,12 +67,19 @@ static func _icon_name(id,category="weapon",halloween=false):
 	return ""
 
 static func has_icon(id,category="weapon",halloween=false):
+	if category=="research" and id in SUMMON_RESEARCH:return ResourceLoader.exists("res://assets/summon-research-icons.png")
+	if preload("res://scripts/tfk_icons.gd").SYMBOLS.has(id):return true
 	if preload("res://scripts/content_extension.gd").data.get("icons",{}).has(id):return true
 	var name=_icon_name(id,category,halloween)
 	return not name.is_empty() and ResourceLoader.exists("res://assets/clean-icons/"+name+".png")
 
 
 static func get_icon(id,category = "weapon",halloween = false):
+	if category=="research" and id in SUMMON_RESEARCH:return summon_research_icon(id)
+	if preload("res://scripts/tfk_icons.gd").SYMBOLS.has(id):
+		var key="tfk-vector:"+id
+		if not cache.has(key):cache[key]=preload("res://scripts/tfk_icons.gd").texture(id)
+		return cache[key]
 	if category=="boss" and id in BOSSES and id!="meteor":
 		var art=AtlasTexture.new();art.atlas=preload("res://scripts/dinosaur_boss_art.gd").SHEET
 		art.region=Rect2(0,BOSSES.find(id)*768,512,384);return art

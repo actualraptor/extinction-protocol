@@ -1,6 +1,7 @@
 extends RefCounted
 ## Small spatial buckets, bounded neighbour work, ground bodies respect walls.
 var buckets: Dictionary = {}
+const NEIGHBOR_CELLS=[Vector2i.ZERO,Vector2i.LEFT,Vector2i.RIGHT,Vector2i.UP,Vector2i.DOWN,Vector2i(-1,-1),Vector2i(1,-1),Vector2i(-1,1),Vector2i(1,1)]
 func cell(p: Vector2) -> Vector2i: return Vector2i(floori(p.x/48),floori(p.y/48))
 func airborne(e: Dictionary) -> bool: return e.get("role","") in ["fly","phase"]
 func radius(e: Dictionary) -> float: return clampf(e.size*0.7,11,32)
@@ -19,7 +20,7 @@ func move(g,e: Dictionary,delta: Vector2,dt: float) -> Vector2:
 	# Reuse contact normals for two 30 Hz steps. Bodies still collide every
 	# step; only the neighbour search is staggered across the horde.
 	if e.has("crowd_normals") and (g.enemy_frame+e.uid)%3!=0:
-		for normal in e.crowd_normals:
+		for normal:Vector2 in e.crowd_normals:
 			var into: float = delta.dot(normal)
 			if into<0: delta -= normal*into
 		return finish_move(g,e,key,delta+e.crowd_push.limit_length(120*dt))
@@ -28,9 +29,11 @@ func move(g,e: Dictionary,delta: Vector2,dt: float) -> Vector2:
 	var travel_length: float = delta.length()
 	var budget: int = 12
 	var body_radius: float = radius(e)
-	for offset_cell in [Vector2i.ZERO,Vector2i.LEFT,Vector2i.RIGHT,Vector2i.UP,Vector2i.DOWN,Vector2i(-1,-1),Vector2i(1,-1),Vector2i(-1,1),Vector2i(1,1)]:
+	for offset_cell:Vector2i in NEIGHBOR_CELLS:
 		if budget<=0: break
-		var bucket: Array = buckets.get(key+offset_cell,[])
+		var found=buckets.get(key+offset_cell)
+		if found==null:continue
+		var bucket:Array=found
 		for offset in range(mini(bucket.size(),6)):
 			if budget<=0: break
 			var other: Vector4 = bucket[(offset+g.enemy_frame*7+e.uid)%bucket.size()]
@@ -52,7 +55,7 @@ func move(g,e: Dictionary,delta: Vector2,dt: float) -> Vector2:
 	var movement: Vector2 = delta+push.limit_length(120*dt)
 	return finish_move(g,e,key,movement)
 
-func finish_move(g,e,_key,movement):
+func finish_move(g,e:Dictionary,_key:Vector2i,movement:Vector2)->Vector2:
 	var result: Vector2 = e.p+movement if airborne(e) else g.terrain.move(e.p,movement,10)
 	if g.boss!=null and not e.boss and not e.anchor:
 		var gap: Vector2 = result-g.boss.p

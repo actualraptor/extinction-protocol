@@ -17,7 +17,9 @@ func group(id):
 
 func icon(parent,id,extent):
 	var d=D.ENTRIES[id]
-	if d.has("hero"):
+	if preload("res://scripts/tfk_icons.gd").DISCOVERIES.has(id):
+		Icons.control(parent,preload("res://scripts/tfk_icons.gd").DISCOVERIES[id],"discovery",extent)
+	elif d.has("hero"):
 		var p=TextureRect.new();p.texture=game.texture(d.hero)
 		p.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;p.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		p.custom_minimum_size=Vector2(extent,extent);parent.add_child(p)
@@ -87,7 +89,8 @@ func build():
 		game.label(v,d.desc,19,"b3c5cb").autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 		game.label(v,Campaign.requirement(game.save_data,selected),17,"dfb67a").autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 		var action=menu_button(v,"Unlocked" if bought else "Unlock • %s amber"%d.cost if found else "Not discovered yet",func():
-			if preload("res://scripts/archive_respec.gd").buy_discovery(game.save_data,selected):game.persist();build(),true)
+			var previous=game.save_data.duplicate(true)
+			if preload("res://scripts/archive_respec.gd").buy_discovery(game.save_data,selected):game.persist(previous);build(),true)
 		action.disabled=bought or not found or game.save_data.amber<d.cost
 		if not bought:
 			menu_button(v,"Track this discovery",func():Campaign.track_goal(game.save_data,selected);game.persist();build())

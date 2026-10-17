@@ -14,7 +14,7 @@ void fragment(){
  float n=fbm(flow);float folds=fbm(flow*2.0+vec2(-t*1.4,t*.65));
  float nose=smoothstep(0.0,.025,x);float end=1.0-smoothstep(.87,1.0,x);
  vec3 rgb;float alpha;
- if(mode==0){
+ if(mode==0 || mode==3){
   float center=sin(x*7.0-t*5.5+seed)*.055*x+drift.y*.10*x;
   float radius=.06+smoothstep(.0,.73,x)*.47;
   float roll=radius*(.75+n*.55);
@@ -41,5 +41,7 @@ void fragment(){
   rgb=mix(rgb,vec3(.76,1.0,.93),clamp(core+strand*.38+pulse*.45,0.0,1.0));
   alpha=max(liquid*.82,max(exp(-d*6.0)*.22,strand*.75))*nose*end*envelope;
  }
+ if(mode==3){float core=rgb.b;rgb=mix(vec3(.05,.12,.018),vec3(.45,.78,.075),rgb.g);rgb=mix(rgb,vec3(.85,.96,.52),smoothstep(.25,.75,core));alpha*=.8;}
+ if(mode==4){rgb=mix(rgb,vec3(.68,.4,1.0),.5);alpha*=.72+.28*pow(sin(x*40.0-t*8.0),2.0);}
  COLOR=vec4(rgb,alpha);
 }

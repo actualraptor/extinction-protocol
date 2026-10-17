@@ -21,6 +21,7 @@ const MAX_CRIT_BURSTS = 24
 const MAX_DAMAGE_NUMBERS = 65
 var shake = 0.0
 var shake_enabled = true
+var reduced_effects = false
 var flashes = 0.0
 var effects = []
 var particles = []
@@ -36,15 +37,20 @@ var selected = 0
 var vignette = null
 
 func _ready():
+	var rescue_layer=preload("res://scripts/goat_rescue_view.gd").new();rescue_layer.world=self;rescue_layer.z_index=4;add_child(rescue_layer)
+	var god_layer=preload("res://scripts/god_renderer.gd").new();god_layer.world=self;god_layer.z_index=3;add_child(god_layer)
+	var tfk_layer=preload("res://scripts/tfk_renderer.gd").new();tfk_layer.world=self;tfk_layer.z_index=3;add_child(tfk_layer)
 	if (OS.has_feature("meteor_rework") or "--meteor-fresh-study" in OS.get_cmdline_user_args()):
 		var meteor_ground=preload("res://scripts/meteor_ground_view.gd").new()
 		meteor_ground.world=self;meteor_ground.z_index=-1;add_child(meteor_ground)
 	var beams_layer=preload("res://scripts/beam_renderer.gd").new();beams_layer.world=self;beams_layer.z_index=2;add_child(beams_layer)
+	var souls_layer=preload("res://scripts/soul_projectile_vfx.gd").new();souls_layer.world=self;souls_layer.z_index=3;add_child(souls_layer)
 	var ground_layer = preload("res://scripts/continuous_ground.gd").new()
 	ground_layer.world = self
 	ground_layer.z_index = -2
 	add_child(ground_layer)
 	var kael_ground=preload("res://scripts/kael_ground_fracture.gd").new()
+	var ancestor_ground=preload("res://scripts/ancestor_rupture_vfx.gd").new();ancestor_ground.world=self;ancestor_ground.z_index=-1;add_child(ancestor_ground)
 	kael_ground.world=self
 	kael_ground.z_index=-1
 	add_child(kael_ground)
@@ -125,6 +131,9 @@ func visible_rect(): return Rect2(-position,get_viewport_rect().size)
 func screen(p): return p-(camera_pos if sim != null else Vector2.ZERO)+Vector2(720,465)+camera_offset
 
 func fx(kind,p,color,size):
+	if kind=="torr_slam":
+		if shake_enabled and not reduced_effects:shake=maxf(shake,13)
+		return
 	if kind=="crit":
 		if clock<next_crit_flash: return
 		next_crit_flash=clock+0.045

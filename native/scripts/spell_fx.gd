@@ -41,6 +41,16 @@ func _draw():
 	if impacts:
 		for zone in s.zones:
 			if zone.wait>0: continue
+			if zone.get("wave",false):
+				var wave_radius=zone.radius*zone.age/zone.duration
+				draw_arc(world.screen(zone.p),wave_radius,0,TAU,48,Color(.78,.6,1,clampf(zone.life/.2,0,1)),3)
+				piece(13,world.screen(zone.p),Vector2.ONE*wave_radius*2,zone.age,.35,Color("d0b2ff"))
+				continue
+			if zone.get("milestone_field",false):
+				var center=world.screen(zone.p);var fade=clampf(zone.life/.35,0,1)
+				var tags=s.C.WEAPONS[zone.id].tags;var tint=Color(s.C.WEAPONS[zone.id].color)
+				piece(3 if "FIRE" in tags else 7 if "ICE" in tags else 13,center,Vector2.ONE*zone.radius*2.0,zone.p.x*.017,.35*fade,tint)
+				continue
 			if zone.get("scorched",false):
 				var ground = world.screen(zone.p)
 				if not Rect2(-zone.radius,-zone.radius,1440+zone.radius*2,900+zone.radius*2).has_point(ground): continue
@@ -55,7 +65,7 @@ func _draw():
 					var location = ground+Vector2.from_angle(angle)*zone.radius*0.55
 					burst(0,location,Vector2.ONE*zone.radius*0.52,phase,0.4*cooling,angle)
 				continue
-			if zone.id!="thunderstorm": continue
+			if zone.id!="thunderstorm" and not zone.get("storm",false): continue
 			var center = world.screen(zone.p)
 			var fade = minf(1,zone.life*3)
 			piece(13,center,Vector2.ONE*zone.radius*2.2,-world.clock*0.4,0.3*fade,Color("668eff"))
@@ -86,6 +96,7 @@ func _draw():
 			piece(13,world.screen(s.pos),Vector2.ONE*135,world.clock*0.3,0.5,Color("86dfff"))
 		var effect_budget = 28 if s.boss!=null else 44
 		for e in world.effects:
+			if e.kind.begins_with("impact_") and preload("res://scripts/soul_projectile_vfx.gd").applies(s,e.kind.trim_prefix("impact_")):continue
 			if effect_budget<=0: break
 			effect_budget -= 1
 			var p = world.screen(e.p)
@@ -138,10 +149,22 @@ func _draw():
 		return
 	var alpha = clampf(22.0/maxi(1,s.shots.size()),0.24,0.8)
 	for shot in s.shots:
-		if shot.id in ["lantern","sunbow"]:
+		if "GOD" in s.C.WEAPONS[shot.id].tags:continue
+		if shot.id in ["polar_crown","prismatic_ouroboros","tempest_anchor"]:
+			var at=world.screen(shot.p)
+			var tint=Color(s.C.WEAPONS[shot.id].color)
+			var angle=world.clock*12 if shot.id!="tempest_anchor" else shot.v.angle()
+			for i in range(1,4):piece(1,at-shot.v.normalized()*i*13,Vector2(28,16),angle,.28/i,tint)
+			draw_set_transform(at,angle)
+			draw_texture_rect(Icons.get_icon(shot.id),Rect2(-25,-25,50,50),false,Color(1,1,1,alpha))
+			draw_set_transform(Vector2.ZERO)
+			continue
+		if preload("res://scripts/soul_projectile_vfx.gd").applies(s,shot.id):
+			continue
+		if shot.id in ["lantern","sunbow","funeral_procession","solar_procession"]:
 			var p=world.screen(shot.p)
 			var tint=Color(s.C.WEAPONS[shot.id].color)
-			for j in range(3): piece(1 if shot.id=="lantern" else 5,p-shot.v.normalized()*j*18,Vector2(52,32)*(1-j*0.2),shot.v.angle(),alpha*(1-j*0.25),tint)
+			for j in range(3): piece(1 if shot.id in ["lantern","funeral_procession"] else 5,p-shot.v.normalized()*j*18,Vector2(52,32)*(1-j*0.2),shot.v.angle(),alpha*(1-j*0.25),tint)
 			continue
 		if shot.id in ["ricochet","return","harpoon","glacier"]:
 			var at = world.screen(shot.p)

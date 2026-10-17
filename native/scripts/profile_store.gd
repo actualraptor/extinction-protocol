@@ -4,7 +4,7 @@ const VERSION = 2
 const Discoveries = preload("res://scripts/discoveries.gd")
 
 static func defaults():
-	return {"version":VERSION,"starter_rules":2,"amber":0,"wins":0,"runs":0,"research":{},"records":[],"daily_records":[],"settings":{"sound":true,"music":true,"shake":true,"hud_scale":1.0,"halloween":true},"campaign":{"kills":0,"bosses":0,"map_kills":{},"map_wins":{}}}
+	return {"version":VERSION,"starter_rules":2,"amber":0,"wins":0,"runs":0,"research":{},"records":[],"daily_records":[],"settings":{"sound":true,"music":true,"shake":true,"reduced_effects":false,"hud_scale":1.0,"halloween":true},"campaign":{"kills":0,"bosses":0,"map_kills":{},"map_wins":{}}}
 
 static func numeric(value):
 	return (value is int or value is float) and is_finite(float(value)) and value >= 0
@@ -17,8 +17,15 @@ static func validate(data):
 			if not data.has(key): return false
 	for key in ["amber","wins","runs"]:
 		if data.has(key) and not numeric(data[key]): return false
-	for key in ["research","settings","campaign"]:
+	if data.has("tfk_reveal_seen") and not data.tfk_reveal_seen is bool:return false
+	for key in ["research","settings","campaign","research_spent","discovery_spent"]:
 		if data.has(key) and not data[key] is Dictionary: return false
+	for receipts in data.get("research_spent",{}).values():
+		if not receipts is Array:return false
+		for paid in receipts:
+			if not numeric(paid) or paid!=floor(float(paid)):return false
+	for paid in data.get("discovery_spent",{}).values():
+		if not numeric(paid) or paid!=floor(float(paid)):return false
 	for key in ["discoveries","unlocks","recipes"]:
 		if data.has(key):
 			if not data[key] is Array: return false
@@ -27,9 +34,12 @@ static func validate(data):
 	for value in data.get("research",{}).values():
 		if not numeric(value): return false
 	var settings=data.get("settings",{})
-	for key in ["sound","music","shake","halloween","intro_seen","opening_0120_seen","noncanon_roster"]:
+	for key in ["sound","music","shake","reduced_effects","halloween","intro_seen","opening_0120_seen","noncanon_roster","hud_minimap","torr_mortal_seen"]:
 		if settings.has(key) and not settings[key] is bool: return false
 	if settings.has("hud_scale") and not numeric(settings.hud_scale): return false
+	if settings.has("hud_skin"):
+		var skin=settings.hud_skin
+		if not (skin is int or skin is float) or not is_finite(float(skin)) or skin!=floor(float(skin)) or skin< -1:return false
 	for key in ["sfx_volume","music_volume","voice_volume","cinematic_volume"]:
 		if settings.has(key) and (not numeric(settings[key]) or settings[key]>1):return false
 	var campaign=data.get("campaign",{})

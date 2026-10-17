@@ -19,12 +19,20 @@ const PROFILE_EVENTS = {
 	"fatal_prevented":{"chance":1.0,"cooldown":90.0,"priority":85},
 	"final_evolution":{"chance":1.0,"cooldown":5.0,"priority":80}
 }
+const TORR_EVENTS = {
+	"orbit_started":{"chance":1.0,"cooldown":3600.0,"priority":60},
+	"orbit_added":{"chance":.65,"cooldown":6.0,"priority":30},
+	"stormload":{"chance":.35,"cooldown":20.0,"priority":30},
+	"final_evolution":{"chance":1.0,"cooldown":5.0,"priority":80}
+}
+const NO_EXTRA_EVENTS = {}
 const Extension=preload("res://scripts/content_extension.gd")
 var last_attempt = {}
 
-func priority(event):return PROFILE_EVENTS[event].priority if PROFILE_EVENTS.has(event) else PRIORITY.get(event,0)
-func cooldown(event):return PROFILE_EVENTS[event].cooldown if PROFILE_EVENTS.has(event) else COOLDOWN.get(event,0.0)
-func chance(event):return PROFILE_EVENTS[event].chance if PROFILE_EVENTS.has(event) else CHANCE.get(event,1.0)
+func extra_events():return TORR_EVENTS if hero_key=="torr" else PROFILE_EVENTS if hero_key==Extension.PROFILE else NO_EXTRA_EVENTS
+func priority(event):return extra_events()[event].priority if extra_events().has(event) else PRIORITY.get(event,0)
+func cooldown(event):return extra_events()[event].cooldown if extra_events().has(event) else COOLDOWN.get(event,0.0)
+func chance(event):return extra_events()[event].chance if extra_events().has(event) else CHANCE.get(event,1.0)
 
 const GLOBAL_GAP = 3.0
 const LOW_HEALTH = 0.25
@@ -57,6 +65,8 @@ func _ready():
 
 func set_hero(index):
 	var key=HERO_KEYS[index] if index>=0 and index<HERO_KEYS.size() else Extension.PROFILE if index==5 else ""
+	var heroes=preload("res://scripts/catalog.gd").HEROES
+	if index>=0 and index<heroes.size():key=heroes[index].get("voice_key",key)
 	if key==hero_key:return
 	reset_run()
 	hero_key=key
@@ -81,10 +91,10 @@ func now():
 	return Time.get_ticks_msec()/1000.0
 
 func eligible(event: String, at: float, force = false):
-	if not enabled or (not COUNTS.has(event) and not (hero_key==Extension.PROFILE and PROFILE_EVENTS.has(event))): return false
+	if not enabled or (not COUNTS.has(event) and not extra_events().has(event)): return false
 	if force: return true
-	if at-float(last_event.get(event,-1000.0)) < cooldown(event): return false
-	if PROFILE_EVENTS.has(event) and at-float(last_attempt.get(event,-1000.0)) < cooldown(event):return false
+	if at-float(last_event.get(event,-INF)) < cooldown(event): return false
+	if extra_events().has(event) and at-float(last_attempt.get(event,-INF)) < cooldown(event):return false
 	# Major announcements have no random/global-gap rejection. A single priority
 	# queue guarantees they get heard without several simultaneous voice lines.
 	if priority(event) >= 60: return true
@@ -102,7 +112,7 @@ func pick_variant(event: String):
 func play_event(event: String, force = false):
 	var at = now()
 	if not eligible(event,at,force) or bank.get(event,[]).is_empty(): return false
-	if PROFILE_EVENTS.has(event):last_attempt[event]=at
+	if extra_events().has(event):last_attempt[event]=at
 	if not force and rng.randf() >= chance(event): return false
 	if current_event == "death" and event != "chosen": return false
 	if event == "death":
